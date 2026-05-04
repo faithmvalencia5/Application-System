@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
+  <title>OSCA Bauan - Office of Senior Citizens Affairs | Fully Fixed Header & Responsive Hero</title>
+  <script src="script.js"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="homepage-page bg-background font-body text-on-surface overflow-x-hidden">
+  
+  <!-- FIXED HEADER - Always visible, never hides on scroll -->
+  <header id="mainHeader" class="fixed-header bg-white shadow-md">
+    <nav class="flex justify-between items-center px-4 md:px-8 py-3 md:py-4 max-w-7xl mx-auto w-full">
+      <div class="flex items-center gap-3">
+        <span class="text-xl md:text-2xl font-black text-[#001f78] font-headline tracking-tighter">OSCA Bauan</span>
+      </div>
+      
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center space-x-6 lg:space-x-8">
+        <a href="#home" class="nav-link text-slate-700 hover:text-[#001f78] font-headline font-bold text-base lg:text-lg">Home</a>
+        <a href="#about" class="nav-link text-slate-700 hover:text-[#001f78] font-headline font-bold text-base lg:text-lg">About</a>
+        <a href="#contact" class="nav-link text-slate-700 hover:text-[#001f78] font-headline font-bold text-base lg:text-lg">Contact</a>
+      </div>
+      
+      <!-- Mobile Menu Button -->
+      <button id="hamburgerBtn" class="md:hidden p-2 text-primary hover:bg-gray-100 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40 z-50 relative" aria-label="Open navigation menu">
+        <span class="material-symbols-outlined text-3xl">menu</span>
+      </button>
+    </nav>
+  </header>
+  
+  <!-- Mobile Menu Overlay -->
+  <div id="menuOverlay" class="menu-overlay"></div>
+  
+  <!-- Mobile Navigation Drawer - Fully visible -->
+  <div id="mobileMenu" class="mobile-menu">
+    <div class="flex justify-between items-center pb-6 mb-4 border-b border-gray-200">
+      <span class="text-2xl font-black text-primary font-headline">OSCA Bauan</span>
+      <button id="closeMenuBtn" class="p-2 rounded-full hover:bg-gray-100 transition-colors" aria-label="Close menu">
+        <span class="material-symbols-outlined text-gray-700 text-2xl">close</span>
+      </button>
+    </div>
+    
+    <div class="flex flex-col gap-2 mt-2">
+      <a href="#home" class="mobile-nav-link">
+        <span class="material-symbols-outlined text-primary text-2xl">home</span>
+        <span>Home</span>
+      </a>
+      <a href="#about" class="mobile-nav-link">
+        <span class="material-symbols-outlined text-primary text-2xl">info</span>
+        <span>About</span>
+      </a>
+      <a href="#contact" class="mobile-nav-link">
+        <span class="material-symbols-outlined text-primary text-2xl">contact_support</span>
+        <span>Contact</span>
+      </a>
+    </div>
+    
+    <div class="mt-auto pt-8 mt-8 border-t border-gray-100">
+      <div class="text-xs text-gray-500 space-y-2">
+        <p>📍 Ground Floor, Municipal Hall</p>
+        <p>📞 (043) 727-XXXX</p>
+        <p>✉️ osca@bauan.gov.ph</p>
+        <p class="pt-2 text-center">© 2024 OSCA Bauan</p>
+      </div>
+    </div>
+  </div>
+  
+  <main>
+    <!-- Hero Section - FIXED: No image cropping, fully responsive -->
+    <section id="home" class="relative h-[85vh] min-h-[550px] md:min-h-[650px] lg:h-[750px] flex items-center overflow-hidden">
+      <div class="hero-image-container">
+        <picture>
+          <!-- Mobile optimized -->
+          <source media="(max-width: 768px)" srcset="https://lh3.googleusercontent.com/aida-public/AB6AXuBiCWwdTh4USRnyNEipbMJUZxeVP8y-hdy-BvvwOwrINNOF_rlX2VwZ_iA253b6qhhq1U1Z5pXltr6tBOOzjJtB4TKNHaRkZeqluOTDEdfGFQ2Vf0BwOKyOt-d9zWil2okQylcm_c3Y88WGomOdlQ9FkLAg5RAcflqozJdhvzrdq69qu93WNkrm6PC-jTnGLDCpgTxypWjRi5mFcGRSHbiJRl0og06aWiB8Zi9FXIaC9HtBz6Ox3soe-1u881A7M2qqvJT9VqZB3D7B">
+          <!-- Desktop: ensure full visibility, no cut-off -->
+          <img class="hero-image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiCWwdTh4USRnyNEipbMJUZxeVP8y-hdy-BvvwOwrINNOF_rlX2VwZ_iA253b6qhhq1U1Z5pXltr6tBOOzjJtB4TKNHaRkZeqluOTDEdfGFQ2Vf0BwOKyOt-d9zWil2okQylcm_c3Y88WGomOdlQ9FkLAg5RAcflqozJdhvzrdq69qu93WNkrm6PC-jTnGLDCpgTxypWjRi5mFcGRSHbiJRl0og06aWiB8Zi9FXIaC9HtBz6Ox3soe-1u881A7M2qqvJT9VqZB3D7B" alt="Senior citizens community celebration in Bauan">
+        </picture>
+        <div class="absolute inset-0 bg-gradient-to-r from-primary/85 via-primary/40 to-transparent"></div>
+      </div>
+      <div class="relative z-10 max-w-7xl mx-auto px-6 md:px-8 w-full">
+        <div class="max-w-2xl">
+          <span class="inline-block bg-secondary text-on-secondary px-4 py-1 rounded-full text-sm font-bold tracking-widest mb-6 font-headline">LUNSOD NG BAUAN</span>
+          <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-on-primary font-headline leading-[1.05] tracking-tight mb-6 md:mb-8">
+            Pusong Para sa <span class="text-secondary-fixed-dim">Seniors</span>
+          </h1>
+          <p class="text-base md:text-xl lg:text-2xl text-on-primary/90 font-body leading-relaxed mb-8 md:mb-10 max-w-xl">
+            Dedicated to honoring and serving the vibrant senior citizen community of Bauan with dignity, respect, and accessible care.
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a href="form.html" class="bg-secondary text-on-secondary px-6 md:px-8 py-3 md:py-4 rounded-xl font-headline font-extrabold text-base md:text-lg flex items-center gap-3 shadow-xl hover:scale-[1.02] transition-all">Register Now <span class="material-symbols-outlined">arrow_forward</span></a>
+            <a href="trackstatus.html" class="inline-flex items-center justify-center bg-white/10 backdrop-blur-md text-on-primary border border-white/20 px-6 md:px-8 py-3 md:py-4 rounded-xl font-headline font-extrabold text-base md:text-lg hover:bg-white/20 transition-all">Track Status</a>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- About Section -->
+    <section id="about" class="py-16 md:py-24 px-6 md:px-8 max-w-7xl mx-auto scroll-mt-24">
+      <div class="about-panel rounded-xl p-6 md:p-12 flex flex-col lg:flex-row items-center gap-10 editorial-shadow">
+        <div class="lg:w-1/2">
+          <h2 class="text-3xl md:text-4xl font-black text-primary font-headline mb-6">About OSCA Bauan</h2>
+          <p class="text-on-surface-variant text-base md:text-xl mb-6">The Office of Senior Citizens Affairs (OSCA) Bauan is committed to promoting the welfare, rights, and empowerment of senior citizens. Established under the Expanded Senior Citizens Act, we provide accessible services, social pension distribution, health programs, and community engagement initiatives.</p>
+          <p class="text-on-surface-variant text-base">We honor the wisdom and contributions of our elderly population, ensuring they live with dignity, security, and opportunities for active participation.</p>
+          <div class="mt-8"><a class="inline-flex bg-secondary text-on-secondary px-6 py-3 rounded-xl font-bold" href="https://bauan.gov.ph/osca/">Learn More</a></div>
+        </div>
+        <div class="lg:w-1/2 flex justify-center"><div class="about-logo-shell relative w-full max-w-sm aspect-square bg-white/5 rounded-xl flex items-center justify-center p-8"><div class="w-full h-full border-4 border-dashed border-white/20 rounded-xl flex items-center justify-center"><img class="about-logo-main" src="OSCA Bauan Logo.jpg" alt="OSCA Bauan Logo"></div><div class="absolute -bottom-4 bg-secondary text-on-secondary px-5 py-2 rounded-lg font-bold shadow-xl text-sm">Since 1993</div></div></div>
+      </div>
+    </section>
+    
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 md:py-24 px-6 md:px-8 bg-surface-container-low scroll-mt-20">
+      <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div><h2 class="text-3xl md:text-4xl font-black text-primary font-headline mb-6">Get in Touch</h2><p class="text-base md:text-lg text-on-surface-variant mb-8">Visit our main office or reach out through digital channels.</p><div class="space-y-6"><div class="flex gap-4"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-primary">location_on</span></div><div><h4 class="text-lg font-bold text-primary font-headline mb-1">Office Location</h4><p class="text-on-surface-variant">Ground Floor, Municipal Hall, Bauan, Batangas 4201</p></div></div><div class="flex gap-4"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-primary">call</span></div><div><h4 class="text-lg font-bold text-primary font-headline mb-1">Phone Number</h4><p class="text-on-surface-variant">(043) 727-XXXX / +63 917 XXX XXXX</p></div></div><div class="flex gap-4"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-primary">mail</span></div><div><h4 class="text-lg font-bold text-primary font-headline mb-1">Email Address</h4><p class="text-on-surface-variant">osca@bauan.gov.ph</p></div></div></div></div>
+        <div class="relative overflow-hidden rounded-xl h-[350px] md:h-[450px] shadow-xl"><img class="w-full h-full object-cover object-center" src="https://onebauan.com/images/bauan-municipal-office.jpg" alt="Bauan Municipal Hall"><div class="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent"></div></div>
+      </div>
+    </section>
+  </main>
+  
+  <!-- Footer -->
+  <footer class="bg-slate-100 border-t-8 border-[#001f78]"><div class="max-w-7xl mx-auto px-6 md:px-12 py-12 grid grid-cols-1 md:grid-cols-4 gap-10"><div><span class="text-xl font-bold text-[#001f78] font-headline mb-4 block">OSCA Bauan</span><p class="text-slate-600 text-sm">Empowering senior citizens of Bauan.</p></div><div><h5 class="text-[#001f78] font-headline font-bold mb-5">Quick Links</h5><ul class="space-y-2"><li><a href="#home" class="text-slate-600 hover:text-[#bc000d] transition-all">Home</a></li><li><a href="#about" class="text-slate-600 hover:text-[#bc000d] transition-all">About</a></li><li><a href="#contact" class="text-slate-600 hover:text-[#bc000d] transition-all">Contact</a></li></ul></div><div><h5 class="text-[#001f78] font-headline font-bold mb-5">Resources</h5><ul class="space-y-2"><li><a href="#" class="text-slate-600 hover:text-[#bc000d]">Senior ID Application</a></li><li><a href="#" class="text-slate-600 hover:text-[#bc000d]">Social Pension Form</a></li></ul></div><div><h5 class="text-[#001f78] font-headline font-bold mb-5">Government</h5><ul class="space-y-2"><li><a href="#" class="text-slate-600 hover:text-[#bc000d]">DSWD</a></li><li><a href="#" class="text-slate-600 hover:text-[#bc000d]">NCSC</a></li></ul></div></div><div class="max-w-7xl mx-auto px-6 md:px-12 py-6 border-t border-slate-200"><p class="text-slate-600 text-center text-sm">© 2024 Office of Senior Citizens Affairs (OSCA) Bauan. All Rights Reserved.</p></div></footer>
+
+</body>
+</html>

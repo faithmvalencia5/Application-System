@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Senior Citizen ID Application Form</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="form-wrapper">
+      <header class="form-header">
+        <div class="header-text">
+          <p>OFFICE OF SENIOR CITIZENS AFFAIRS</p>
+          <p>CITY / MUNICIPALITY BAUAN BATANGAS</p>
+        </div>
+        <div class="header-bottom">
+          <div class="logo-box"><img src="OSCA Bauan Logo.jpg" alt="Logo" /></div>
+          <div class="title-bar">ONLINE SENIOR CITIZEN ID APPLICATION FORM</div>
+        </div>
+      </header>
+
+      <section class="section-block">
+        <h2>Information</h2>
+
+        <div class="row three">
+          <div class="field">
+            <label for="surname">Name</label>
+            <input id="surname" type="text" />
+            <small>Surname</small>
+          </div>
+          <div class="field">
+            <label for="firstname" class="ghost-label">.</label>
+            <input id="firstname" type="text" />
+            <small>Firstname</small>
+          </div>
+          <div class="field">
+            <label for="middlename" class="ghost-label">.</label>
+            <input id="middlename" type="text" />
+            <small>Middlename</small>
+          </div>
+        </div>
+
+        <div class="row three">
+          <div class="field">
+            <label for="dob">Date of Birth</label>
+            <input id="dob" type="date" />
+          </div>
+          <div class="field">
+            <label for="age">Age</label>
+            <input id="age" type="number" min="0" />
+          </div>
+          <div class="field">
+            <label for="sex">Sex</label>
+            <select id="sex">
+              <option value="" selected disabled>Select sex</option>
+              <option>Male</option>
+              <option>Female</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row two-thirds">
+          <div class="field">
+            <label for="birthplace">Place of Birth</label>
+            <input id="birthplace" type="text" />
+          </div>
+          <div class="field">
+            <label for="civil-status">Civil Status</label>
+            <select id="civil-status">
+              <option value="" selected disabled>Select civil status</option>
+              <option>Single</option>
+              <option>Separated</option>
+              <option>Widower</option>
+              <option>Married</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row two">
+          <div class="field">
+            <label for="address">Address</label>
+            <input id="address" type="text" />
+            <small>House No. &amp; Street Name</small>
+          </div>
+          <div class="field">
+            <label for="barangay" class="ghost-label">.</label>
+            <input id="barangay" type="text" />
+            <small>Barangay / District</small>
+          </div>
+        </div>
+
+        <div class="row one">
+          <div class="field">
+            <label for="education">Educational Attainment</label>
+            <select id="education">
+              <option value="" selected disabled>Select educational attainment</option>
+              <option>Elementary Level</option>
+              <option>Elementary Graduate</option>
+              <option>High School Level</option>
+              <option>High School Graduate</option>
+              <option>Vocational</option>
+              <option>College Level</option>
+              <option>College Graduate</option>
+              <option>Post Graduate</option>
+              <option>Not Attended Any School</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row two">
+          <div class="field">
+            <label for="religion">Religion</label>
+            <select id="religion">
+              <option value="" selected disabled>Select religion</option>
+              <option>Roman Catholic</option>
+              <option>Iglesia Ni Cristo</option>
+              <option>Protestant</option>
+              <option>Others pls. specify</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="occupation">Occupation</label>
+            <input id="occupation" type="text" />
+          </div>
+        </div>
+
+        <div class="row five labels-top">
+          <div class="field">
+            <label for="id-osca">ID Number</label>
+            <input id="id-osca" type="text" />
+            <small>OSCA</small>
+          </div>
+          <div class="field">
+            <label for="id-sss" class="ghost-label">.</label>
+            <input id="id-sss" type="text" />
+            <small>SSS</small>
+          </div>
+          <div class="field">
+            <label for="id-philhealth" class="ghost-label">.</label>
+            <input id="id-philhealth" type="text" />
+            <small>PHILHEALTH</small>
+          </div>
+          <div class="field">
+            <label for="id-gsis" class="ghost-label">.</label>
+            <input id="id-gsis" type="text" />
+            <small>GSIS</small>
+          </div>
+          <div class="field">
+            <label for="id-tin" class="ghost-label">.</label>
+            <input id="id-tin" type="text" />
+            <small>TIN</small>
+          </div>
+        </div>
+
+        <div class="row one narrow">
+          <div class="field">
+            <label for="contact-number">Contact Number</label>
+            <input id="contact-number" type="number" min="0" />
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block">
+        <h2>Family Composition</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>NAME</th>
+                <th>RELATIONSHIP</th>
+                <th>AGE</th>
+                <th>CIVIL STATUS</th>
+                <th>OCCUPATION / INCOME</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody id="family-body">
+              <tr>
+                <td><input type="text" aria-label="Family member name" /></td>
+                <td><input type="text" aria-label="Family relationship" /></td>
+                <td><input type="number" min="0" aria-label="Family age" /></td>
+                <td>
+                  <select aria-label="Family civil status">
+                    <option value="" selected disabled>Select status</option>
+                    <option>Single</option>
+                    <option>Separated</option>
+                    <option>Widower</option>
+                    <option>Married</option>
+                  </select>
+                </td>
+                <td><input type="text" aria-label="Family occupation or income" /></td>
+                <td class="family-action-cell">
+                  <button type="button" class="family-delete-btn" aria-label="Delete family row">X</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-controls">
+          <button type="button" id="add-family-row" class="table-btn">Add Next Row</button>
+        </div>
+      </section>
+
+      <section class="section-block">
+        <h2>Membership to Senior Citizens Association</h2>
+        <div class="row one">
+          <div class="field">
+            <label for="assoc-name">Name of Association</label>
+            <input id="assoc-name" type="text" />
+          </div>
+        </div>
+        <div class="row one">
+          <div class="field">
+            <label for="assoc-address">Address of Association</label>
+            <input id="assoc-address" type="text" />
+          </div>
+        </div>
+        <div class="row two">
+          <div class="field">
+            <label for="assoc-date">Date of Association</label>
+            <input id="assoc-date" type="date" />
+          </div>
+          <div class="field">
+            <label for="assoc-position">Position</label>
+            <input id="assoc-position" type="text" />
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block">
+        <h2>Personal Background</h2>
+
+        <div class="row one">
+          <div class="field checkbox-group">
+            <p class="group-label">Source of Income and Assistance (Check all applicable)</p>
+            <div class="checkbox-options">
+              <label class="check-option"><input type="checkbox" /> Own Earnings, Salaries, /Waves</label>
+              <label class="check-option"><input type="checkbox" /> Own Pension</label>
+              <label class="check-option"><input type="checkbox" /> Stocks/Dividends</label>
+              <label class="check-option"><input type="checkbox" /> Dependent Of Children/Relatives</label>
+              <label class="check-option"><input type="checkbox" /> Spouse's Salary</label>
+              <label class="check-option"><input type="checkbox" /> Insurance</label>
+              <label class="check-option"><input type="checkbox" /> Rentals/Sharecrops</label>
+              <label class="check-option"><input type="checkbox" /> Savings</label>
+              <label class="check-option"><input type="checkbox" /> Livestock/Crop</label>
+              <label class="check-option"><input type="checkbox" /> Others Specify</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row one">
+          <div class="field checkbox-group">
+            <p class="group-label">Assets and Properties (Check all applicable)</p>
+            <div class="checkbox-options">
+              <label class="check-option"><input type="checkbox" /> House</label>
+              <label class="check-option"><input type="checkbox" /> Lot</label>
+              <label class="check-option"><input type="checkbox" /> Farmland</label>
+              <label class="check-option"><input type="checkbox" /> Fishponds/Resorts</label>
+              <label class="check-option"><input type="checkbox" /> Commercial Building</label>
+              <label class="check-option"><input type="checkbox" /> Others Specify</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row one">
+          <div class="field">
+            <label for="monthly-income">Monthly Income (in the Philippine Peso)</label>
+            <select id="monthly-income">
+              <option value="" selected disabled>Select monthly income</option>
+              <option>10,000 &amp; ABOVE</option>
+              <option>9,000 - 9,999</option>
+              <option>8,000 - 8,999</option>
+              <option>7,000 - 7,999</option>
+              <option>6,000 - 6,999</option>
+              <option>5,000 - 5,999</option>
+              <option>4,000 - 4,999</option>
+              <option>3,000 - 3,999</option>
+              <option>2,000 - 2,999</option>
+              <option>1,000 - 1,999</option>
+              <option>999 AND BELOW</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row one">
+          <div class="field checkbox-group">
+            <p class="group-label">Living / Residing With (Check all applicable)</p>
+            <div class="checkbox-options">
+              <label class="check-option"><input type="checkbox" /> Alone</label>
+              <label class="check-option"><input type="checkbox" /> Spouse</label>
+              <label class="check-option"><input type="checkbox" /> Care Institution</label>
+              <label class="check-option"><input type="checkbox" /> Children</label>
+              <label class="check-option"><input type="checkbox" /> Friends</label>
+              <label class="check-option"><input type="checkbox" /> Common Law Spouse</label>
+              <label class="check-option"><input type="checkbox" /> Grandchildren</label>
+              <label class="check-option"><input type="checkbox" /> Households</label>
+              <label class="check-option"><input type="checkbox" /> Relatives</label>
+              <label class="check-option"><input type="checkbox" /> In Laws</label>
+              <label class="check-option"><input type="checkbox" /> Others Specify</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row one">
+          <div class="field checkbox-group">
+            <p class="group-label">Areas Specialization / Skills (Check all applicable)</p>
+            <div class="checkbox-options">
+              <label class="check-option"><input type="checkbox" /> Medical</label>
+              <label class="check-option"><input type="checkbox" /> Dental</label>
+              <label class="check-option"><input type="checkbox" /> Farming</label>
+              <label class="check-option"><input type="checkbox" /> Arts</label>
+              <label class="check-option"><input type="checkbox" /> Teaching</label>
+              <label class="check-option"><input type="checkbox" /> Counseling</label>
+              <label class="check-option"><input type="checkbox" /> Fishing</label>
+              <label class="check-option"><input type="checkbox" /> Engineering</label>
+              <label class="check-option"><input type="checkbox" /> Legal Services</label>
+              <label class="check-option"><input type="checkbox" /> Evangelization</label>
+              <label class="check-option"><input type="checkbox" /> Cooking</label>
+              <label class="check-option"><input type="checkbox" /> Vocational</label>
+              <label class="check-option"><input type="checkbox" /> Others Specify</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row one">
+          <div class="field checkbox-group">
+            <p class="group-label">Involvement in Common Encountered (Check all applicable)</p>
+            <div class="checkbox-options">
+              <label class="check-option"><input type="checkbox" /> Medical</label>
+              <label class="check-option"><input type="checkbox" /> Dental</label>
+              <label class="check-option"><input type="checkbox" /> Religious</label>
+              <label class="check-option"><input type="checkbox" /> Sportsmanship</label>
+              <label class="check-option"><input type="checkbox" /> Resource Volunteer</label>
+              <label class="check-option"><input type="checkbox" /> Friendly Visits</label>
+              <label class="check-option"><input type="checkbox" /> Counseling/Referral</label>
+              <label class="check-option"><input type="checkbox" /> Legal Spouse</label>
+              <label class="check-option"><input type="checkbox" /> Community/Organization Leader</label>
+              <label class="check-option"><input type="checkbox" /> Others Specify</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="problems-block">
+          <p class="problem-title">Problems / Needs Commonly Encountered (Check all applicable)</p>
+
+          <div class="row one">
+            <div class="field checkbox-group">
+              <p class="group-label">a) Economic</p>
+              <div class="checkbox-options">
+                <label class="check-option"><input type="checkbox" /> Lack of Income/Resource</label>
+                <label class="check-option"><input type="checkbox" /> Skills/Capability Training (specify)</label>
+                <label class="check-option"><input type="checkbox" /> Livelihood Opportunities (specify)</label>
+                <label class="check-option"><input type="checkbox" /> Others Specify</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row one">
+            <div class="field checkbox-group">
+              <p class="group-label">b) Social / Emotional</p>
+              <div class="checkbox-options">
+                <label class="check-option"><input type="checkbox" /> Feeling of Neglect &amp; Rejection</label>
+                <label class="check-option"><input type="checkbox" /> Feeling of Helplessness &amp; worthlessness</label>
+                <label class="check-option"><input type="checkbox" /> Feeling of Loneliness &amp; Isolation</label>
+                <label class="check-option"><input type="checkbox" /> Inadequate Leisure/Recreational Activities</label>
+                <label class="check-option"><input type="checkbox" /> Senior Citizens Friendly Environment</label>
+                <label class="check-option"><input type="checkbox" /> Others Specify</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row one">
+            <div class="field checkbox-group">
+              <p class="group-label">c) Health</p>
+              <div class="checkbox-options">
+                <label class="check-option"><input type="checkbox" /> High Cost of Medicines</label>
+                <label class="check-option"><input type="checkbox" /> Lack of Medical Professionals</label>
+                <label class="check-option"><input type="checkbox" /> Lack/No Access of Sanitation</label>
+                <label class="check-option"><input type="checkbox" /> Lack/No Health Insurance</label>
+                <label class="check-option"><input type="checkbox" /> Lack of Hospitals/Medical Facilities</label>
+                <label class="check-option"><input type="checkbox" /> Health problems/Ailments Specify</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row one">
+            <div class="field checkbox-group">
+              <p class="group-label">d) Housing</p>
+              <div class="checkbox-options">
+                <label class="check-option"><input type="checkbox" /> Overcrowding In Family Home</label>
+                <label class="check-option"><input type="checkbox" /> No Permanent Housing</label>
+                <label class="check-option"><input type="checkbox" /> Longing For Independent Living/Quiet Atmosphere</label>
+                <label class="check-option"><input type="checkbox" /> Lost Privacy</label>
+                <label class="check-option"><input type="checkbox" /> Living In Squatter's Area</label>
+                <label class="check-option"><input type="checkbox" /> High Cost of Rental</label>
+                <label class="check-option"><input type="checkbox" /> Others Specify</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row one">
+            <div class="field checkbox-group">
+              <p class="group-label">e) Community Service</p>
+              <div class="checkbox-options">
+                <label class="check-option"><input type="checkbox" /> Desire To Participate</label>
+                <label class="check-option"><input type="checkbox" /> Skills/Resource to Share</label>
+                <label class="check-option"><input type="checkbox" /> Others Specify</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row one">
+            <div class="field">
+              <label for="specific-needs">f) Identify Other Specific Needs</label>
+              <textarea id="specific-needs" rows="5"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block">
+        <h2>Upload Files</h2>
+
+        <div class="upload-list">
+          <article class="upload-item">
+            <div class="upload-control">
+              <input id="upload-valid-id" class="upload-input" type="file" accept="image/*,.pdf" />
+              <label for="upload-valid-id" class="upload-box" role="button" tabindex="0">
+                <span class="upload-label">Upload your ID</span>
+                <small class="upload-file-name">No file selected</small>
+              </label>
+            </div>
+            <div>
+              <h3>Valid ID</h3>
+              <p>Please take an image or picture of any valid government ID you have.</p>
+            </div>
+          </article>
+
+          <article class="upload-item">
+            <div class="upload-control">
+              <input id="upload-latest-photo" class="upload-input" type="file" accept="image/*" />
+              <label for="upload-latest-photo" class="upload-box" role="button" tabindex="0">
+                <span class="upload-label">Upload Picture</span>
+                <small class="upload-file-name">No file selected</small>
+              </label>
+            </div>
+            <div>
+              <h3>Latest Photo</h3>
+              <p>Take a formal picture using a camera or your mobile phone.</p>
+            </div>
+          </article>
+
+          <article class="upload-item">
+            <div class="upload-control">
+              <input id="upload-birth-certificate" class="upload-input" type="file" accept="image/*,.pdf" />
+              <label for="upload-birth-certificate" class="upload-box" role="button" tabindex="0">
+                <span class="upload-label">Upload File</span>
+                <small class="upload-file-name">No file selected</small>
+              </label>
+            </div>
+            <div>
+              <h3>Birth Certificate</h3>
+              <p>Please take an image or picture of your Birth Certificate.</p>
+            </div>
+          </article>
+
+          <article class="upload-item">
+            <div class="upload-control">
+              <input id="upload-cedula" class="upload-input" type="file" accept="image/*,.pdf" />
+              <label for="upload-cedula" class="upload-box" role="button" tabindex="0">
+                <span class="upload-label">Upload File</span>
+                <small class="upload-file-name">No file selected</small>
+              </label>
+            </div>
+            <div>
+              <h3>Community Tax Certificate (Cedula)</h3>
+              <p>Please take an image or picture of your Community Tax Certificate (Cedula).</p>
+            </div>
+          </article>
+
+          <article class="upload-item">
+            <div class="upload-control">
+              <input id="upload-verification" class="upload-input" type="file" accept="image/*" capture="user" />
+              <button id="open-face-camera" class="upload-box scan-face-btn" type="button" aria-expanded="false">
+                <span class="upload-label">Scan Face</span>
+                <small class="upload-file-name">Tap to open camera</small>
+              </button>
+            </div>
+            <div>
+              <h3>Verification</h3>
+              <p>Please take a scan of your face for verification.</p>
+            </div>
+          </article>
+
+          <article class="upload-item">
+            <div class="upload-control">
+              <input id="upload-signature" class="upload-input" type="file" accept="image/*,.pdf" />
+              <label for="upload-signature" class="upload-box" role="button" tabindex="0">
+                <span class="upload-label">Upload File</span>
+                <small class="upload-file-name">No file selected</small>
+              </label>
+            </div>
+            <div>
+              <h3>Signature</h3>
+              <p>Please take an image or picture of your Signature.</p>
+            </div>
+          </article>
+        </div>
+
+        <div id="face-camera-preview" class="camera-modal" hidden aria-hidden="true">
+          <div class="camera-dialog" role="dialog" aria-modal="true" aria-labelledby="face-camera-title">
+            <div class="camera-dialog-head">
+              <div>
+                <h3 id="face-camera-title">Verification Camera</h3>
+                <small id="face-camera-status" class="camera-status" aria-live="polite"></small>
+              </div>
+              <button id="close-face-camera" type="button" class="table-btn camera-btn">Close Camera</button>
+            </div>
+            <video id="face-camera-video" autoplay playsinline muted></video>
+          </div>
+        </div>
+
+        <br>
+
+        <div class="row one">
+          <div class="field">
+            <label for="date-application">Date of Application</label>
+            <input id="date-application" type="date" />
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block">
+        <h2>Confirmation to allow the Storage and Use of My Personal Data</h2>
+
+        <p class="consent-title">This is to certify that</p>
+
+        <label class="checkbox-row"><input type="checkbox" /> The information entered above is true and correct.</label>
+        <label class="checkbox-row"><input type="checkbox" /> I have the full knowledge in providing the above information.</label>
+        <label class="checkbox-row"><input type="checkbox" /> I have personally given my consent to allow the use of the information contained in this form.</label>
+        <label class="checkbox-row"><input type="checkbox" /> I understand that this form contains my personal information to be stored.</label>
+        <label class="checkbox-row"><input type="checkbox" /> I confirm and agree to all of the above.</label>
+
+        <label class="checkbox-row checkbox-assist">
+          <input type="checkbox" />
+          I have certified further that during the filling-out of this form, I was assisted by the person whose name is indicated below and that such person is personally known to me.
+        </label>
+
+        <div class="row two">
+          <div class="field">
+            <label for="assisted-by">Assisted by</label>
+            <input id="assisted-by" type="text" />
+          </div>
+          <div class="field">
+            <label for="relation-registrant">Relation to the registrant</label>
+            <input id="relation-registrant" type="text" />
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button type="button" class="btn submit">Submit</button>
+          <button type="button" class="btn cancel" id="cancel-application">Cancel</button>
+        </div>
+      </section>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>

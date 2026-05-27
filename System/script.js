@@ -571,6 +571,22 @@ function collectFormSubmissionData() {
   };
 }
 
+function getSubmissionApiUrl() {
+  const apiBaseMeta = document.querySelector('meta[name="api-base-url"]');
+  const configuredBase =
+    (window.API_BASE_URL || (apiBaseMeta && apiBaseMeta.content) || "").trim();
+
+  if (configuredBase) {
+    return new URL("/api/submit", configuredBase).toString();
+  }
+
+  if (window.location && window.location.origin && window.location.origin !== "null") {
+    return new URL("/api/submit", window.location.origin).toString();
+  }
+
+  return "http://localhost:3000/api/submit";
+}
+
 async function submitFormToBackend() {
   const recaptchaToken = getDisclaimerRecaptchaToken();
 
@@ -581,7 +597,7 @@ async function submitFormToBackend() {
   const payload = collectFormSubmissionData();
   payload.recaptchaToken = recaptchaToken;
 
-  const response = await fetch("http://localhost:3000/api/submit", {
+  const response = await fetch(getSubmissionApiUrl(), {
     method: "POST",
     headers: {
       "Content-Type": "application/json"

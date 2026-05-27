@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Registration Disclaimer | OSCA Bauan</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
   <main class="disclaimer-page">
@@ -31,6 +32,10 @@
           <label for="consent-checkbox">
             I confirm that I have read the notice above and certify that all information I will provide is true, complete, and accurate to the best of my knowledge.
           </label>
+        </div>
+
+        <div class="recaptcha-container">
+          <div class="g-recaptcha" data-sitekey="6Levjv4sAAAAAOhGhZTLFjYfhvYtJOD1vpleELFJ" data-callback="recaptchaCallback"></div>
         </div>
 
         <div class="action-row">

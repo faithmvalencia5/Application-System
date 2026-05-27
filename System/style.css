@@ -1381,6 +1381,19 @@ body.disclaimer-page {
   font-weight: 700;
 }
 
+.recaptcha-container {
+  --recaptcha-scale: 1;
+  margin: 20px 0 18px;
+  width: calc(304px * var(--recaptcha-scale));
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.recaptcha-container .g-recaptcha {
+  transform: scale(var(--recaptcha-scale));
+  transform-origin: 0 0;
+}
+
 .action-row {
   display: flex;
   flex-wrap: wrap;
@@ -1441,6 +1454,16 @@ body.disclaimer-page {
   .action-row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .recaptcha-container {
+    --recaptcha-scale: 0.82;
+  }
+}
+
+@media (max-width: 420px) {
+  .recaptcha-container {
+    --recaptcha-scale: 0.72;
   }
 }
 

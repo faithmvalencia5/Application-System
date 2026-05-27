@@ -449,6 +449,7 @@ function setupFormCancelButton() {
   });
 }
 
+// Replace your existing setupDisclaimerPage function with this updated version
 function setupDisclaimerPage() {
   const consentCheckbox = document.getElementById("consent-checkbox");
   const continueButton = document.getElementById("continue-btn");
@@ -457,20 +458,76 @@ function setupDisclaimerPage() {
     return;
   }
 
+  // Function to check if reCAPTCHA is completed
+  function isRecaptchaCompleted() {
+    const recaptchaResponse = document.querySelector('.g-recaptcha-response');
+    if (recaptchaResponse && recaptchaResponse.value) {
+      return recaptchaResponse.value.length > 0;
+    }
+    return false;
+  }
+
+  // Update button state based on both conditions
   const updateContinueState = function () {
-    continueButton.disabled = !consentCheckbox.checked;
+    const consentChecked = consentCheckbox.checked;
+    const recaptchaCompleted = isRecaptchaCompleted();
+    
+    continueButton.disabled = !(consentChecked && recaptchaCompleted);
   };
 
   consentCheckbox.addEventListener("change", updateContinueState);
+  
+  // Listen for reCAPTCHA completion
+  window.recaptchaCallback = function() {
+    updateContinueState();
+  };
+
+  // Handle continue button click
   continueButton.addEventListener("click", function () {
     if (!consentCheckbox.checked) {
+      alert("Please check the consent box.");
       return;
     }
 
+    const recaptchaResponse = document.querySelector('.g-recaptcha-response');
+    if (!recaptchaResponse || !recaptchaResponse.value) {
+      alert("Please complete the reCAPTCHA verification.");
+      return;
+    }
+
+    // Store token for backend validation when form is submitted
+    sessionStorage.setItem('recaptchaToken', recaptchaResponse.value);
+    
+    // Proceed to form
     window.location.href = "form.html";
   });
 
   updateContinueState();
+}
+
+function setupFormSubmission() {
+  const submitButton = document.querySelector('.btn.submit');
+  if (!submitButton) return;
+  
+  submitButton.addEventListener('click', function() {
+    // Get the stored token from disclaimer page
+    const recaptchaToken = sessionStorage.getItem('recaptchaToken');
+    
+    if (!recaptchaToken) {
+      alert('Please complete the reCAPTCHA verification on the disclaimer page.');
+      window.location.href = 'register-disclaimer.html';
+      return;
+    }
+    
+    // Add token to form
+    const tokenInput = document.getElementById('recaptcha-token');
+    if (tokenInput) {
+      tokenInput.value = recaptchaToken;
+    }
+    
+    sessionStorage.removeItem('recaptchaToken');
+    
+  });
 }
 
 function setupHomepageNavigation() {
@@ -843,6 +900,8 @@ document.addEventListener("DOMContentLoaded", function () {
   setupApplicationDate();
   setupFormCancelButton();
   setupDisclaimerPage();
+  setupDisclaimerRecaptcha();
+  setupFormSubmittion();
   setupHomepageNavigation();
   setupVerificationPage();
   setupRequestIdModal();

@@ -800,6 +800,66 @@ td select {
   table {
     min-width: 100%;
   }
+
+  .table-wrap {
+    overflow-x: visible;
+  }
+
+  .table-wrap table {
+    min-width: 0;
+    display: block;
+  }
+
+  .table-wrap thead {
+    display: none;
+  }
+
+  .table-wrap tr {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 12px;
+    border: 1px solid #cedbe4;
+    border-radius: 16px;
+    background: #f5fbff;
+  }
+
+  .table-wrap td {
+    display: grid;
+    grid-template-columns: 1fr;
+    border: none;
+    padding: 0;
+    background: transparent;
+  }
+
+  .table-wrap td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #153246;
+  }
+
+  .table-wrap td input,
+  .table-wrap td select,
+  .table-wrap td button {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .table-wrap td {
+    width: 100%;
+  }
+
+  .family-action-cell {
+    width: auto;
+  }
+
+  .family-delete-btn {
+    width: 100%;
+  }
 }
 
 @media (min-width: 700px) {

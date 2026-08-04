@@ -112,10 +112,10 @@ function createFamilyRow() {
   const row = document.createElement("tr");
 
   row.innerHTML = `
-    <td><input type="text" aria-label="Family member name" /></td>
-    <td><input type="text" aria-label="Family relationship" /></td>
-    <td><input type="number" min="0" aria-label="Family age" /></td>
-    <td>
+    <td data-label="Name"><input type="text" aria-label="Family member name" /></td>
+    <td data-label="Relationship"><input type="text" aria-label="Family relationship" /></td>
+    <td data-label="Age"><input type="number" min="0" aria-label="Family age" /></td>
+    <td data-label="Civil status">
       <select aria-label="Family civil status">
         <option value="" selected disabled>Select status</option>
         <option>Single</option>
@@ -124,9 +124,9 @@ function createFamilyRow() {
         <option>Married</option>
       </select>
     </td>
-    <td><input type="text" aria-label="Family occupation" /></td>
-    <td><input type="number" min="0" aria-label="Family income" /></td>
-    <td class="family-action-cell">
+    <td data-label="Occupation"><input type="text" aria-label="Family occupation" /></td>
+    <td data-label="Income"><input type="number" min="0" aria-label="Family income" /></td>
+    <td class="family-action-cell" data-label="Action">
       <button type="button" class="family-delete-btn" aria-label="Delete family row">X</button>
     </td>
   `;

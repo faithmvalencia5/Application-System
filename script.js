@@ -1652,6 +1652,9 @@ document.addEventListener("DOMContentLoaded", function () {
   setupRequestIdModal();
   setupFormSubmitConfirmation();
   const setupApplicantAge = function () {
+
+    console.log("setupApplicantAge is running");
+
     const dobInput = document.getElementById("dob");
     const ageInput = document.getElementById("age");
 

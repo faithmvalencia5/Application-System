@@ -916,7 +916,15 @@ function setupFormSubmitConfirmation() {
       // Attach files
       const validId = document.getElementById("upload-valid-id")?.files[0];
       if (validId) {
-          formData.append("valid_id", validId);
+          formData.append(
+              "valid_id_front",
+              document.getElementById("upload-valid-id-front").files[0]
+          );
+
+          formData.append(
+              "valid_id_back",
+              document.getElementById("upload-valid-id-back").files[0]
+          );
       }
 
       const latestPhoto = document.getElementById("upload-latest-photo")?.files[0];

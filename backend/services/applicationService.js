@@ -31,10 +31,16 @@ export async function registerApplication(payload, files) {
 
         applicationId = application.application_id;
 
-        const validIdPath = await uploadFile(
+        const validIdFrontPath = await uploadFile(
             applicationId,
-            files?.valid_id?.[0],
-            "valid_id"
+            files?.valid_id_front?.[0],
+            "valid_id_front"
+        );
+
+        const validIdBackPath = await uploadFile(
+            applicationId,
+            files?.valid_id_back?.[0],
+            "valid_id_back"
         );
 
         const latestPhotoPath = await uploadFile(
@@ -142,7 +148,8 @@ export async function registerApplication(payload, files) {
                     ...applicationFilesData,
                     application_id: applicationId,
 
-                    valid_id_url: validIdPath,
+                    valid_id_url: validIdFrontPath,
+                    valid_id_back_url: validIdBackPath,
                     latest_photo_url: latestPhotoPath,
                     birth_certificate_url: birthCertificatePath,
                     community_tax_certificate_url: communityTaxPath,

@@ -1644,10 +1644,43 @@ document.addEventListener("DOMContentLoaded", function () {
   setupUploadButtons();
   setupFaceCamera();
   setupApplicationDate();
+  setupApplicantAge();
   setupFormCancelButton();
   setupDisclaimerPage();
   setupHomepageNavigation();
   setupVerificationPage();
   setupRequestIdModal();
   setupFormSubmitConfirmation();
+  const setupApplicantAge = function () {
+    const dobInput = document.getElementById("dob");
+    const ageInput = document.getElementById("age");
+
+    if (!dobInput || !ageInput) {
+      return;
+    }
+
+    dobInput.addEventListener("change", function () {
+
+      if (!this.value) {
+        ageInput.value = "";
+        return;
+      }
+
+      const birthDate = new Date(this.value);
+      const today = new Date();
+
+      let age = today.getFullYear() - birthDate.getFullYear();
+
+      const monthDifference = today.getMonth() - birthDate.getMonth();
+
+      if (
+        monthDifference < 0 ||
+        (monthDifference === 0 && today.getDate() < birthDate.getDate())
+      ) {
+        age--;
+      }
+
+      ageInput.value = age;
+    });
+  };
 });

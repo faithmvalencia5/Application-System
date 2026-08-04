@@ -806,8 +806,9 @@ td select {
   }
 
   .table-wrap table {
-    min-width: 100%;
-    display: table;
+    min-width: 900px;
+    width: auto;
+    table-layout: fixed;
   }
 
   .table-wrap thead {
@@ -823,18 +824,20 @@ td select {
     background: transparent;
   }
 
+  .table-wrap th,
   .table-wrap td {
-    display: table-cell;
+    min-width: 120px;
     border: 1px solid #cedbe4;
     padding: 10px;
     background: #ffffff;
+    white-space: normal;
   }
 
   .table-wrap td input,
   .table-wrap td select,
   .table-wrap td button {
     width: 100%;
-    min-width: 0;
+    min-width: 120px;
     box-sizing: border-box;
   }
 
@@ -843,7 +846,7 @@ td select {
   }
 
   .family-delete-btn {
-    width: auto;
+    width: 100%;
   }
 }
 

@@ -914,17 +914,14 @@ function setupFormSubmitConfirmation() {
       formData.append("payload", JSON.stringify(payload));
 
       // Attach files
-      const validId = document.getElementById("upload-valid-id")?.files[0];
-      if (validId) {
-          formData.append(
-              "valid_id_front",
-              document.getElementById("upload-valid-id-front").files[0]
-          );
+      const validIdFront = document.getElementById("upload-valid-id-front")?.files[0];
+      if (validIdFront) {
+          formData.append("valid_id_front", validIdFront);
+      }
 
-          formData.append(
-              "valid_id_back",
-              document.getElementById("upload-valid-id-back").files[0]
-          );
+      const validIdBack = document.getElementById("upload-valid-id-back")?.files[0];
+      if (validIdBack) {
+          formData.append("valid_id_back", validIdBack);
       }
 
       const latestPhoto = document.getElementById("upload-latest-photo")?.files[0];
@@ -1366,9 +1363,7 @@ function setupVerificationPage() {
     return;
   }
 
-  const getSupabaseClient = function () {
-    return window.supabaseClient || window.supabase || null;
-  };
+  const API_BASE_URL = 'https://osca-backend.onrender.com/api/applications';
 
   const toTimelineStatus = function (statusValue) {
     const normalized = (statusValue || '').trim().toLowerCase();
@@ -1403,48 +1398,20 @@ function setupVerificationPage() {
   };
 
   const fetchVerificationRecord = async function (applicationId) {
-    const supabaseClient = getSupabaseClient();
-    if (!supabaseClient) {
-      throw new Error('Database connection is not available.');
+    const response = await fetch(`${API_BASE_URL}/status/${encodeURIComponent(applicationId)}`);
+    const result = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error(result.message || 'Unable to check application status.');
     }
-
-    const { data: applicationRow, error: applicationError } = await supabaseClient
-      .from('applications')
-      .select('application_id, first_name, middle_name, surname, application_status')
-      .eq('application_id', applicationId)
-      .maybeSingle();
-
-    if (applicationError) {
-      throw applicationError;
-    }
-
-    if (!applicationRow) {
-      return null;
-    }
-
-    const { data: statusHistoryRows, error: statusHistoryError } = await supabaseClient
-      .from('application_status_history')
-      .select('status, remarks, updated_at')
-      .eq('application_id', applicationId)
-      .order('updated_at', { ascending: false })
-      .limit(1);
-
-    if (statusHistoryError) {
-      throw statusHistoryError;
-    }
-
-    const latestStatus = statusHistoryRows && statusHistoryRows.length > 0 ? statusHistoryRows[0] : null;
-    const statusText = (latestStatus && latestStatus.status) || applicationRow.application_status || 'Pending';
-    const status = toTimelineStatus(statusText);
-    const applicant = [applicationRow.first_name, applicationRow.middle_name, applicationRow.surname]
-      .filter(Boolean)
-      .join(' ')
-      .trim() || 'Applicant';
 
     return {
-      applicant: applicant,
-      status: status,
-      note: (latestStatus && latestStatus.remarks) || getDefaultNoteByStatus(statusText)
+      applicant: result.applicant,
+      status: toTimelineStatus(result.status),
+      note: result.note
     };
   };
 

@@ -15,12 +15,12 @@ export async function testDatabase(req, res) {
 }
 
 export async function registerApplication(req, res) {
-
     try {
 
         const payload = JSON.parse(req.body.payload);
+        const files = req.files;
 
-        const result = await registerApplicationService(payload, req.files);
+        const result = await registerApplicationService(payload, files);
 
         res.status(201).json({
             success: true,
@@ -37,5 +37,4 @@ export async function registerApplication(req, res) {
         });
 
     }
-
 }

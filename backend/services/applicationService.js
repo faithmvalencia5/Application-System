@@ -1,7 +1,15 @@
 import { supabase } from "../supabase.js";
 import { uploadFile } from "./storageService.js";
 
+
+
 export async function registerApplication(payload, files) {
+
+    console.log("========== PAYLOAD ==========");
+    console.log(payload);
+
+    console.log("========== FILES ==========");
+    console.log(files);
 
     const {
         applicationsData,

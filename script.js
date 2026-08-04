@@ -318,6 +318,7 @@ function setupFaceCamera() {
       });
 
       videoElement.srcObject = faceStream;
+      videoElement.style.transform = "scaleX(-1)";
       previewWrap.hidden = false;
       previewWrap.setAttribute("aria-hidden", "false");
       openButton.setAttribute("aria-expanded", "true");

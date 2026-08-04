@@ -902,6 +902,10 @@ function setupFormSubmitConfirmation() {
           formData.append("signature", signature);
       }
 
+      for (const pair of formData.entries()) {
+          console.log(pair[0], pair[1]);
+      }
+
       const response = await fetch("https://osca-backend.onrender.com/api/applications/register", {
           method: "POST",
           body: formData

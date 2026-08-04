@@ -366,6 +366,42 @@ function setupApplicationDate() {
   dateField.value = `${year}-${month}-${day}`;
 }
 
+function setupApplicantAge() {
+  const dobInput = document.getElementById("dob");
+  const ageInput = document.getElementById("age");
+
+  if (!dobInput || !ageInput) {
+    return;
+  }
+
+  const calculateAge = function (birthDateValue) {
+    if (!birthDateValue) {
+      return "";
+    }
+
+    const birthDate = new Date(birthDateValue);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+
+    if (
+      today.getMonth() < birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return age >= 0 ? String(age) : "";
+  };
+
+  dobInput.addEventListener("input", function () {
+    ageInput.value = calculateAge(this.value);
+  });
+
+  if (dobInput.value) {
+    ageInput.value = calculateAge(dobInput.value);
+  }
+}
+
 function showConfirmationModal(title, message, onConfirm) {
   const backdrop = document.createElement("div");
   backdrop.className = "modal-backdrop";
@@ -1637,6 +1673,7 @@ function showSuccessNotification(message, onClose) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+  
   blockNonNumericInput();
   wireFamilyRowButton();
   setupSpecifyForCheckboxes();
@@ -1651,42 +1688,4 @@ document.addEventListener("DOMContentLoaded", function () {
   setupVerificationPage();
   setupRequestIdModal();
   setupFormSubmitConfirmation();
-  const setupApplicantAge = function () {
-
-    console.log("setupApplicantAge is running");
-
-    const dobInput = document.getElementById("dob");
-    const ageInput = document.getElementById("age");
-
-    console.log("DOB:", dobInput);
-    console.log("Age:", ageInput);
-
-    if (!dobInput || !ageInput) {
-      return;
-    }
-
-    dobInput.addEventListener("input", function () {
-      console.log("DOB changed:", this.value);
-
-      if (!this.value) {
-        ageInput.value = "";
-        return;
-      }
-
-      const birthDate = new Date(this.value);
-      const today = new Date();
-
-      let age = today.getFullYear() - birthDate.getFullYear();
-
-      if (
-        today.getMonth() < birthDate.getMonth() ||
-        (today.getMonth() === birthDate.getMonth() &&
-          today.getDate() < birthDate.getDate())
-      ) {
-        age--;
-      }
-
-      ageInput.value = age;
-    });
-  };
 });

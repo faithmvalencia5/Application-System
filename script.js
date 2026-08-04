@@ -867,6 +867,7 @@ function setupFormSubmitConfirmation() {
   };
 
   const saveApplication = async function () {
+      console.log("saveApplication() is running");
 
       const payload = collectAllPayloads();
 

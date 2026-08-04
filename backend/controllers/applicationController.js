@@ -20,6 +20,12 @@ export async function registerApplication(req, res) {
         const payload = JSON.parse(req.body.payload);
         const files = req.files;
 
+        console.log("========== FILES RECEIVED ==========");
+        console.log(files);
+
+        console.log("========== BODY ==========");
+        console.log(req.body);
+
         const result = await registerApplicationService(payload, files);
 
         res.status(201).json({

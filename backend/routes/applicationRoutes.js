@@ -10,6 +10,10 @@ const router = express.Router();
 router.get("/test", testDatabase);
 router.post(
     "/register",
+    (req, res, next) => {
+        console.log("REGISTER REQUEST RECEIVED");
+        next();
+    },
     upload.fields([
         { name: "valid_id", maxCount: 1 },
         { name: "latest_photo", maxCount: 1 },
@@ -18,5 +22,5 @@ router.post(
         { name: "signature", maxCount: 1 }
     ]),
     registerApplication
-);
+);    
 export default router;

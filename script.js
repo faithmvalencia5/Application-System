@@ -1655,11 +1655,15 @@ document.addEventListener("DOMContentLoaded", function () {
     const dobInput = document.getElementById("dob");
     const ageInput = document.getElementById("age");
 
+    console.log("DOB:", dobInput);
+    console.log("Age:", ageInput);
+
     if (!dobInput || !ageInput) {
       return;
     }
 
-    dobInput.addEventListener("change", function () {
+    dobInput.addEventListener("input", function () {
+      console.log("DOB changed:", this.value);
 
       if (!this.value) {
         ageInput.value = "";
@@ -1671,11 +1675,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       let age = today.getFullYear() - birthDate.getFullYear();
 
-      const monthDifference = today.getMonth() - birthDate.getMonth();
-
       if (
-        monthDifference < 0 ||
-        (monthDifference === 0 && today.getDate() < birthDate.getDate())
+        today.getMonth() < birthDate.getMonth() ||
+        (today.getMonth() === birthDate.getMonth() &&
+          today.getDate() < birthDate.getDate())
       ) {
         age--;
       }

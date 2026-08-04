@@ -427,15 +427,34 @@
         <div class="upload-list">
           <article class="upload-item">
             <div class="upload-control">
-              <input id="upload-valid-id" class="upload-input" type="file" accept="image/*,.pdf" />
-              <label for="upload-valid-id" class="upload-box" role="button" tabindex="0">
-                <span class="upload-label">Upload your ID</span>
+
+              <input
+                id="upload-valid-id-front"
+                class="upload-input"
+                type="file"
+                accept="image/*,.pdf" />
+
+              <label for="upload-valid-id-front" class="upload-box" role="button" tabindex="0">
+                <span class="upload-label">Upload Front of ID</span>
                 <small class="upload-file-name">No file selected</small>
               </label>
+
+              <input
+                id="upload-valid-id-back"
+                class="upload-input"
+                type="file"
+                accept="image/*,.pdf" />
+
+              <label for="upload-valid-id-back" class="upload-box" role="button" tabindex="0">
+                <span class="upload-label">Upload Back of ID</span>
+                <small class="upload-file-name">No file selected</small>
+              </label>
+
             </div>
+
             <div>
-              <h3>Valid ID</h3>
-              <p>Please take an image or picture of any valid government ID you have.</p>
+              <h3>Valid Government ID</h3>
+              <p>Please upload clear images of both the <strong>front</strong> and <strong>back</strong> of your valid government-issued ID.</p>
             </div>
           </article>
 

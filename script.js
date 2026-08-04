@@ -786,7 +786,8 @@ function setupFormSubmitConfirmation() {
     };
 
     const applicationFilesData = {
-      valid_id_url: toNull(document.getElementById('upload-valid-id')?.files?.[0]?.name || ''),
+      valid_id_url: toNull(document.getElementById('upload-valid-id-front')?.files?.[0]?.name || ''),
+      valid_id_back_url: toNull(document.getElementById('upload-valid-id-back')?.files?.[0]?.name || ''),
       latest_photo_url: toNull(document.getElementById('upload-latest-photo')?.files?.[0]?.name || ''),
       birth_certificate_url: toNull(document.getElementById('upload-birth-certificate')?.files?.[0]?.name || ''),
       community_tax_certificate_url: toNull(document.getElementById('upload-cedula')?.files?.[0]?.name || ''),

@@ -1501,11 +1501,9 @@ function setupVerificationPage() {
   const verifiedId = document.getElementById("verified-application-id");
   const verifiedApplicant = document.getElementById("verified-applicant-name");
   const verificationNote = document.getElementById("verification-note");
-  const editApplicationStep2 =
-    document.getElementById("edit-application-step2");
-
-  const editApplicationStep3 =
-    document.getElementById("edit-application-step3");
+  const requestIdButton = document.getElementById("request-id-button");
+  const editApplicationStep2 = document.getElementById("edit-application-step2");
+  const editApplicationStep3 = document.getElementById("edit-application-step3");
   const closeButtons = [
     document.getElementById("close-verification-page-entry"),
     document.getElementById("close-verification-page-entry-secondary"),
@@ -1518,6 +1516,7 @@ function setupVerificationPage() {
   }
 
   const API_BASE_URL = 'https://osca-backend.onrender.com/api/applications';
+  let currentApplicationId = "";
   let currentApplicationStatus = "";
 
   const toTimelineStatus = function (statusValue) {
@@ -1587,23 +1586,35 @@ function setupVerificationPage() {
 
   const showStatusStep = function (applicationId, record) {
     verifiedId.textContent = applicationId;
+    currentApplicationId = applicationId;
     verifiedApplicant.textContent = record.applicant;
-    verificationNote.textContent = record.note || getDefaultNoteByStatus(record.status);
+    verificationNote.textContent = getDefaultNoteByStatus(record.status);
 
     currentApplicationStatus =
       String(record.status || "").trim().toLowerCase();
 
-    const canEditApplication =
+    const canEditFromStep2 =
       currentApplicationStatus === "pending";
 
+    const canRequestId =
+      currentApplicationStatus === "completed";
+
+    const canEditFromStep3 =
+      currentApplicationStatus === "completed";
+
     if (editApplicationStep2) {
-      editApplicationStep2.hidden = !canEditApplication;
-      editApplicationStep2.disabled = !canEditApplication;
+      editApplicationStep2.hidden = !canEditFromStep2;
+      editApplicationStep2.disabled = !canEditFromStep2;
+    }
+
+    if (requestIdButton) {
+      requestIdButton.hidden = !canRequestId;
+      requestIdButton.disabled = !canRequestId;
     }
 
     if (editApplicationStep3) {
-      editApplicationStep3.hidden = !canEditApplication;
-      editApplicationStep3.disabled = !canEditApplication;
+      editApplicationStep3.hidden = !canEditFromStep3;
+      editApplicationStep3.disabled = !canEditFromStep3;
     }
 
     statusItems.forEach(function (item) {
@@ -1681,6 +1692,32 @@ function setupVerificationPage() {
     }
 
     showStatusStep(applicationId, record);
+  });
+
+  editApplicationStep2?.addEventListener("click", function () {
+
+    if (!currentApplicationId) {
+      return;
+    }
+
+    window.location.href =
+      "form.html?mode=edit&id=" +
+      encodeURIComponent(currentApplicationId) +
+      "&return=step2";
+
+  });
+
+  editApplicationStep3?.addEventListener("click", function () {
+
+    if (!currentApplicationId) {
+      return;
+    }
+
+    window.location.href =
+      "form.html?mode=request-edit&id=" +
+      encodeURIComponent(currentApplicationId) +
+      "&return=step3";
+
   });
 
   showEntryStep();

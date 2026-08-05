@@ -219,10 +219,12 @@
           Edit Application
         </button>
 
+        <!-- Visible only when the application status is Completed -->
         <button
           type="button"
           id="request-id-button"
           class="verify-primary-button"
+          hidden
         >
           Request for ID
         </button>
@@ -317,7 +319,7 @@
 
         <div class="verify-actions">
 
-          <!-- Visible only when the application status is Pending -->
+          <!-- Visible only when the application status is Completed -->
           <button
             type="button"
             id="edit-application-step3"

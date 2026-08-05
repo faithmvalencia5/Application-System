@@ -353,6 +353,21 @@ function setupUploadButtons() {
   });
 }
 
+function protectApplicationForm() {
+  const isFormPage = window.location.pathname.endsWith("form.html");
+
+  if (!isFormPage) {
+    return;
+  }
+
+  const hasAccess =
+    sessionStorage.getItem("applicationFormAccess") === "verified";
+
+  if (!hasAccess) {
+    window.location.href = "register-disclaimer.html";
+  }
+}
+
 function setupFaceCamera() {
   const openButton = document.getElementById("open-face-camera");
   const closeButton = document.getElementById("close-face-camera");
@@ -1001,16 +1016,6 @@ function setupFormSubmitConfirmation() {
   const saveApplication = async function () {
     const payload = collectAllPayloads();
 
-    const recaptchaToken = sessionStorage.getItem("recaptchaToken");
-
-    if (!recaptchaToken) {
-      throw new Error(
-        "reCAPTCHA verification is missing or expired. Please return to the disclaimer page and complete it again."
-      );
-    }
-
-    payload.recaptchaToken = recaptchaToken;
-
     const formData = new FormData();
 
     // Send all non-file data as JSON
@@ -1258,25 +1263,26 @@ function setupFormSubmitConfirmation() {
         try {
           await saveApplication();
 
-          // Reset the reCAPTCHA
-          if (window.grecaptcha) {
-            grecaptcha.reset();
-          }
+          // Remove access after a successful submission
+          sessionStorage.removeItem("applicationFormAccess");
 
-          // Show styled notification, then redirect when closed
-          showSuccessNotification('Your application has been submitted successfully.', function () {
-            window.location.href = 'index.html';
-          });
+          // Show notification, then return to the homepage
+          showSuccessNotification(
+            "Your application has been submitted successfully.",
+            function () {
+              window.location.href = "index.html";
+            }
+          );
 
         } catch (error) {
+          const message =
+            error && error.message
+              ? error.message
+              : "Unknown error";
 
-          // Optional: Reset the reCAPTCHA after a failed submission too
-          if (window.grecaptcha) {
-            grecaptcha.reset();
-          }
-
-          const message = error && error.message ? error.message : 'Unknown error';
-          showSuccessNotification('Submission failed: ' + message);
+          showSuccessNotification(
+            "Submission failed: " + message
+          );
 
         } finally {
           submitButton.disabled = false;
@@ -1321,14 +1327,16 @@ function setupDisclaimerPage() {
     continueButton.disabled = !(consentCheckbox.checked && captchaReady);
   };
 
-  window.handleRecaptchaSuccess = function (token) {
-    sessionStorage.setItem("recaptchaToken", token);
+  window.handleRecaptchaSuccess = function () {
+    sessionStorage.setItem("applicationFormAccess", "verified");
+
     hideDisclaimerError();
     updateContinueState();
   };
 
   window.handleRecaptchaExpired = function () {
-    sessionStorage.removeItem("recaptchaToken");
+    sessionStorage.removeItem("applicationFormAccess");
+
     showDisclaimerError("CAPTCHA has expired. Please complete it again.");
     updateContinueState();
   };
@@ -1783,7 +1791,7 @@ function showSuccessNotification(message, onClose) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  
+  protectApplicationForm();
   blockNonNumericInput();
   wireFamilyRowButton();
   setupSpecifyForCheckboxes();

@@ -249,13 +249,14 @@ function setupUploadButtons() {
       filePreviewModal.setAttribute("aria-hidden", "true");
     }
     if (previewImage) {
-      previewImage.style.display = 'none';
+      previewImage.hidden = true;
       previewImage.src = "";
     }
     if (previewIframe) {
-      previewIframe.style.display = 'none';
+      previewIframe.hidden = true;
       previewIframe.src = "";
     }
+    currentInputForReplace = null;
   };
 
   if (previewClose) {
@@ -313,22 +314,16 @@ function setupUploadButtons() {
         currentPreviewUrl = URL.createObjectURL(file);
 
         if (file.type && file.type.startsWith('image/')) {
-          if (previewIframe) {
-            previewIframe.style.display = 'none';
-            previewIframe.src = '';
-          }
+          if (previewIframe) previewIframe.hidden = true;
           if (previewImage) {
             previewImage.src = currentPreviewUrl;
-            previewImage.style.display = 'block';
+            previewImage.hidden = false;
           }
         } else if (file.type === 'application/pdf') {
-          if (previewImage) {
-            previewImage.style.display = 'none';
-            previewImage.src = '';
-          }
+          if (previewImage) previewImage.hidden = true;
           if (previewIframe) {
             previewIframe.src = currentPreviewUrl;
-            previewIframe.style.display = 'block';
+            previewIframe.hidden = false;
           }
         } else {
           // fallback: show download link by opening in new tab
@@ -1004,68 +999,81 @@ function setupFormSubmitConfirmation() {
   };
 
   const saveApplication = async function () {
+    const payload = collectAllPayloads();
 
-      const payload = collectAllPayloads();
-      
-      // Get reCAPTCHA token (render/execute invisible widget if needed)
-      if (typeof getRecaptchaToken === 'function') {
-        try {
-          payload.recaptchaToken = await getRecaptchaToken();
-        } catch (e) {
-          payload.recaptchaToken = null;
-        }
-      } else {
-        payload.recaptchaToken = null;
+    const recaptchaToken = sessionStorage.getItem("recaptchaToken");
+
+    if (!recaptchaToken) {
+      throw new Error(
+        "reCAPTCHA verification is missing or expired. Please return to the disclaimer page and complete it again."
+      );
+    }
+
+    payload.recaptchaToken = recaptchaToken;
+
+    const formData = new FormData();
+
+    // Send all non-file data as JSON
+    formData.append("payload", JSON.stringify(payload));
+
+    // Attach files
+    const validIdFront =
+      document.getElementById("upload-valid-id-front")?.files?.[0];
+
+    if (validIdFront) {
+      formData.append("valid_id_front", validIdFront);
+    }
+
+    const validIdBack =
+      document.getElementById("upload-valid-id-back")?.files?.[0];
+
+    if (validIdBack) {
+      formData.append("valid_id_back", validIdBack);
+    }
+
+    const latestPhoto =
+      document.getElementById("upload-latest-photo")?.files?.[0];
+
+    if (latestPhoto) {
+      formData.append("latest_photo", latestPhoto);
+    }
+
+    const birthCertificate =
+      document.getElementById("upload-birth-certificate")?.files?.[0];
+
+    if (birthCertificate) {
+      formData.append("birth_certificate", birthCertificate);
+    }
+
+    const communityTax =
+      document.getElementById("upload-cedula")?.files?.[0];
+
+    if (communityTax) {
+      formData.append("community_tax_certificate", communityTax);
+    }
+
+    const signature =
+      document.getElementById("upload-signature")?.files?.[0];
+
+    if (signature) {
+      formData.append("signature", signature);
+    }
+
+    const response = await fetch(
+      "https://osca-backend.onrender.com/api/applications/register",
+      {
+        method: "POST",
+        body: formData
       }
+    );
 
-      const formData = new FormData();
+    const result = await response.json();
 
-      // Send all non-file data as JSON
-      formData.append("payload", JSON.stringify(payload));
+    if (!response.ok) {
+      throw new Error(result.message || "Registration failed.");
+    }
 
-      // Attach files
-      const validIdFront = document.getElementById("upload-valid-id-front")?.files[0];
-      if (validIdFront) {
-          formData.append("valid_id_front", validIdFront);
-      }
-
-      const validIdBack = document.getElementById("upload-valid-id-back")?.files[0];
-      if (validIdBack) {
-          formData.append("valid_id_back", validIdBack);
-      }
-
-      const latestPhoto = document.getElementById("upload-latest-photo")?.files[0];
-      if (latestPhoto) {
-          formData.append("latest_photo", latestPhoto);
-      }
-
-      const birthCertificate = document.getElementById("upload-birth-certificate")?.files[0];
-      if (birthCertificate) {
-          formData.append("birth_certificate", birthCertificate);
-      }
-
-      const communityTax = document.getElementById("upload-cedula")?.files[0];
-      if (communityTax) {
-          formData.append("community_tax_certificate", communityTax);
-      }
-
-      const signature = document.getElementById("upload-signature")?.files[0];
-      if (signature) {
-          formData.append("signature", signature);
-      }
-
-      const response = await fetch("https://osca-backend.onrender.com/api/applications/register", {
-          method: "POST",
-          body: formData
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-          throw new Error(result.message || "Registration failed.");
-      }
-
-      return result;
+    return result;
   };
 
   const requiredConsents = [
@@ -1250,9 +1258,9 @@ function setupFormSubmitConfirmation() {
         try {
           await saveApplication();
 
-          // Reset the reCAPTCHA if available
-          if (window.grecaptcha && typeof window.grecaptcha.reset === 'function') {
-            window.grecaptcha.reset();
+          // Reset the reCAPTCHA
+          if (window.grecaptcha) {
+            grecaptcha.reset();
           }
 
           // Show styled notification, then redirect when closed
@@ -1263,8 +1271,8 @@ function setupFormSubmitConfirmation() {
         } catch (error) {
 
           // Optional: Reset the reCAPTCHA after a failed submission too
-          if (window.grecaptcha && typeof window.grecaptcha.reset === 'function') {
-            window.grecaptcha.reset();
+          if (window.grecaptcha) {
+            grecaptcha.reset();
           }
 
           const message = error && error.message ? error.message : 'Unknown error';
@@ -1303,11 +1311,8 @@ function setupDisclaimerPage() {
   };
 
   const hasCaptchaResponse = function () {
-    // If grecaptcha is not present on the page, treat captcha as optional/fulfilled
-    if (typeof window.grecaptcha === "undefined") {
-      return true;
-    }
-    return typeof window.grecaptcha.getResponse === "function" &&
+    return typeof window.grecaptcha !== "undefined" &&
+      typeof window.grecaptcha.getResponse === "function" &&
       window.grecaptcha.getResponse().length > 0;
   };
 
@@ -1316,12 +1321,14 @@ function setupDisclaimerPage() {
     continueButton.disabled = !(consentCheckbox.checked && captchaReady);
   };
 
-  window.handleRecaptchaSuccess = function () {
+  window.handleRecaptchaSuccess = function (token) {
+    sessionStorage.setItem("recaptchaToken", token);
     hideDisclaimerError();
     updateContinueState();
   };
 
   window.handleRecaptchaExpired = function () {
+    sessionStorage.removeItem("recaptchaToken");
     showDisclaimerError("CAPTCHA has expired. Please complete it again.");
     updateContinueState();
   };
@@ -1347,73 +1354,6 @@ function setupDisclaimerPage() {
   });
 
   updateContinueState();
-}
-
-// --- reCAPTCHA helper (invisible widget) ---
-window.onRecaptchaApiLoad = function () {
-  // Render is performed lazily inside getRecaptchaToken when needed.
-};
-
-async function getRecaptchaToken() {
-  const SITE_KEY = '6LeDhRUtAAAAAEyAuvyRiP5XSRCLcRaIvF7YmH5f';
-  if (typeof window.grecaptcha === 'undefined') {
-    return null;
-  }
-
-  // If a token already exists, return it
-  if (window._recaptchaToken) {
-    return window._recaptchaToken;
-  }
-
-  // Ensure widget is rendered
-  try {
-    if (typeof window.recaptchaWidgetId === 'undefined') {
-      const container = document.getElementById('recaptcha-container');
-      if (!container) {
-        return null;
-      }
-      window.recaptchaWidgetId = grecaptcha.render('recaptcha-container', {
-        sitekey: SITE_KEY,
-        size: 'invisible',
-        callback: function (token) {
-          window._recaptchaToken = token;
-          if (window._recaptchaResolve) {
-            try { window._recaptchaResolve(token); } catch (e) {}
-            window._recaptchaResolve = null;
-          }
-        },
-        'expired-callback': function () {
-          window._recaptchaToken = null;
-        }
-      });
-    }
-
-    // Execute and wait for token
-    return await new Promise(function (resolve) {
-      // short-circuit if token already available
-      if (window._recaptchaToken) {
-        resolve(window._recaptchaToken);
-        return;
-      }
-      window._recaptchaResolve = resolve;
-      try {
-        grecaptcha.execute(window.recaptchaWidgetId);
-      } catch (e) {
-        // If execute fails, resolve null
-        window._recaptchaResolve = null;
-        resolve(null);
-      }
-      // safety timeout
-      setTimeout(function () {
-        if (window._recaptchaResolve) {
-          try { window._recaptchaResolve(null); } catch (e) {}
-          window._recaptchaResolve = null;
-        }
-      }, 10000);
-    });
-  } catch (e) {
-    return null;
-  }
 }
 
 function setupHomepageNavigation() {

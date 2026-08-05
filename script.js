@@ -916,7 +916,6 @@ function setupFormSubmitConfirmation() {
 
     const statusHistoryData = {
       status: 'Pending',
-      remarks: 'Application submitted from online form.'
     };
 
     return {

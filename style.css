@@ -1581,6 +1581,10 @@ body.verify-page .verify-status-dot[data-status="in process"] {
 }
 
 body.verify-page .verify-status-dot[data-status="ready for release"] {
+  background: #8b5cf6;
+}
+
+body.verify-page .verify-status-dot[data-status="completed"] {
   background: #16a34a;
 }
 
@@ -1714,6 +1718,11 @@ body.verify-page .verify-status-pill[data-status="in process"] {
 }
 
 body.verify-page .verify-status-pill[data-status="ready for release"] {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+body.verify-page .verify-status-pill[data-status="completed"] {
   background: #dcfce7;
   color: #166534;
 }

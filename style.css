@@ -797,13 +797,24 @@ body.camera-open {
   place-items: center;
 }
 
+.file-preview-inner {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .file-preview-body img,
 .file-preview-body iframe {
+  max-width: 100%;
+  max-height: calc(80vh - 140px);
   width: 100%;
-  height: calc(92vh - 180px);
+  height: auto;
   border: none;
   border-radius: 8px;
   background: #000;
+  object-fit: contain;
+  display: block;
 }
 
 .file-preview-actions {
@@ -927,6 +938,18 @@ body.camera-open {
 
   .camera-dialog {
     padding: 12px;
+  }
+
+  .file-preview-dialog {
+    width: calc(100% - 24px);
+    max-height: 94vh;
+    border-radius: 10px;
+  }
+
+  .file-preview-body img,
+  .file-preview-body iframe {
+    max-height: calc(70vh - 120px);
+    max-width: calc(100% - 32px);
   }
 
   .camera-dialog-head {

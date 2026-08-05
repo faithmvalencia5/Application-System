@@ -1002,7 +1002,12 @@ function setupFormSubmitConfirmation() {
 
       const payload = collectAllPayloads();
       
-      payload.recaptchaToken = grecaptcha.getResponse();
+      // Get recaptcha token if reCAPTCHA is available, otherwise send null
+      if (window.grecaptcha && typeof window.grecaptcha.getResponse === 'function') {
+        payload.recaptchaToken = window.grecaptcha.getResponse();
+      } else {
+        payload.recaptchaToken = null;
+      }
 
       const formData = new FormData();
 
@@ -1236,9 +1241,9 @@ function setupFormSubmitConfirmation() {
         try {
           await saveApplication();
 
-          // Reset the reCAPTCHA
-          if (window.grecaptcha) {
-            grecaptcha.reset();
+          // Reset the reCAPTCHA if available
+          if (window.grecaptcha && typeof window.grecaptcha.reset === 'function') {
+            window.grecaptcha.reset();
           }
 
           // Show styled notification, then redirect when closed
@@ -1249,8 +1254,8 @@ function setupFormSubmitConfirmation() {
         } catch (error) {
 
           // Optional: Reset the reCAPTCHA after a failed submission too
-          if (window.grecaptcha) {
-            grecaptcha.reset();
+          if (window.grecaptcha && typeof window.grecaptcha.reset === 'function') {
+            window.grecaptcha.reset();
           }
 
           const message = error && error.message ? error.message : 'Unknown error';
@@ -1289,8 +1294,11 @@ function setupDisclaimerPage() {
   };
 
   const hasCaptchaResponse = function () {
-    return typeof window.grecaptcha !== "undefined" &&
-      typeof window.grecaptcha.getResponse === "function" &&
+    // If grecaptcha is not present on the page, treat captcha as optional/fulfilled
+    if (typeof window.grecaptcha === "undefined") {
+      return true;
+    }
+    return typeof window.grecaptcha.getResponse === "function" &&
       window.grecaptcha.getResponse().length > 0;
   };
 

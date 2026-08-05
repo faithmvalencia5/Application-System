@@ -612,8 +612,6 @@
       </section>
     </main>
     </div>
-    <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaApiLoad&render=explicit" async defer></script>
-    <div id="recaptcha-container" style="display:none"></div>
     <script src="script.js"></script>
     <div id="file-preview-modal" class="file-preview-modal" hidden aria-hidden="true">
       <div class="file-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="file-preview-title">
@@ -622,10 +620,8 @@
           <button id="file-preview-close" class="camera-close" aria-label="Close preview">✕</button>
         </div>
         <div class="file-preview-body">
-          <div class="file-preview-inner">
-            <img id="file-preview-image" alt="Preview image" hidden />
-            <iframe id="file-preview-iframe" hidden title="PDF preview"></iframe>
-          </div>
+          <img id="file-preview-image" alt="Preview image" hidden />
+          <iframe id="file-preview-iframe" hidden title="PDF preview"></iframe>
           <a id="file-download-link" href="#" download hidden>Download file</a>
         </div>
       </div>

@@ -236,10 +236,8 @@ function setupUploadButtons() {
   const previewImage = document.getElementById("file-preview-image");
   const previewIframe = document.getElementById("file-preview-iframe");
   const previewClose = document.getElementById("file-preview-close");
-  const fileReplaceButton = document.getElementById("file-replace-button");
 
   let currentPreviewUrl = null;
-  let currentInputForReplace = null;
 
   const closePreview = function () {
     if (currentPreviewUrl) {
@@ -265,16 +263,6 @@ function setupUploadButtons() {
     previewClose.addEventListener("click", closePreview);
   }
 
-  if (fileReplaceButton) {
-    fileReplaceButton.addEventListener("click", function () {
-      if (currentInputForReplace) {
-        // close preview then open the file chooser for that input
-        closePreview();
-        currentInputForReplace.click();
-      }
-    });
-  }
-
   uploadInputs.forEach(function (inputElement) {
     const uploadBox = inputElement.nextElementSibling;
     if (!uploadBox || !uploadBox.classList.contains("upload-box")) {
@@ -290,6 +278,11 @@ function setupUploadButtons() {
       const hasFile = inputElement.files && inputElement.files.length > 0;
       if (fileNameLabel) {
         fileNameLabel.textContent = hasFile ? inputElement.files[0].name : 'No file selected';
+        if (hasFile) {
+          uploadBox.classList.add('has-file');
+        } else {
+          uploadBox.classList.remove('has-file');
+        }
       }
       if (viewBtn) {
         viewBtn.hidden = !hasFile;
@@ -319,7 +312,6 @@ function setupUploadButtons() {
           currentPreviewUrl = null;
         }
         currentPreviewUrl = URL.createObjectURL(file);
-        currentInputForReplace = inputElement;
 
         if (file.type && file.type.startsWith('image/')) {
           if (previewIframe) previewIframe.hidden = true;

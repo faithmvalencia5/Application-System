@@ -632,6 +632,22 @@ td select {
   word-break: break-word;
 }
 
+/* When a file is selected, hide the 'Upload ...' label and show filename prominently */
+.upload-box.has-file {
+  align-items: center;
+}
+
+.upload-box.has-file .upload-label {
+  display: none;
+}
+
+.upload-box.has-file .upload-file-name {
+  display: block;
+  font-weight: 800;
+  color: var(--heading);
+  font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+}
+
 .scan-face-btn {
   width: 100%;
   font-family: inherit;

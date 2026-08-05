@@ -835,8 +835,9 @@ body.camera-open {
   }
 
   .camera-dialog-head {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 
   table {

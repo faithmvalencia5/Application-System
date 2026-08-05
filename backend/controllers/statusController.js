@@ -24,7 +24,7 @@ export async function getApplicationStatus(req, res) {
 
         const { data: statusHistoryRows, error: statusHistoryError } = await supabase
             .from("application_status_history")
-            .select("status, remarks, updated_at")
+            .select("status, updated_at")
             .eq("application_id", applicationId)
             .order("updated_at", { ascending: false })
             .limit(1);

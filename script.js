@@ -249,14 +249,13 @@ function setupUploadButtons() {
       filePreviewModal.setAttribute("aria-hidden", "true");
     }
     if (previewImage) {
-      previewImage.hidden = true;
+      previewImage.style.display = 'none';
       previewImage.src = "";
     }
     if (previewIframe) {
-      previewIframe.hidden = true;
+      previewIframe.style.display = 'none';
       previewIframe.src = "";
     }
-    currentInputForReplace = null;
   };
 
   if (previewClose) {
@@ -314,16 +313,22 @@ function setupUploadButtons() {
         currentPreviewUrl = URL.createObjectURL(file);
 
         if (file.type && file.type.startsWith('image/')) {
-          if (previewIframe) previewIframe.hidden = true;
+          if (previewIframe) {
+            previewIframe.style.display = 'none';
+            previewIframe.src = '';
+          }
           if (previewImage) {
             previewImage.src = currentPreviewUrl;
-            previewImage.hidden = false;
+            previewImage.style.display = 'block';
           }
         } else if (file.type === 'application/pdf') {
-          if (previewImage) previewImage.hidden = true;
+          if (previewImage) {
+            previewImage.style.display = 'none';
+            previewImage.src = '';
+          }
           if (previewIframe) {
             previewIframe.src = currentPreviewUrl;
-            previewIframe.hidden = false;
+            previewIframe.style.display = 'block';
           }
         } else {
           // fallback: show download link by opening in new tab
@@ -1002,9 +1007,13 @@ function setupFormSubmitConfirmation() {
 
       const payload = collectAllPayloads();
       
-      // Get recaptcha token if reCAPTCHA is available, otherwise send null
-      if (window.grecaptcha && typeof window.grecaptcha.getResponse === 'function') {
-        payload.recaptchaToken = window.grecaptcha.getResponse();
+      // Get reCAPTCHA token (render/execute invisible widget if needed)
+      if (typeof getRecaptchaToken === 'function') {
+        try {
+          payload.recaptchaToken = await getRecaptchaToken();
+        } catch (e) {
+          payload.recaptchaToken = null;
+        }
       } else {
         payload.recaptchaToken = null;
       }
@@ -1338,6 +1347,73 @@ function setupDisclaimerPage() {
   });
 
   updateContinueState();
+}
+
+// --- reCAPTCHA helper (invisible widget) ---
+window.onRecaptchaApiLoad = function () {
+  // Render is performed lazily inside getRecaptchaToken when needed.
+};
+
+async function getRecaptchaToken() {
+  const SITE_KEY = '6LeDhRUtAAAAAEyAuvyRiP5XSRCLcRaIvF7YmH5f';
+  if (typeof window.grecaptcha === 'undefined') {
+    return null;
+  }
+
+  // If a token already exists, return it
+  if (window._recaptchaToken) {
+    return window._recaptchaToken;
+  }
+
+  // Ensure widget is rendered
+  try {
+    if (typeof window.recaptchaWidgetId === 'undefined') {
+      const container = document.getElementById('recaptcha-container');
+      if (!container) {
+        return null;
+      }
+      window.recaptchaWidgetId = grecaptcha.render('recaptcha-container', {
+        sitekey: SITE_KEY,
+        size: 'invisible',
+        callback: function (token) {
+          window._recaptchaToken = token;
+          if (window._recaptchaResolve) {
+            try { window._recaptchaResolve(token); } catch (e) {}
+            window._recaptchaResolve = null;
+          }
+        },
+        'expired-callback': function () {
+          window._recaptchaToken = null;
+        }
+      });
+    }
+
+    // Execute and wait for token
+    return await new Promise(function (resolve) {
+      // short-circuit if token already available
+      if (window._recaptchaToken) {
+        resolve(window._recaptchaToken);
+        return;
+      }
+      window._recaptchaResolve = resolve;
+      try {
+        grecaptcha.execute(window.recaptchaWidgetId);
+      } catch (e) {
+        // If execute fails, resolve null
+        window._recaptchaResolve = null;
+        resolve(null);
+      }
+      // safety timeout
+      setTimeout(function () {
+        if (window._recaptchaResolve) {
+          try { window._recaptchaResolve(null); } catch (e) {}
+          window._recaptchaResolve = null;
+        }
+      }, 10000);
+    });
+  } catch (e) {
+    return null;
+  }
 }
 
 function setupHomepageNavigation() {

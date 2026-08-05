@@ -799,22 +799,22 @@ body.camera-open {
 
 .file-preview-inner {
   width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: relative;
+  display: block;
 }
 
 .file-preview-body img,
 .file-preview-body iframe {
-  max-width: 100%;
-  max-height: calc(80vh - 140px);
-  width: 100%;
+  max-width: calc(100% - 40px);
+  max-height: calc(80vh - 160px);
+  width: auto;
   height: auto;
   border: none;
   border-radius: 8px;
   background: #000;
   object-fit: contain;
   display: block;
+  margin: 0 auto;
 }
 
 .file-preview-actions {

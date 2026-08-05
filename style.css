@@ -672,8 +672,9 @@ body.camera-open {
 
 .camera-dialog-head {
   position: absolute;
-  inset: 18px auto auto 18px;
+  top: 18px;
   right: 18px;
+  left: 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -698,25 +699,29 @@ body.camera-open {
 }
 
 .camera-close {
-  width: 46px;
-  height: 46px;
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  min-height: 50px;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.55);
   color: #ffffff;
-  font-size: 1.35rem;
-  font-weight: 800;
+  font-size: 1.4rem;
+  font-weight: 900;
   line-height: 1;
   cursor: pointer;
   display: grid;
   place-items: center;
-  transition: transform 0.15s ease, background-color 0.15s ease;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .camera-close:hover,
 .camera-close:focus-visible {
-  background: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.18);
   transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.32);
 }
 
 .camera-status {

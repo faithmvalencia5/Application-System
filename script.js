@@ -1001,6 +1001,12 @@ function setupFormSubmitConfirmation() {
       setIfExists('education', app.educational_attainment);
       setIfExists('occupation', app.occupation);
       setIfExists('contact-number', app.contact_number);
+      // ID numbers
+      setIfExists('id-osca', app.osca_id_number || app.osca_id || null);
+      setIfExists('id-sss', app.sss_id_number || null);
+      setIfExists('id-philhealth', app.philhealth_id_number || null);
+      setIfExists('id-gsis', app.gsis_id_number || null);
+      setIfExists('id-tin', app.tin_id_number || null);
 
       // memberships
       if (data.memberships) {

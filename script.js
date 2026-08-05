@@ -1548,6 +1548,9 @@ function setupVerificationPage() {
     if (normalized === 'ready for release') {
       return 'Your ID is ready for release. Please visit the OSCA office with a valid ID.';
     }
+    if (normalized === 'completed') {
+      return 'Your application process has been completed successfully.';
+    }
 
     return 'Your application status has been updated.';
   };
@@ -1585,7 +1588,7 @@ function setupVerificationPage() {
   const showStatusStep = function (applicationId, record) {
     verifiedId.textContent = applicationId;
     verifiedApplicant.textContent = record.applicant;
-    verificationNote.textContent = record.note;
+    verificationNote.textContent = record.note || getDefaultNoteByStatus(record.status);
 
     currentApplicationStatus =
       String(record.status || "").trim().toLowerCase();

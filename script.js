@@ -354,17 +354,37 @@ function setupUploadButtons() {
 }
 
 function protectApplicationForm() {
-  const isFormPage = window.location.pathname.endsWith("form.html");
+  const isFormPage =
+    window.location.pathname.endsWith("form.html");
 
   if (!isFormPage) {
     return;
   }
 
+  const params =
+    new URLSearchParams(window.location.search);
+
+  const mode = params.get("mode");
+
+  const isEditMode =
+    mode === "edit" ||
+    mode === "request-edit";
+
+  // Existing applications may open the form directly
+  // from the Track Status page.
+  if (isEditMode) {
+    return;
+  }
+
+  // New applications must pass through the disclaimer
+  // and reCAPTCHA page first.
   const hasAccess =
-    sessionStorage.getItem("applicationFormAccess") === "verified";
+    sessionStorage.getItem("applicationFormAccess") ===
+    "verified";
 
   if (!hasAccess) {
-    window.location.href = "register-disclaimer.html";
+    window.location.href =
+      "register-disclaimer.html";
   }
 }
 

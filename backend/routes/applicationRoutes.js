@@ -4,6 +4,7 @@ import {
     testDatabase,
     registerApplication
 } from "../controllers/applicationController.js";
+import { getApplication, updateApplication } from "../controllers/applicationController.js";
 import { getApplicationStatus } from "../controllers/statusController.js";
 
 const router = express.Router();
@@ -22,4 +23,6 @@ router.post(
     registerApplication
 );
 router.get("/status/:applicationId", getApplicationStatus);
+router.get("/:applicationId", getApplication);
+router.put("/:applicationId", updateApplication);
 export default router;

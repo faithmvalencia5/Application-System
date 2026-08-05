@@ -962,6 +962,102 @@ function setupFormSubmitConfirmation() {
       return result;
   };
 
+  // --- Edit mode helpers ---
+  let editApplicationId = null;
+
+  const getEditApplicationIdFromUrl = function () {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('edit');
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const loadApplicationForEdit = async function (applicationId) {
+    if (!applicationId) return;
+    try {
+      const res = await fetch('https://osca-backend.onrender.com/api/applications/' + encodeURIComponent(applicationId));
+      const data = await res.json();
+      if (!res.ok || !data || !data.application) {
+        console.warn('Unable to load application for edit', data);
+        return;
+      }
+
+      editApplicationId = applicationId;
+      const app = data.application;
+
+      // Prefill basic fields if present
+      setIfExists('surname', app.surname);
+      setIfExists('firstname', app.first_name);
+      setIfExists('middlename', app.middle_name);
+      setIfExists('dob', app.date_of_birth);
+      setIfExists('age', app.age);
+      setIfExists('sex', app.sex);
+      setIfExists('birthplace', app.place_of_birth);
+      setIfExists('civil-status', app.civil_status);
+      setIfExists('address', app.house_street);
+      setIfExists('barangay', app.barangay_district);
+      setIfExists('education', app.educational_attainment);
+      setIfExists('occupation', app.occupation);
+      setIfExists('contact-number', app.contact_number);
+
+      // Focus top of form
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const setIfExists = function (id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (value === null || typeof value === 'undefined') return;
+    el.value = value;
+  };
+
+  const updateApplication = async function () {
+    if (!editApplicationId) throw new Error('No application id to update.');
+
+    // Collect the basic payload to update applications table
+    const payload = {
+      surname: getInputValue('surname'),
+      first_name: getInputValue('firstname'),
+      middle_name: toNull(getInputValue('middlename')),
+      date_of_birth: getInputValue('dob'),
+      age: parseInteger(getInputValue('age')),
+      sex: toNull(getInputValue('sex')),
+      place_of_birth: toNull(getInputValue('birthplace')),
+      civil_status: toNull(getInputValue('civil-status')),
+      house_street: toNull(getInputValue('address')),
+      barangay_district: toNull(getInputValue('barangay')),
+      educational_attainment: toNull(getInputValue('education')),
+      occupation: toNull(getInputValue('occupation')),
+      contact_number: toNull(getInputValue('contact-number'))
+    };
+
+    const response = await fetch('https://osca-backend.onrender.com/api/applications/' + encodeURIComponent(editApplicationId), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Update failed.');
+    }
+
+    return result;
+  };
+
+  // If page was opened with an edit param, load application
+  const initialEditId = getEditApplicationIdFromUrl();
+  if (initialEditId) {
+    // attempt to load the application for edit mode
+    loadApplicationForEdit(initialEditId);
+  }
+
   const requiredConsents = [
     document.getElementById('consent-1'),
     document.getElementById('consent-2'),
@@ -1142,17 +1238,30 @@ function setupFormSubmitConfirmation() {
         submitButton.textContent = 'Submitting...';
 
         try {
-          await saveApplication();
+          let result = null;
+          if (editApplicationId) {
+            result = await updateApplication();
+          } else {
+            result = await saveApplication();
+          }
 
           // Reset the reCAPTCHA
           if (window.grecaptcha) {
             grecaptcha.reset();
           }
 
+          // Determine application id from response
+          let applicationId = null;
+          if (result && result.application && result.application.application_id) {
+            applicationId = result.application.application_id;
+          } else if (result && result.application_id) {
+            applicationId = result.application_id;
+          }
+
           // Show styled notification, then redirect when closed
           showSuccessNotification('Your application has been submitted successfully.', function () {
             window.location.href = 'index.html';
-          });
+          }, applicationId);
 
         } catch (error) {
 
@@ -1464,6 +1573,24 @@ function setupVerificationPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // expose edit button behavior for status step
+  const editButton = document.getElementById('edit-application-button');
+  if (editButton) {
+    // when showing status step, toggle visibility depending on status
+    const originalShowStatus = showStatusStep;
+    window.showStatusStepWithEdit = function (applicationId, record) {
+      originalShowStatus(applicationId, record);
+      if (record && record.status === 'pending') {
+        editButton.hidden = false;
+        editButton.onclick = function () {
+          window.location.href = 'form.html?edit=' + encodeURIComponent(applicationId);
+        };
+      } else {
+        editButton.hidden = true;
+      }
+    };
+  }
+
   const closeVerificationPage = function () {
     window.location.href = "index.html";
   };
@@ -1523,7 +1650,11 @@ function setupVerificationPage() {
       submitButton.textContent = originalButtonText;
     }
 
-    showStatusStep(applicationId, record);
+    if (typeof window.showStatusStepWithEdit === 'function') {
+      window.showStatusStepWithEdit(applicationId, record);
+    } else {
+      showStatusStep(applicationId, record);
+    }
   });
 
   showEntryStep();
@@ -1627,11 +1758,13 @@ function setupRequestIdModal() {
   });
 }
 
-function showSuccessNotification(message, onClose) {
+function showSuccessNotification(message, onClose, applicationId) {
   const overlay = document.getElementById("success-notification-overlay");
   const notification = document.getElementById("success-notification");
   const notificationMessage = document.getElementById("notification-message");
+  const notificationAppId = document.getElementById("notification-app-id");
   const closeButton = document.getElementById("notification-close-button");
+  const editButton = document.getElementById("notification-edit-button");
 
   if (!overlay || !notification || !notificationMessage || !closeButton) {
     if (typeof onClose === 'function') {
@@ -1641,6 +1774,26 @@ function showSuccessNotification(message, onClose) {
   }
 
   notificationMessage.textContent = message;
+  if (notificationAppId) {
+    if (applicationId) {
+      notificationAppId.hidden = false;
+      notificationAppId.textContent = 'Application ID: ' + applicationId + ' — please take note of this ID.';
+    } else {
+      notificationAppId.hidden = true;
+    }
+  }
+
+  if (editButton) {
+    if (applicationId) {
+      editButton.hidden = false;
+      editButton.onclick = function () {
+        // open form in edit mode
+        window.location.href = 'form.html?edit=' + encodeURIComponent(applicationId);
+      };
+    } else {
+      editButton.hidden = true;
+    }
+  }
   overlay.hidden = false;
   notification.hidden = false;
 

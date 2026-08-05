@@ -909,6 +909,8 @@ function setupFormSubmitConfirmation() {
   const saveApplication = async function () {
 
       const payload = collectAllPayloads();
+      
+      payload.recaptchaToken = grecaptcha.getResponse();
 
       const formData = new FormData();
 
@@ -1142,13 +1144,26 @@ function setupFormSubmitConfirmation() {
         try {
           await saveApplication();
 
+          // Reset the reCAPTCHA
+          if (window.grecaptcha) {
+            grecaptcha.reset();
+          }
+
           // Show styled notification, then redirect when closed
           showSuccessNotification('Your application has been submitted successfully.', function () {
             window.location.href = 'index.html';
           });
+
         } catch (error) {
+
+          // Optional: Reset the reCAPTCHA after a failed submission too
+          if (window.grecaptcha) {
+            grecaptcha.reset();
+          }
+
           const message = error && error.message ? error.message : 'Unknown error';
           showSuccessNotification('Submission failed: ' + message);
+
         } finally {
           submitButton.disabled = false;
           submitButton.textContent = originalText;

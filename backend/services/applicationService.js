@@ -1,7 +1,14 @@
 import { supabase } from "../supabase.js";
 import { uploadFile } from "./storageService.js";
+import { verifyRecaptcha } from "./recaptchaService.js";
 
 export async function registerApplication(payload, files) {
+
+    const isHuman = await verifyRecaptcha(payload.recaptchaToken);
+
+    if (!isHuman) {
+        throw new Error("reCAPTCHA verification failed.");
+    }
 
     const {
         applicationsData,

@@ -653,8 +653,8 @@ td select {
 }
 
 .camera-dialog {
-  width: min(100%, 760px);
-  max-height: min(88vh, 900px);
+  width: clamp(320px, 95vw, 760px);
+  max-height: min(92vh, 900px);
   display: grid;
   gap: 14px;
   padding: 16px;
@@ -679,6 +679,7 @@ td select {
 
 .camera-dialog video {
   width: 100%;
+  height: min(70vh, 520px);
   aspect-ratio: 4 / 3;
   object-fit: cover;
   border-radius: 14px;

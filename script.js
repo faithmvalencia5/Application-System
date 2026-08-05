@@ -293,6 +293,7 @@ function setupFaceCamera() {
     previewWrap.hidden = true;
     previewWrap.setAttribute("aria-hidden", "true");
     openButton.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("camera-open");
   };
 
   openButton.addEventListener("click", async function () {
@@ -322,6 +323,7 @@ function setupFaceCamera() {
       previewWrap.hidden = false;
       previewWrap.setAttribute("aria-hidden", "false");
       openButton.setAttribute("aria-expanded", "true");
+      document.body.classList.add("camera-open");
       closeButton.focus();
     } catch (error) {
       setStatus("Unable to access camera. Please allow permission, then try again.");

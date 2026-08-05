@@ -646,6 +646,12 @@ td select {
   padding: 0;
   background: rgba(5, 20, 28, 0.85);
   backdrop-filter: blur(5px);
+  overflow: hidden;
+}
+
+body.camera-open {
+  overflow: hidden;
+  height: 100vh;
 }
 
 .camera-modal[hidden] {
@@ -661,15 +667,16 @@ td select {
   padding: 18px;
   border-radius: 0;
   border: none;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.06);
   box-shadow: none;
 }
 
 .camera-dialog-head {
+  position: relative;
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
   align-items: center;
+  gap: 12px;
+  min-height: 56px;
 }
 
 .camera-dialog-head h3 {
@@ -688,6 +695,9 @@ td select {
 }
 
 .camera-close {
+  position: absolute;
+  top: 0;
+  right: 0;
   width: 46px;
   height: 46px;
   border: none;

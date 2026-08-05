@@ -437,7 +437,6 @@
               <label for="upload-valid-id-front" class="upload-box" role="button" tabindex="0">
                 <span class="upload-label">Upload Front of ID</span>
                 <small class="upload-file-name">No file selected</small>
-                <a id="view-valid-id-front" class="upload-view-link" hidden target="_blank" rel="noopener">View</a>
               </label>
 
               <input
@@ -449,7 +448,6 @@
               <label for="upload-valid-id-back" class="upload-box" role="button" tabindex="0">
                 <span class="upload-label">Upload Back of ID</span>
                 <small class="upload-file-name">No file selected</small>
-                <a id="view-valid-id-back" class="upload-view-link" hidden target="_blank" rel="noopener">View</a>
               </label>
 
             </div>
@@ -466,7 +464,6 @@
               <label for="upload-latest-photo" class="upload-box" role="button" tabindex="0">
                 <span class="upload-label">Upload Picture</span>
                 <small class="upload-file-name">No file selected</small>
-                <a id="view-latest-photo" class="upload-view-link" hidden target="_blank" rel="noopener">View</a>
               </label>
             </div>
             <div>
@@ -481,7 +478,6 @@
               <label for="upload-birth-certificate" class="upload-box" role="button" tabindex="0">
                 <span class="upload-label">Upload File</span>
                 <small class="upload-file-name">No file selected</small>
-                <a id="view-birth-certificate" class="upload-view-link" hidden target="_blank" rel="noopener">View</a>
               </label>
             </div>
             <div>
@@ -496,7 +492,6 @@
               <label for="upload-cedula" class="upload-box" role="button" tabindex="0">
                 <span class="upload-label">Upload File</span>
                 <small class="upload-file-name">No file selected</small>
-                <a id="view-community-tax" class="upload-view-link" hidden target="_blank" rel="noopener">View</a>
               </label>
             </div>
             <div>
@@ -511,7 +506,6 @@
               <button id="open-face-camera" class="upload-box scan-face-btn" type="button" aria-expanded="false">
                 <span class="upload-label">Scan Face</span>
                 <small class="upload-file-name">Tap to open camera</small>
-                <a id="view-face-scan" class="upload-view-link" hidden target="_blank" rel="noopener">View</a>
               </button>
             </div>
             <div>
@@ -526,7 +520,6 @@
               <label for="upload-signature" class="upload-box" role="button" tabindex="0">
                 <span class="upload-label">Upload File</span>
                 <small class="upload-file-name">No file selected</small>
-                <a id="view-signature" class="upload-view-link" hidden target="_blank" rel="noopener">View</a>
               </label>
             </div>
             <div>
@@ -603,15 +596,9 @@
           <div>
             <strong class="notification-title">Submission Successful</strong>
             <p id="notification-message">Your application has been submitted successfully.</p>
-            <p id="notification-app-id" style="margin-top:6px; font-weight:700;" hidden>Application ID: </p>
-            <div id="notification-file-links" style="margin-top:8px;" hidden>
-              <p style="margin:0 0 6px 0; font-weight:600;">Uploaded files</p>
-              <div id="notification-file-list"></div>
-            </div>
           </div>
         </div>
         <div class="notification-actions">
-          <button id="notification-edit-button" class="table-btn" hidden>Edit Application</button>
           <button id="notification-close-button" class="table-btn">Close</button>
         </div>
       </div>

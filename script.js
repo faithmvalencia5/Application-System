@@ -1261,14 +1261,22 @@ function setupFormSubmitConfirmation() {
         submitButton.textContent = 'Submitting...';
 
         try {
-          await saveApplication();
+          const result = await saveApplication();
 
-          // Remove access after a successful submission
+          const applicationId = result?.application?.application_id;
+
+          if (!applicationId) {
+            throw new Error(
+              "The application was submitted, but the Application ID was not returned."
+            );
+          }
+
           sessionStorage.removeItem("applicationFormAccess");
 
-          // Show notification, then return to the homepage
           showSuccessNotification(
-            "Your application has been submitted successfully.",
+            "Your application has been submitted successfully.\n\n" +
+            "Application ID: " + applicationId + "\n\n" +
+            "Please take note of this Application ID. You will need it to track the status of your application.",
             function () {
               window.location.href = "index.html";
             }

@@ -24,5 +24,16 @@ router.post(
 );
 router.get("/status/:applicationId", getApplicationStatus);
 router.get("/:applicationId", getApplication);
-router.put("/:applicationId", updateApplication);
+router.put(
+    "/:applicationId",
+    upload.fields([
+        { name: "valid_id_front", maxCount: 1 },
+        { name: "valid_id_back", maxCount: 1 },
+        { name: "latest_photo", maxCount: 1 },
+        { name: "birth_certificate", maxCount: 1 },
+        { name: "community_tax_certificate", maxCount: 1 },
+        { name: "signature", maxCount: 1 }
+    ]),
+    updateApplication
+);
 export default router;

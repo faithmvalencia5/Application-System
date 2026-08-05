@@ -1002,6 +1002,91 @@ function setupFormSubmitConfirmation() {
       setIfExists('occupation', app.occupation);
       setIfExists('contact-number', app.contact_number);
 
+      // memberships
+      if (data.memberships) {
+        setIfExists('assoc-name', data.memberships.association_name);
+        setIfExists('assoc-address', data.memberships.association_address);
+        setIfExists('assoc-date', data.memberships.association_date);
+        setIfExists('assoc-position', data.memberships.position);
+      }
+
+      // confirmations
+      if (data.confirmations) {
+        const c = data.confirmations;
+        const map = {
+          info_true: 'consent-1',
+          full_knowledge: 'consent-2',
+          personal_consent: 'consent-3',
+          understand_storage: 'consent-4',
+          agree_all: 'consent-5'
+        };
+        Object.keys(map).forEach(function (k) {
+          if (c[k]) {
+            const el = document.getElementById(map[k]);
+            if (el) el.checked = true;
+          }
+        });
+      }
+
+      // family rows
+      if (Array.isArray(data.family) && data.family.length > 0) {
+        const familyBody = document.getElementById('family-body');
+        if (familyBody) {
+          familyBody.innerHTML = '';
+          data.family.forEach(function (member) {
+            const row = createFamilyRow();
+            // set values into the row's inputs
+            const inputs = row.querySelectorAll('input, select');
+            if (inputs[0]) inputs[0].value = member.name || '';
+            if (inputs[1]) inputs[1].value = member.relationship || '';
+            if (inputs[2]) inputs[2].value = member.age !== null && member.age !== undefined ? member.age : '';
+            if (inputs[3]) inputs[3].value = member.civil_status || '';
+            if (inputs[4]) inputs[4].value = member.occupation || '';
+            if (inputs[5]) inputs[5].value = member.income !== null && member.income !== undefined ? member.income : '';
+            familyBody.appendChild(row);
+          });
+        }
+      }
+
+      // personal background & problems needs (attempt to map booleans to checkbox labels)
+      const fillCheckboxGroupsFromObject = function (obj) {
+        if (!obj) return;
+        const labels = Array.from(document.querySelectorAll('.check-option'));
+        const normalize = s => (s || '').toString().toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        Object.keys(obj).forEach(function (key) {
+          const val = obj[key];
+          if (!val) return;
+          // derive keyword from key
+          let target = key.replace(/^(income_|asset_|living_|skill_|involvement_|economic_|social_|health_|housing_|community_)/, '').replace(/_/g, ' ').trim();
+          target = normalize(target);
+          labels.forEach(function (label) {
+            const text = normalize(label.textContent || '');
+            if (!text) return;
+            if (text.includes(target) || target.includes(text) || text.startsWith(target) || target.startsWith(text)) {
+              const cb = label.querySelector('input[type="checkbox"]');
+              if (cb) cb.checked = true;
+              // reveal any specify input if present
+              const specify = label.parentElement ? label.parentElement.querySelector('.specify-input') : null;
+              if (specify && obj[key + '_specify']) {
+                specify.hidden = false;
+                specify.value = obj[key + '_specify'];
+              }
+            }
+          });
+        });
+      };
+
+      if (data.personal_background) fillCheckboxGroupsFromObject(data.personal_background);
+      if (data.problems_needs) fillCheckboxGroupsFromObject(data.problems_needs);
+
+      // files: we don't auto-fill file inputs, but we can show hints (optional)
+
+      // Change submit button label to Save
+      const submitBtn = document.querySelector('.btn.submit');
+      if (submitBtn) {
+        submitBtn.textContent = 'Save Changes';
+      }
+
       // Focus top of form
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
@@ -1019,27 +1104,28 @@ function setupFormSubmitConfirmation() {
   const updateApplication = async function () {
     if (!editApplicationId) throw new Error('No application id to update.');
 
-    // Collect the basic payload to update applications table
-    const payload = {
-      surname: getInputValue('surname'),
-      first_name: getInputValue('firstname'),
-      middle_name: toNull(getInputValue('middlename')),
-      date_of_birth: getInputValue('dob'),
-      age: parseInteger(getInputValue('age')),
-      sex: toNull(getInputValue('sex')),
-      place_of_birth: toNull(getInputValue('birthplace')),
-      civil_status: toNull(getInputValue('civil-status')),
-      house_street: toNull(getInputValue('address')),
-      barangay_district: toNull(getInputValue('barangay')),
-      educational_attainment: toNull(getInputValue('education')),
-      occupation: toNull(getInputValue('occupation')),
-      contact_number: toNull(getInputValue('contact-number'))
-    };
+    const payload = collectAllPayloads();
+
+    const formData = new FormData();
+    formData.append('payload', JSON.stringify(payload));
+
+    // Attach files only if user selected new ones
+    const validIdFront = document.getElementById('upload-valid-id-front')?.files[0];
+    if (validIdFront) formData.append('valid_id_front', validIdFront);
+    const validIdBack = document.getElementById('upload-valid-id-back')?.files[0];
+    if (validIdBack) formData.append('valid_id_back', validIdBack);
+    const latestPhoto = document.getElementById('upload-latest-photo')?.files[0];
+    if (latestPhoto) formData.append('latest_photo', latestPhoto);
+    const birthCertificate = document.getElementById('upload-birth-certificate')?.files[0];
+    if (birthCertificate) formData.append('birth_certificate', birthCertificate);
+    const communityTax = document.getElementById('upload-cedula')?.files[0];
+    if (communityTax) formData.append('community_tax_certificate', communityTax);
+    const signature = document.getElementById('upload-signature')?.files[0];
+    if (signature) formData.append('signature', signature);
 
     const response = await fetch('https://osca-backend.onrender.com/api/applications/' + encodeURIComponent(editApplicationId), {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: formData
     });
 
     const result = await response.json();

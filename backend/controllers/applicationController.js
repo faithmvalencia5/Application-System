@@ -22,9 +22,37 @@ export async function registerApplication(req, res) {
 
         const result = await registerApplicationService(payload, req.files);
 
+        // fetch application_files and convert storage paths to public urls
+        let applicationFilesRow = null;
+        try {
+            const { data: appFiles } = await supabase.from('application_files').select('*').eq('application_id', result.application_id).maybeSingle();
+            applicationFilesRow = appFiles || null;
+            if (applicationFilesRow) {
+                const urls = {};
+                const bucket = supabase.storage.from('documents');
+                ['valid_id_url','valid_id_back_url','latest_photo_url','birth_certificate_url','community_tax_certificate_url','signature_url'].forEach(key => {
+                    const path = applicationFilesRow[key];
+                    if (path) {
+                        try {
+                            const publicRes = supabase.storage.from('documents').getPublicUrl(path);
+                            urls[key] = publicRes && publicRes.data && publicRes.data.publicUrl ? publicRes.data.publicUrl : null;
+                        } catch (e) {
+                            urls[key] = null;
+                        }
+                    } else {
+                        urls[key] = null;
+                    }
+                });
+                applicationFilesRow.public_urls = urls;
+            }
+        } catch (e) {
+            console.warn('Unable to compute public urls for application files', e.message || e);
+        }
+
         res.status(201).json({
             success: true,
-            application: result
+            application: result,
+            application_files: applicationFilesRow
         });
 
     } catch (error) {
@@ -70,6 +98,26 @@ export async function getApplication(req, res) {
             supabase.from('confirmations').select('*').eq('application_id', applicationId)
         ]);
 
+        const appFilesRow = (applicationFiles && applicationFiles[0]) || null;
+        // compute public URLs
+        if (appFilesRow) {
+            const urls = {};
+            ['valid_id_url','valid_id_back_url','latest_photo_url','birth_certificate_url','community_tax_certificate_url','signature_url'].forEach(key => {
+                const path = appFilesRow[key];
+                if (path) {
+                    try {
+                        const publicRes = supabase.storage.from('documents').getPublicUrl(path);
+                        urls[key] = publicRes && publicRes.data && publicRes.data.publicUrl ? publicRes.data.publicUrl : null;
+                    } catch (e) {
+                        urls[key] = null;
+                    }
+                } else {
+                    urls[key] = null;
+                }
+            });
+            appFilesRow.public_urls = urls;
+        }
+
         return res.status(200).json({
             success: true,
             application: applicationRow,
@@ -77,7 +125,7 @@ export async function getApplication(req, res) {
             memberships: (memberships && memberships[0]) || null,
             personal_background: (personalBackground && personalBackground[0]) || null,
             problems_needs: (problemsNeeds && problemsNeeds[0]) || null,
-            application_files: (applicationFiles && applicationFiles[0]) || null,
+            application_files: appFilesRow,
             confirmations: (confirmations && confirmations[0]) || null
         });
     } catch (error) {
@@ -237,11 +285,31 @@ export async function updateApplication(req, res) {
             if (confErr) throw confErr;
         }
 
-        // Return updated application
+        // Return updated application and files (with public urls)
         const { data: finalApp, error: finalErr } = await supabase.from('applications').select('*').eq('application_id', applicationId).maybeSingle();
         if (finalErr) throw finalErr;
 
-        return res.status(200).json({ success: true, application: finalApp });
+        const { data: appFiles } = await supabase.from('application_files').select('*').eq('application_id', applicationId).maybeSingle();
+        const appFilesRow = appFiles || null;
+        if (appFilesRow) {
+            const urls = {};
+            ['valid_id_url','valid_id_back_url','latest_photo_url','birth_certificate_url','community_tax_certificate_url','signature_url'].forEach(key => {
+                const path = appFilesRow[key];
+                if (path) {
+                    try {
+                        const publicRes = supabase.storage.from('documents').getPublicUrl(path);
+                        urls[key] = publicRes && publicRes.data && publicRes.data.publicUrl ? publicRes.data.publicUrl : null;
+                    } catch (e) {
+                        urls[key] = null;
+                    }
+                } else {
+                    urls[key] = null;
+                }
+            });
+            appFilesRow.public_urls = urls;
+        }
+
+        return res.status(200).json({ success: true, application: finalApp, application_files: appFilesRow });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ success: false, message: error.message || 'Unable to update application.' });

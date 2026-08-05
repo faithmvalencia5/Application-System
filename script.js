@@ -1086,6 +1086,33 @@ function setupFormSubmitConfirmation() {
       if (data.problems_needs) fillCheckboxGroupsFromObject(data.problems_needs);
 
       // files: we don't auto-fill file inputs, but we can show hints (optional)
+      // show existing file view links if available
+      const fileLinkMap = {
+        valid_id_url: 'view-valid-id-front',
+        valid_id_back_url: 'view-valid-id-back',
+        latest_photo_url: 'view-latest-photo',
+        birth_certificate_url: 'view-birth-certificate',
+        community_tax_certificate_url: 'view-community-tax',
+        signature_url: 'view-signature'
+      };
+      // hide all by default
+      Object.values(fileLinkMap).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.hidden = true;
+      });
+      if (data.application_files && data.application_files.public_urls) {
+        const p = data.application_files.public_urls;
+        Object.keys(fileLinkMap).forEach(function (k) {
+          const el = document.getElementById(fileLinkMap[k]);
+          if (!el) return;
+          const url = p[k] || null;
+          if (url) {
+            el.href = url;
+            el.hidden = false;
+            el.textContent = 'View';
+          }
+        });
+      }
 
       // Change submit button label to Save
       const submitBtn = document.querySelector('.btn.submit');
@@ -1873,6 +1900,47 @@ function showSuccessNotification(message, onClose, applicationId) {
     } else {
       notificationAppId.hidden = true;
     }
+  }
+
+  const fileLinksContainer = document.getElementById('notification-file-links');
+  const fileList = document.getElementById('notification-file-list');
+  if (fileList) fileList.innerHTML = '';
+  if (fileLinksContainer) fileLinksContainer.hidden = true;
+
+  if (applicationId) {
+    // fetch application to get file public urls and render links
+    (async function () {
+      try {
+        const resp = await fetch('https://osca-backend.onrender.com/api/applications/' + encodeURIComponent(applicationId));
+        const js = await resp.json();
+        if (resp.ok && js && js.application_files && js.application_files.public_urls) {
+          const urls = js.application_files.public_urls;
+          const mapping = {
+            valid_id_url: 'Valid ID (front)',
+            valid_id_back_url: 'Valid ID (back)',
+            latest_photo_url: 'Latest Photo',
+            birth_certificate_url: 'Birth Certificate',
+            community_tax_certificate_url: 'Community Tax Certificate',
+            signature_url: 'Signature'
+          };
+          Object.keys(mapping).forEach(function (k) {
+            const u = urls[k];
+            if (!u) return;
+            const a = document.createElement('a');
+            a.href = u;
+            a.target = '_blank';
+            a.rel = 'noopener';
+            a.textContent = mapping[k];
+            const div = document.createElement('div');
+            div.appendChild(a);
+            if (fileList) fileList.appendChild(div);
+          });
+          if (fileList && fileList.childElementCount > 0 && fileLinksContainer) fileLinksContainer.hidden = false;
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
   }
 
   if (editButton) {

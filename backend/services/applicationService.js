@@ -31,41 +31,50 @@ export async function registerApplication(payload, files) {
 
         applicationId = application.application_id;
 
-        const validIdFrontPath = await uploadFile(
-            applicationId,
-            files?.valid_id_front?.[0],
-            "valid_id_front"
-        );
+        const [
+            validIdFrontPath,
+            validIdBackPath,
+            latestPhotoPath,
+            birthCertificatePath,
+            communityTaxPath,
+            signaturePath
+        ] = await Promise.all([
+            uploadFile(
+                applicationId,
+                files?.valid_id_front?.[0],
+                "valid_id_front"
+            ),
 
-        const validIdBackPath = await uploadFile(
-            applicationId,
-            files?.valid_id_back?.[0],
-            "valid_id_back"
-        );
+            uploadFile(
+                applicationId,
+                files?.valid_id_back?.[0],
+                "valid_id_back"
+            ),
 
-        const latestPhotoPath = await uploadFile(
-            applicationId,
-            files?.latest_photo?.[0],
-            "latest_photo"
-        );
+            uploadFile(
+                applicationId,
+                files?.latest_photo?.[0],
+                "latest_photo"
+            ),
 
-        const birthCertificatePath = await uploadFile(
-            applicationId,
-            files?.birth_certificate?.[0],
-            "birth_certificate"
-        );
+            uploadFile(
+                applicationId,
+                files?.birth_certificate?.[0],
+                "birth_certificate"
+            ),
 
-        const communityTaxPath = await uploadFile(
-            applicationId,
-            files?.community_tax_certificate?.[0],
-            "community_tax_certificate"
-        );
+            uploadFile(
+                applicationId,
+                files?.community_tax_certificate?.[0],
+                "community_tax_certificate"
+            ),
 
-        const signaturePath = await uploadFile(
-            applicationId,
-            files?.signature?.[0],
-            "signature"
-        );
+            uploadFile(
+                applicationId,
+                files?.signature?.[0],
+                "signature"
+            )
+        ]);
 
         // TABLE 2: FAMILY COMPOSITION
         if (familyRowsData && familyRowsData.length > 0) {

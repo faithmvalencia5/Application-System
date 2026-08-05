@@ -2304,3 +2304,58 @@ body.homepage-page .via-primary\/40 {
 body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transparent {
   background-image: linear-gradient(to right, rgba(0, 31, 120, 0.85), rgba(0, 31, 120, 0.4), rgba(0, 31, 120, 0));
 }
+
+/* Submission result notification */
+.notification-card {
+  width: min(92vw, 560px);
+  max-width: 560px;
+  padding: 24px;
+}
+
+.notification-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.notification-icon {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.notification-body > div:last-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-title {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+#notification-message {
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.notification-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+#notification-close-button {
+  min-width: 110px;
+}

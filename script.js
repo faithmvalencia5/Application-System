@@ -1791,11 +1791,6 @@ function showSuccessNotification(message, onClose) {
     }
   }, { once: true });
 
-  window.setTimeout(function () {
-    if (!notification.hidden) {
-      closeNotification();
-    }
-  }, 4500);
 }
 
 document.addEventListener("DOMContentLoaded", function () {

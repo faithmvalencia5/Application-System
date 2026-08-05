@@ -438,6 +438,10 @@
                 <span class="upload-label">Upload Front of ID</span>
                 <small class="upload-file-name">No file selected</small>
               </label>
+              <div class="upload-actions">
+                <button type="button" class="view-btn" hidden>View</button>
+                <button type="button" class="change-btn" hidden>Change</button>
+              </div>
 
               <input
                 id="upload-valid-id-back"
@@ -449,6 +453,10 @@
                 <span class="upload-label">Upload Back of ID</span>
                 <small class="upload-file-name">No file selected</small>
               </label>
+              <div class="upload-actions">
+                <button type="button" class="view-btn" hidden>View</button>
+                <button type="button" class="change-btn" hidden>Change</button>
+              </div>
 
             </div>
 
@@ -465,6 +473,10 @@
                 <span class="upload-label">Upload Picture</span>
                 <small class="upload-file-name">No file selected</small>
               </label>
+              <div class="upload-actions">
+                <button type="button" class="view-btn" hidden>View</button>
+                <button type="button" class="change-btn" hidden>Change</button>
+              </div>
             </div>
             <div>
               <h3>Latest Photo</h3>
@@ -479,6 +491,10 @@
                 <span class="upload-label">Upload File</span>
                 <small class="upload-file-name">No file selected</small>
               </label>
+              <div class="upload-actions">
+                <button type="button" class="view-btn" hidden>View</button>
+                <button type="button" class="change-btn" hidden>Change</button>
+              </div>
             </div>
             <div>
               <h3>Birth Certificate</h3>
@@ -493,6 +509,10 @@
                 <span class="upload-label">Upload File</span>
                 <small class="upload-file-name">No file selected</small>
               </label>
+              <div class="upload-actions">
+                <button type="button" class="view-btn" hidden>View</button>
+                <button type="button" class="change-btn" hidden>Change</button>
+              </div>
             </div>
             <div>
               <h3>Community Tax Certificate (Cedula)</h3>
@@ -521,6 +541,10 @@
                 <span class="upload-label">Upload File</span>
                 <small class="upload-file-name">No file selected</small>
               </label>
+              <div class="upload-actions">
+                <button type="button" class="view-btn" hidden>View</button>
+                <button type="button" class="change-btn" hidden>Change</button>
+              </div>
             </div>
             <div>
               <h3>Signature</h3>
@@ -589,6 +613,23 @@
     </main>
     </div>
     <script src="script.js"></script>
+    <div id="file-preview-modal" class="file-preview-modal" hidden aria-hidden="true">
+      <div class="file-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="file-preview-title">
+        <div class="file-preview-head">
+          <h3 id="file-preview-title">File Preview</h3>
+          <button id="file-preview-close" class="camera-close" aria-label="Close preview">✕</button>
+        </div>
+        <div class="file-preview-body">
+          <img id="file-preview-image" alt="Preview image" hidden />
+          <iframe id="file-preview-iframe" hidden title="PDF preview"></iframe>
+          <a id="file-download-link" href="#" download hidden>Download file</a>
+        </div>
+        <div class="file-preview-actions">
+          <button id="file-replace-button" class="table-btn">Upload New</button>
+        </div>
+      </div>
+    </div>
+
     <div id="success-notification-overlay" class="notification-overlay" hidden>
       <div id="success-notification" class="notification-card" role="status" aria-live="polite">
         <div class="notification-body">

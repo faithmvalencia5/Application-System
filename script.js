@@ -231,6 +231,49 @@ function setupSpecifyForSelects() {
 
 function setupUploadButtons() {
   const uploadInputs = document.querySelectorAll('.upload-input:not(#upload-verification)');
+  // file preview modal elements
+  const filePreviewModal = document.getElementById("file-preview-modal");
+  const previewImage = document.getElementById("file-preview-image");
+  const previewIframe = document.getElementById("file-preview-iframe");
+  const previewClose = document.getElementById("file-preview-close");
+  const fileReplaceButton = document.getElementById("file-replace-button");
+
+  let currentPreviewUrl = null;
+  let currentInputForReplace = null;
+
+  const closePreview = function () {
+    if (currentPreviewUrl) {
+      URL.revokeObjectURL(currentPreviewUrl);
+      currentPreviewUrl = null;
+    }
+    if (filePreviewModal) {
+      filePreviewModal.hidden = true;
+      filePreviewModal.setAttribute("aria-hidden", "true");
+    }
+    if (previewImage) {
+      previewImage.hidden = true;
+      previewImage.src = "";
+    }
+    if (previewIframe) {
+      previewIframe.hidden = true;
+      previewIframe.src = "";
+    }
+    currentInputForReplace = null;
+  };
+
+  if (previewClose) {
+    previewClose.addEventListener("click", closePreview);
+  }
+
+  if (fileReplaceButton) {
+    fileReplaceButton.addEventListener("click", function () {
+      if (currentInputForReplace) {
+        // close preview then open the file chooser for that input
+        closePreview();
+        currentInputForReplace.click();
+      }
+    });
+  }
 
   uploadInputs.forEach(function (inputElement) {
     const uploadBox = inputElement.nextElementSibling;
@@ -239,18 +282,75 @@ function setupUploadButtons() {
     }
 
     const fileNameLabel = uploadBox.querySelector(".upload-file-name");
+    const actions = uploadBox.nextElementSibling && uploadBox.nextElementSibling.classList.contains('upload-actions') ? uploadBox.nextElementSibling : null;
+    const viewBtn = actions ? actions.querySelector('.view-btn') : null;
+    const changeBtn = actions ? actions.querySelector('.change-btn') : null;
+
+    const updateButtonsState = function () {
+      const hasFile = inputElement.files && inputElement.files.length > 0;
+      if (fileNameLabel) {
+        fileNameLabel.textContent = hasFile ? inputElement.files[0].name : 'No file selected';
+      }
+      if (viewBtn) {
+        viewBtn.hidden = !hasFile;
+        viewBtn.disabled = !hasFile;
+      }
+      if (changeBtn) {
+        changeBtn.hidden = !hasFile;
+      }
+    };
+
+    // initial state
+    updateButtonsState();
 
     inputElement.addEventListener("change", function () {
-      if (!fileNameLabel) {
-        return;
-      }
-
-      if (inputElement.files && inputElement.files.length > 0) {
-        fileNameLabel.textContent = inputElement.files[0].name;
-      } else {
-        fileNameLabel.textContent = "No file selected";
-      }
+      updateButtonsState();
     });
+
+    if (viewBtn) {
+      viewBtn.addEventListener('click', function () {
+        if (!inputElement.files || inputElement.files.length === 0) return;
+        const file = inputElement.files[0];
+        if (!file) return;
+
+        // prepare preview
+        if (currentPreviewUrl) {
+          URL.revokeObjectURL(currentPreviewUrl);
+          currentPreviewUrl = null;
+        }
+        currentPreviewUrl = URL.createObjectURL(file);
+        currentInputForReplace = inputElement;
+
+        if (file.type && file.type.startsWith('image/')) {
+          if (previewIframe) previewIframe.hidden = true;
+          if (previewImage) {
+            previewImage.src = currentPreviewUrl;
+            previewImage.hidden = false;
+          }
+        } else if (file.type === 'application/pdf') {
+          if (previewImage) previewImage.hidden = true;
+          if (previewIframe) {
+            previewIframe.src = currentPreviewUrl;
+            previewIframe.hidden = false;
+          }
+        } else {
+          // fallback: show download link by opening in new tab
+          window.open(currentPreviewUrl, '_blank');
+          return;
+        }
+
+        if (filePreviewModal) {
+          filePreviewModal.hidden = false;
+          filePreviewModal.setAttribute('aria-hidden', 'false');
+        }
+      });
+    }
+
+    if (changeBtn) {
+      changeBtn.addEventListener('click', function () {
+        inputElement.click();
+      });
+    }
 
     uploadBox.addEventListener("keydown", function (event) {
       if (event.key === "Enter" || event.key === " ") {
@@ -962,221 +1062,6 @@ function setupFormSubmitConfirmation() {
       return result;
   };
 
-  // --- Edit mode helpers ---
-  let editApplicationId = null;
-
-  const getEditApplicationIdFromUrl = function () {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('edit');
-    } catch (e) {
-      return null;
-    }
-  };
-
-  const loadApplicationForEdit = async function (applicationId) {
-    if (!applicationId) return;
-    try {
-      const res = await fetch('https://osca-backend.onrender.com/api/applications/' + encodeURIComponent(applicationId));
-      const data = await res.json();
-      if (!res.ok || !data || !data.application) {
-        console.warn('Unable to load application for edit', data);
-        return;
-      }
-
-      editApplicationId = applicationId;
-      const app = data.application;
-
-      // Prefill basic fields if present
-      setIfExists('surname', app.surname);
-      setIfExists('firstname', app.first_name);
-      setIfExists('middlename', app.middle_name);
-      setIfExists('dob', app.date_of_birth);
-      setIfExists('age', app.age);
-      setIfExists('sex', app.sex);
-      setIfExists('birthplace', app.place_of_birth);
-      setIfExists('civil-status', app.civil_status);
-      setIfExists('address', app.house_street);
-      setIfExists('barangay', app.barangay_district);
-      setIfExists('education', app.educational_attainment);
-      setIfExists('occupation', app.occupation);
-      setIfExists('contact-number', app.contact_number);
-      // ID numbers
-      setIfExists('id-osca', app.osca_id_number || app.osca_id || null);
-      setIfExists('id-sss', app.sss_id_number || null);
-      setIfExists('id-philhealth', app.philhealth_id_number || null);
-      setIfExists('id-gsis', app.gsis_id_number || null);
-      setIfExists('id-tin', app.tin_id_number || null);
-
-      // memberships
-      if (data.memberships) {
-        setIfExists('assoc-name', data.memberships.association_name);
-        setIfExists('assoc-address', data.memberships.association_address);
-        setIfExists('assoc-date', data.memberships.association_date);
-        setIfExists('assoc-position', data.memberships.position);
-      }
-
-      // confirmations
-      if (data.confirmations) {
-        const c = data.confirmations;
-        const map = {
-          info_true: 'consent-1',
-          full_knowledge: 'consent-2',
-          personal_consent: 'consent-3',
-          understand_storage: 'consent-4',
-          agree_all: 'consent-5'
-        };
-        Object.keys(map).forEach(function (k) {
-          if (c[k]) {
-            const el = document.getElementById(map[k]);
-            if (el) el.checked = true;
-          }
-        });
-      }
-
-      // family rows
-      if (Array.isArray(data.family) && data.family.length > 0) {
-        const familyBody = document.getElementById('family-body');
-        if (familyBody) {
-          familyBody.innerHTML = '';
-          data.family.forEach(function (member) {
-            const row = createFamilyRow();
-            // set values into the row's inputs
-            const inputs = row.querySelectorAll('input, select');
-            if (inputs[0]) inputs[0].value = member.name || '';
-            if (inputs[1]) inputs[1].value = member.relationship || '';
-            if (inputs[2]) inputs[2].value = member.age !== null && member.age !== undefined ? member.age : '';
-            if (inputs[3]) inputs[3].value = member.civil_status || '';
-            if (inputs[4]) inputs[4].value = member.occupation || '';
-            if (inputs[5]) inputs[5].value = member.income !== null && member.income !== undefined ? member.income : '';
-            familyBody.appendChild(row);
-          });
-        }
-      }
-
-      // personal background & problems needs (attempt to map booleans to checkbox labels)
-      const fillCheckboxGroupsFromObject = function (obj) {
-        if (!obj) return;
-        const labels = Array.from(document.querySelectorAll('.check-option'));
-        const normalize = s => (s || '').toString().toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-        Object.keys(obj).forEach(function (key) {
-          const val = obj[key];
-          if (!val) return;
-          // derive keyword from key
-          let target = key.replace(/^(income_|asset_|living_|skill_|involvement_|economic_|social_|health_|housing_|community_)/, '').replace(/_/g, ' ').trim();
-          target = normalize(target);
-          labels.forEach(function (label) {
-            const text = normalize(label.textContent || '');
-            if (!text) return;
-            if (text.includes(target) || target.includes(text) || text.startsWith(target) || target.startsWith(text)) {
-              const cb = label.querySelector('input[type="checkbox"]');
-              if (cb) cb.checked = true;
-              // reveal any specify input if present
-              const specify = label.parentElement ? label.parentElement.querySelector('.specify-input') : null;
-              if (specify && obj[key + '_specify']) {
-                specify.hidden = false;
-                specify.value = obj[key + '_specify'];
-              }
-            }
-          });
-        });
-      };
-
-      if (data.personal_background) fillCheckboxGroupsFromObject(data.personal_background);
-      if (data.problems_needs) fillCheckboxGroupsFromObject(data.problems_needs);
-
-      // files: we don't auto-fill file inputs, but we can show hints (optional)
-      // show existing file view links if available
-      const fileLinkMap = {
-        valid_id_url: 'view-valid-id-front',
-        valid_id_back_url: 'view-valid-id-back',
-        latest_photo_url: 'view-latest-photo',
-        birth_certificate_url: 'view-birth-certificate',
-        community_tax_certificate_url: 'view-community-tax',
-        signature_url: 'view-signature'
-      };
-      // hide all by default
-      Object.values(fileLinkMap).forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.hidden = true;
-      });
-      if (data.application_files && data.application_files.public_urls) {
-        const p = data.application_files.public_urls;
-        Object.keys(fileLinkMap).forEach(function (k) {
-          const el = document.getElementById(fileLinkMap[k]);
-          if (!el) return;
-          const url = p[k] || null;
-          if (url) {
-            el.href = url;
-            el.hidden = false;
-            el.textContent = 'View';
-          }
-        });
-      }
-
-      // Change submit button label to Save
-      const submitBtn = document.querySelector('.btn.submit');
-      if (submitBtn) {
-        submitBtn.textContent = 'Save Changes';
-      }
-
-      // Focus top of form
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const setIfExists = function (id, value) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (value === null || typeof value === 'undefined') return;
-    el.value = value;
-  };
-
-  const updateApplication = async function () {
-    if (!editApplicationId) throw new Error('No application id to update.');
-
-    const payload = collectAllPayloads();
-
-    const formData = new FormData();
-    formData.append('payload', JSON.stringify(payload));
-
-    // Attach files only if user selected new ones
-    const validIdFront = document.getElementById('upload-valid-id-front')?.files[0];
-    if (validIdFront) formData.append('valid_id_front', validIdFront);
-    const validIdBack = document.getElementById('upload-valid-id-back')?.files[0];
-    if (validIdBack) formData.append('valid_id_back', validIdBack);
-    const latestPhoto = document.getElementById('upload-latest-photo')?.files[0];
-    if (latestPhoto) formData.append('latest_photo', latestPhoto);
-    const birthCertificate = document.getElementById('upload-birth-certificate')?.files[0];
-    if (birthCertificate) formData.append('birth_certificate', birthCertificate);
-    const communityTax = document.getElementById('upload-cedula')?.files[0];
-    if (communityTax) formData.append('community_tax_certificate', communityTax);
-    const signature = document.getElementById('upload-signature')?.files[0];
-    if (signature) formData.append('signature', signature);
-
-    const response = await fetch('https://osca-backend.onrender.com/api/applications/' + encodeURIComponent(editApplicationId), {
-      method: 'PUT',
-      body: formData
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.message || 'Update failed.');
-    }
-
-    return result;
-  };
-
-  // If page was opened with an edit param, load application
-  const initialEditId = getEditApplicationIdFromUrl();
-  if (initialEditId) {
-    // attempt to load the application for edit mode
-    loadApplicationForEdit(initialEditId);
-  }
-
   const requiredConsents = [
     document.getElementById('consent-1'),
     document.getElementById('consent-2'),
@@ -1357,30 +1242,17 @@ function setupFormSubmitConfirmation() {
         submitButton.textContent = 'Submitting...';
 
         try {
-          let result = null;
-          if (editApplicationId) {
-            result = await updateApplication();
-          } else {
-            result = await saveApplication();
-          }
+          await saveApplication();
 
           // Reset the reCAPTCHA
           if (window.grecaptcha) {
             grecaptcha.reset();
           }
 
-          // Determine application id from response
-          let applicationId = null;
-          if (result && result.application && result.application.application_id) {
-            applicationId = result.application.application_id;
-          } else if (result && result.application_id) {
-            applicationId = result.application_id;
-          }
-
           // Show styled notification, then redirect when closed
           showSuccessNotification('Your application has been submitted successfully.', function () {
             window.location.href = 'index.html';
-          }, applicationId);
+          });
 
         } catch (error) {
 
@@ -1692,24 +1564,6 @@ function setupVerificationPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // expose edit button behavior for status step
-  const editButton = document.getElementById('edit-application-button');
-  if (editButton) {
-    // when showing status step, toggle visibility depending on status
-    const originalShowStatus = showStatusStep;
-    window.showStatusStepWithEdit = function (applicationId, record) {
-      originalShowStatus(applicationId, record);
-      if (record && record.status === 'pending') {
-        editButton.hidden = false;
-        editButton.onclick = function () {
-          window.location.href = 'form.html?edit=' + encodeURIComponent(applicationId);
-        };
-      } else {
-        editButton.hidden = true;
-      }
-    };
-  }
-
   const closeVerificationPage = function () {
     window.location.href = "index.html";
   };
@@ -1769,11 +1623,7 @@ function setupVerificationPage() {
       submitButton.textContent = originalButtonText;
     }
 
-    if (typeof window.showStatusStepWithEdit === 'function') {
-      window.showStatusStepWithEdit(applicationId, record);
-    } else {
-      showStatusStep(applicationId, record);
-    }
+    showStatusStep(applicationId, record);
   });
 
   showEntryStep();
@@ -1877,13 +1727,11 @@ function setupRequestIdModal() {
   });
 }
 
-function showSuccessNotification(message, onClose, applicationId) {
+function showSuccessNotification(message, onClose) {
   const overlay = document.getElementById("success-notification-overlay");
   const notification = document.getElementById("success-notification");
   const notificationMessage = document.getElementById("notification-message");
-  const notificationAppId = document.getElementById("notification-app-id");
   const closeButton = document.getElementById("notification-close-button");
-  const editButton = document.getElementById("notification-edit-button");
 
   if (!overlay || !notification || !notificationMessage || !closeButton) {
     if (typeof onClose === 'function') {
@@ -1893,67 +1741,6 @@ function showSuccessNotification(message, onClose, applicationId) {
   }
 
   notificationMessage.textContent = message;
-  if (notificationAppId) {
-    if (applicationId) {
-      notificationAppId.hidden = false;
-      notificationAppId.textContent = 'Application ID: ' + applicationId + ' — please take note of this ID.';
-    } else {
-      notificationAppId.hidden = true;
-    }
-  }
-
-  const fileLinksContainer = document.getElementById('notification-file-links');
-  const fileList = document.getElementById('notification-file-list');
-  if (fileList) fileList.innerHTML = '';
-  if (fileLinksContainer) fileLinksContainer.hidden = true;
-
-  if (applicationId) {
-    // fetch application to get file public urls and render links
-    (async function () {
-      try {
-        const resp = await fetch('https://osca-backend.onrender.com/api/applications/' + encodeURIComponent(applicationId));
-        const js = await resp.json();
-        if (resp.ok && js && js.application_files && js.application_files.public_urls) {
-          const urls = js.application_files.public_urls;
-          const mapping = {
-            valid_id_url: 'Valid ID (front)',
-            valid_id_back_url: 'Valid ID (back)',
-            latest_photo_url: 'Latest Photo',
-            birth_certificate_url: 'Birth Certificate',
-            community_tax_certificate_url: 'Community Tax Certificate',
-            signature_url: 'Signature'
-          };
-          Object.keys(mapping).forEach(function (k) {
-            const u = urls[k];
-            if (!u) return;
-            const a = document.createElement('a');
-            a.href = u;
-            a.target = '_blank';
-            a.rel = 'noopener';
-            a.textContent = mapping[k];
-            const div = document.createElement('div');
-            div.appendChild(a);
-            if (fileList) fileList.appendChild(div);
-          });
-          if (fileList && fileList.childElementCount > 0 && fileLinksContainer) fileLinksContainer.hidden = false;
-        }
-      } catch (e) {
-        // ignore
-      }
-    })();
-  }
-
-  if (editButton) {
-    if (applicationId) {
-      editButton.hidden = false;
-      editButton.onclick = function () {
-        // open form in edit mode
-        window.location.href = 'form.html?edit=' + encodeURIComponent(applicationId);
-      };
-    } else {
-      editButton.hidden = true;
-    }
-  }
   overlay.hidden = false;
   notification.hidden = false;
 

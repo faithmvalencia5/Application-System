@@ -1501,6 +1501,11 @@ function setupVerificationPage() {
   const verifiedId = document.getElementById("verified-application-id");
   const verifiedApplicant = document.getElementById("verified-applicant-name");
   const verificationNote = document.getElementById("verification-note");
+  const editApplicationStep2 =
+    document.getElementById("edit-application-step2");
+
+  const editApplicationStep3 =
+    document.getElementById("edit-application-step3");
   const closeButtons = [
     document.getElementById("close-verification-page-entry"),
     document.getElementById("close-verification-page-entry-secondary"),
@@ -1513,6 +1518,7 @@ function setupVerificationPage() {
   }
 
   const API_BASE_URL = 'https://osca-backend.onrender.com/api/applications';
+  let currentApplicationStatus = "";
 
   const toTimelineStatus = function (statusValue) {
     const normalized = (statusValue || '').trim().toLowerCase();
@@ -1580,6 +1586,22 @@ function setupVerificationPage() {
     verifiedId.textContent = applicationId;
     verifiedApplicant.textContent = record.applicant;
     verificationNote.textContent = record.note;
+
+    currentApplicationStatus =
+      String(record.status || "").trim().toLowerCase();
+
+    const canEditApplication =
+      currentApplicationStatus === "pending";
+
+    if (editApplicationStep2) {
+      editApplicationStep2.hidden = !canEditApplication;
+      editApplicationStep2.disabled = !canEditApplication;
+    }
+
+    if (editApplicationStep3) {
+      editApplicationStep3.hidden = !canEditApplication;
+      editApplicationStep3.disabled = !canEditApplication;
+    }
 
     statusItems.forEach(function (item) {
       const isCurrent = item.getAttribute("data-status") === record.status;
@@ -1752,6 +1774,8 @@ function setupRequestIdModal() {
       requestMessage = "Lost";
     } else if (selectedReason === "damage") {
       requestMessage = "Damage";
+    } else if (selectedReason === "change") {
+      requestMessage = "Change Address";
     }
 
     showSuccessNotification("Reason: " + requestMessage + "\n\nWe will process your request soon.");

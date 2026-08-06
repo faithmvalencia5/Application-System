@@ -461,6 +461,76 @@ async function loadApplicationForEditing() {
     field.value = value ?? "";
   };
 
+  const normalizeLabelText = function (value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  };
+
+  const findCheckboxGroup = function (titleHint) {
+    const normalizedTitle = normalizeLabelText(titleHint);
+
+    return Array.from(
+      document.querySelectorAll(".checkbox-group")
+    ).find(function (group) {
+      const groupTitle = normalizeLabelText(
+        group.querySelector(".group-label")?.textContent
+      );
+
+      return groupTitle.includes(normalizedTitle);
+    });
+  };
+
+  const setCheckboxOption = function (
+    groupTitle,
+    optionText,
+    checked,
+    specifyValue
+  ) {
+    const group = findCheckboxGroup(groupTitle);
+
+    if (!group) {
+      return;
+    }
+
+    const normalizedOption = normalizeLabelText(optionText);
+
+    const label = Array.from(
+      group.querySelectorAll(".check-option")
+    ).find(function (item) {
+      return normalizeLabelText(item.textContent).includes(
+        normalizedOption
+      );
+    });
+
+    if (!label) {
+      return;
+    }
+
+    const checkbox = label.querySelector(
+      'input[type="checkbox"]'
+    );
+
+    if (!checkbox) {
+      return;
+    }
+
+    checkbox.checked = Boolean(checked);
+    checkbox.dispatchEvent(new Event("change"));
+
+    const specifyInput = label.nextElementSibling;
+
+    if (
+      specifyInput &&
+      specifyInput.classList.contains("specify-input")
+    ) {
+      specifyInput.value = checked
+        ? (specifyValue ?? "")
+        : "";
+    }
+  };
+
   try {
     const response = await fetch(
       "https://osca-backend.onrender.com/api/applications/" +
@@ -479,6 +549,7 @@ async function loadApplicationForEditing() {
     const application = data.application || {};
     const membership = data.membership || {};
     const familyComposition = data.familyComposition || [];
+    const personalBackground = data.personalBackground || {};
 
     setValue("surname", application.surname);
     setValue("firstname", application.first_name);
@@ -563,6 +634,327 @@ async function loadApplicationForEditing() {
 
         familyBody.appendChild(row);
       });
+
+      // SOURCE OF INCOME AND ASSISTANCE
+      setCheckboxOption(
+        "source of income and assistance",
+        "own earnings",
+        personalBackground.income_own_earnings
+      );
+
+      setCheckboxOption(
+        "source of income and assistance",
+        "own pension",
+        personalBackground.income_own_pension
+      );
+
+      setCheckboxOption(
+        "source of income and assistance",
+        "stocks dividends",
+        personalBackground.income_stocks_dividends
+      );
+
+      setCheckboxOption(
+        "source of income and assistance",
+        "dependent of children relatives",
+        personalBackground.income_dependent_children
+      );
+
+      setCheckboxOption(
+        "source of income and assistance",
+        "spouse salary",
+        personalBackground.income_spouse_salary
+      );
+
+      setCheckboxOption(
+        "source of income and assistance",
+        "insurance",
+        personalBackground.income_insurance
+      );
+
+      setCheckboxOption(
+        "source of income and assistance",
+        "rentals sharecrops",
+        personalBackground.income_rentals_sharecrops
+      );
+
+      setCheckboxOption(
+        "source of income and assistance",
+        "savings",
+        personalBackground.income_savings
+      );
+
+      setCheckboxOption(
+        "source of income and assistance",
+        "livestock crop",
+        personalBackground.income_livestock_crop
+      );
+
+      setCheckboxOption(
+        "source of income and assistance",
+        "others specify",
+        personalBackground.income_other,
+        personalBackground.income_other_specify
+      );
+
+
+      // ASSETS AND PROPERTIES
+      setCheckboxOption(
+        "assets and properties",
+        "house",
+        personalBackground.asset_house
+      );
+
+      setCheckboxOption(
+        "assets and properties",
+        "lot",
+        personalBackground.asset_lot
+      );
+
+      setCheckboxOption(
+        "assets and properties",
+        "farmland",
+        personalBackground.asset_farmland
+      );
+
+      setCheckboxOption(
+        "assets and properties",
+        "fishponds resorts",
+        personalBackground.asset_fishponds_resorts
+      );
+
+      setCheckboxOption(
+        "assets and properties",
+        "commercial building",
+        personalBackground.asset_commercial_building
+      );
+
+      setCheckboxOption(
+        "assets and properties",
+        "others specify",
+        personalBackground.asset_other,
+        personalBackground.asset_other_specify
+      );
+
+
+      // MONTHLY INCOME
+      setValue(
+        "monthly-income",
+        personalBackground.monthly_income
+      );
+
+
+      // LIVING OR RESIDING WITH
+      setCheckboxOption(
+        "living residing with",
+        "alone",
+        personalBackground.living_alone
+      );
+
+      setCheckboxOption(
+        "living residing with",
+        "spouse",
+        personalBackground.living_spouse
+      );
+
+      setCheckboxOption(
+        "living residing with",
+        "care institution",
+        personalBackground.living_care_institution
+      );
+
+      setCheckboxOption(
+        "living residing with",
+        "children",
+        personalBackground.living_children
+      );
+
+      setCheckboxOption(
+        "living residing with",
+        "friends",
+        personalBackground.living_friends
+      );
+
+      setCheckboxOption(
+        "living residing with",
+        "common law spouse",
+        personalBackground.living_common_law_spouse
+      );
+
+      setCheckboxOption(
+        "living residing with",
+        "grandchildren",
+        personalBackground.living_grandchildren
+      );
+
+      setCheckboxOption(
+        "living residing with",
+        "households",
+        personalBackground.living_households
+      );
+
+      setCheckboxOption(
+        "living residing with",
+        "relatives",
+        personalBackground.living_relatives
+      );
+
+      setCheckboxOption(
+        "living residing with",
+        "in laws",
+        personalBackground.living_in_laws
+      );
+
+      setCheckboxOption(
+        "living residing with",
+        "others specify",
+        personalBackground.living_other,
+        personalBackground.living_other_specify
+      );
+
+
+      // AREAS OF SPECIALIZATION OR SKILLS
+      setCheckboxOption(
+        "areas specialization skills",
+        "medical",
+        personalBackground.skill_medical
+      );
+
+      setCheckboxOption(
+        "areas specialization skills",
+        "dental",
+        personalBackground.skill_dental
+      );
+
+      setCheckboxOption(
+        "areas specialization skills",
+        "farming",
+        personalBackground.skill_farming
+      );
+
+      setCheckboxOption(
+        "areas specialization skills",
+        "arts",
+        personalBackground.skill_arts
+      );
+
+      setCheckboxOption(
+        "areas specialization skills",
+        "teaching",
+        personalBackground.skill_teaching
+      );
+
+      setCheckboxOption(
+        "areas specialization skills",
+        "counseling",
+        personalBackground.skill_counseling
+      );
+
+      setCheckboxOption(
+        "areas specialization skills",
+        "fishing",
+        personalBackground.skill_fishing
+      );
+
+      setCheckboxOption(
+        "areas specialization skills",
+        "engineering",
+        personalBackground.skill_engineering
+      );
+
+      setCheckboxOption(
+        "areas specialization skills",
+        "legal services",
+        personalBackground.skill_legal_services
+      );
+
+      setCheckboxOption(
+        "areas specialization skills",
+        "evangelization",
+        personalBackground.skill_evangelization
+      );
+
+      setCheckboxOption(
+        "areas specialization skills",
+        "cooking",
+        personalBackground.skill_cooking
+      );
+
+      setCheckboxOption(
+        "areas specialization skills",
+        "vocational",
+        personalBackground.skill_vocational
+      );
+
+      setCheckboxOption(
+        "areas specialization skills",
+        "others specify",
+        personalBackground.skill_other,
+        personalBackground.skill_other_specify
+      );
+
+
+      // INVOLVEMENT
+      setCheckboxOption(
+        "involvement in common encountered",
+        "medical",
+        personalBackground.involvement_medical
+      );
+
+      setCheckboxOption(
+        "involvement in common encountered",
+        "dental",
+        personalBackground.involvement_dental
+      );
+
+      setCheckboxOption(
+        "involvement in common encountered",
+        "religious",
+        personalBackground.involvement_religious
+      );
+
+      setCheckboxOption(
+        "involvement in common encountered",
+        "sportsmanship",
+        personalBackground.involvement_sportsmanship
+      );
+
+      setCheckboxOption(
+        "involvement in common encountered",
+        "resource volunteer",
+        personalBackground.involvement_resource_volunteer
+      );
+
+      setCheckboxOption(
+        "involvement in common encountered",
+        "friendly visits",
+        personalBackground.involvement_friendly_visits
+      );
+
+      setCheckboxOption(
+        "involvement in common encountered",
+        "counseling referral",
+        personalBackground.involvement_counseling_referral
+      );
+
+      setCheckboxOption(
+        "involvement in common encountered",
+        "legal spouse",
+        personalBackground.involvement_legal_services
+      );
+
+      setCheckboxOption(
+        "involvement in common encountered",
+        "community organization leader",
+        personalBackground.involvement_community_leader
+      );
+
+      setCheckboxOption(
+        "involvement in common encountered",
+        "others specify",
+        personalBackground.involvement_other,
+        personalBackground.involvement_other_specify
+      );
     }
 
     let education = application.educational_attainment;
@@ -2088,11 +2480,11 @@ function showSuccessNotification(message, onClose) {
 document.addEventListener("DOMContentLoaded", function () {
   protectApplicationForm();
   setupFormMode();
-  loadApplicationForEditing();
   blockNonNumericInput();
   wireFamilyRowButton();
   setupSpecifyForCheckboxes();
   setupSpecifyForSelects();
+  loadApplicationForEditing();
   setupUploadButtons();
   setupFaceCamera();
   setupApplicationDate();

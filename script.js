@@ -2028,12 +2028,18 @@ function setupFormSubmitConfirmation() {
   const saveApplication = async function () {
     const payload = collectAllPayloads();
 
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get("mode");
+    const applicationId = params.get("id");
+
+    const isPendingEdit =
+      mode === "edit" &&
+      Boolean(applicationId);
+
     const formData = new FormData();
 
-    // Send all non-file data as JSON
     formData.append("payload", JSON.stringify(payload));
 
-    // Attach files
     const validIdFront =
       document.getElementById("upload-valid-id-front")?.files?.[0];
 
@@ -2066,7 +2072,10 @@ function setupFormSubmitConfirmation() {
       document.getElementById("upload-cedula")?.files?.[0];
 
     if (communityTax) {
-      formData.append("community_tax_certificate", communityTax);
+      formData.append(
+        "community_tax_certificate",
+        communityTax
+      );
     }
 
     const signature =
@@ -2076,18 +2085,31 @@ function setupFormSubmitConfirmation() {
       formData.append("signature", signature);
     }
 
-    const response = await fetch(
-      "https://osca-backend.onrender.com/api/applications/register",
-      {
-        method: "POST",
-        body: formData
-      }
-    );
+    const requestUrl = isPendingEdit
+      ? "https://osca-backend.onrender.com/api/applications/" +
+        encodeURIComponent(applicationId)
+      : "https://osca-backend.onrender.com/api/applications/register";
+
+    const requestMethod = isPendingEdit
+      ? "PUT"
+      : "POST";
+
+    const response = await fetch(requestUrl, {
+      method: requestMethod,
+      body: formData
+    });
 
     const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.message || "Registration failed.");
+      throw new Error(
+        result.message ||
+        (
+          isPendingEdit
+            ? "Unable to save application changes."
+            : "Registration failed."
+        )
+      );
     }
 
     return result;
@@ -2258,39 +2280,85 @@ function setupFormSubmitConfirmation() {
   // initialize
   updateSubmitState();
 
-  submitButton.addEventListener('click', function () {
+  submitButton.addEventListener("click", function () {
     if (!validateRequiredFields()) {
       return;
     }
 
-    showConfirmationModal(
-      'Submit Application?',
-      'Are you sure you want to submit this application? Please confirm that all information is correct before submitting.',
-      async function () {
+    const params =
+      new URLSearchParams(window.location.search);
 
+    const mode = params.get("mode");
+    const existingApplicationId = params.get("id");
+
+    const isPendingEdit =
+      mode === "edit" &&
+      Boolean(existingApplicationId);
+
+    const confirmationTitle = isPendingEdit
+      ? "Save Changes?"
+      : "Submit Application?";
+
+    const confirmationMessage = isPendingEdit
+      ? "Are you sure you want to save the changes made to this application?"
+      : "Are you sure you want to submit this application? Please confirm that all information is correct before submitting.";
+
+    showConfirmationModal(
+      confirmationTitle,
+      confirmationMessage,
+      async function () {
         submitButton.disabled = true;
-        const originalText = submitButton.textContent;
-        submitButton.textContent = 'Submitting...';
+
+        const originalText =
+          submitButton.textContent;
+
+        submitButton.textContent = isPendingEdit
+          ? "Saving..."
+          : "Submitting...";
 
         try {
           const result = await saveApplication();
 
-          const applicationId = result?.application?.application_id;
+          if (isPendingEdit) {
+            const returnedApplicationId =
+              result?.application?.application_id ||
+              existingApplicationId;
 
-          if (!applicationId) {
+            showSuccessNotification(
+              "Your application changes have been saved successfully.",
+              function () {
+                window.location.href =
+                  "trackstatus.html?id=" +
+                  encodeURIComponent(returnedApplicationId) +
+                  "&step=2";
+              }
+            );
+
+            return;
+          }
+
+          const newApplicationId =
+            result?.application?.application_id;
+
+          if (!newApplicationId) {
             throw new Error(
               "The application was submitted, but the Application ID was not returned."
             );
           }
 
-          sessionStorage.removeItem("applicationFormAccess");
+          sessionStorage.removeItem(
+            "applicationFormAccess"
+          );
 
           showSuccessNotification(
             "Your application has been submitted successfully.\n\n" +
-            "Application ID: " + applicationId + "\n\n" +
+            "Application ID: " +
+            newApplicationId +
+            "\n\n" +
             "Please take note of this Application ID. You will need it to track the status of your application.",
             function () {
-              window.location.href = "index.html";
+              window.location.href =
+                "index.html";
             }
           );
 
@@ -2301,12 +2369,17 @@ function setupFormSubmitConfirmation() {
               : "Unknown error";
 
           showSuccessNotification(
-            "Submission failed: " + message
+            (
+              isPendingEdit
+                ? "Saving failed: "
+                : "Submission failed: "
+            ) + message
           );
 
         } finally {
           submitButton.disabled = false;
-          submitButton.textContent = originalText;
+          submitButton.textContent =
+            originalText;
         }
       }
     );

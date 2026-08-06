@@ -215,3 +215,85 @@ export async function registerApplication(payload, files) {
         throw error;
     }
 }
+
+export async function getApplicationById(applicationId) {
+    const [
+        applicationResult,
+        familyResult,
+        membershipResult,
+        personalBackgroundResult,
+        problemsNeedsResult,
+        applicationFilesResult,
+        confirmationsResult
+    ] = await Promise.all([
+        supabase
+            .from("applications")
+            .select("*")
+            .eq("application_id", applicationId)
+            .maybeSingle(),
+
+        supabase
+            .from("family_composition")
+            .select("*")
+            .eq("application_id", applicationId)
+            .order("id", { ascending: true }),
+
+        supabase
+            .from("memberships")
+            .select("*")
+            .eq("application_id", applicationId)
+            .maybeSingle(),
+
+        supabase
+            .from("personal_background")
+            .select("*")
+            .eq("application_id", applicationId)
+            .maybeSingle(),
+
+        supabase
+            .from("problems_needs")
+            .select("*")
+            .eq("application_id", applicationId)
+            .maybeSingle(),
+
+        supabase
+            .from("application_files")
+            .select("*")
+            .eq("application_id", applicationId)
+            .maybeSingle(),
+
+        supabase
+            .from("confirmations")
+            .select("*")
+            .eq("application_id", applicationId)
+            .maybeSingle()
+    ]);
+
+    const errors = [
+        applicationResult.error,
+        familyResult.error,
+        membershipResult.error,
+        personalBackgroundResult.error,
+        problemsNeedsResult.error,
+        applicationFilesResult.error,
+        confirmationsResult.error
+    ].filter(Boolean);
+
+    if (errors.length > 0) {
+        throw errors[0];
+    }
+
+    if (!applicationResult.data) {
+        return null;
+    }
+
+    return {
+        application: applicationResult.data,
+        familyComposition: familyResult.data || [],
+        membership: membershipResult.data || null,
+        personalBackground: personalBackgroundResult.data || null,
+        problemsNeeds: problemsNeedsResult.data || null,
+        applicationFiles: applicationFilesResult.data || null,
+        confirmations: confirmationsResult.data || null
+    };
+}

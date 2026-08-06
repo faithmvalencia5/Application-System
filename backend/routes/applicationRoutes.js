@@ -2,8 +2,10 @@ import express from "express";
 import upload from "../middleware/upload.js";
 import {
     testDatabase,
-    registerApplication
+    registerApplication,
+    getApplicationById
 } from "../controllers/applicationController.js";
+
 import { getApplicationStatus } from "../controllers/statusController.js";
 
 const router = express.Router();
@@ -22,4 +24,5 @@ router.post(
     registerApplication
 );
 router.get("/status/:applicationId", getApplicationStatus);
+router.get("/:applicationId", getApplicationById);
 export default router;

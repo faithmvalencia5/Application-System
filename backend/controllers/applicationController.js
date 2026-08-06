@@ -1,5 +1,9 @@
 import { supabase } from "../supabase.js";
-import { registerApplication as registerApplicationService } from "../services/applicationService.js";
+import {
+    registerApplication as registerApplicationService,
+    getApplicationById as getApplicationByIdService
+} from "../services/applicationService.js";
+
 
 export async function testDatabase(req, res) {
     const { data, error } = await supabase
@@ -38,4 +42,41 @@ export async function registerApplication(req, res) {
 
     }
 
+}
+
+export async function getApplicationById(req, res) {
+    const applicationId = req.params.applicationId;
+
+    if (!applicationId) {
+        return res.status(400).json({
+            success: false,
+            message: "Application ID is required."
+        });
+    }
+
+    try {
+        const result = await getApplicationByIdService(applicationId);
+
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: "Application not found."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: result
+        });
+
+    } catch (error) {
+        console.error("Get application error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message:
+                error.message ||
+                "Unable to retrieve application."
+        });
+    }
 }

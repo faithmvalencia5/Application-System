@@ -388,6 +388,49 @@ function protectApplicationForm() {
   }
 }
 
+function setupFormMode() {
+
+    if (!window.location.pathname.endsWith("form.html")) {
+        return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+
+    const mode = params.get("mode");
+    const applicationId = params.get("id");
+
+    if (!mode || !applicationId) {
+        return;
+    }
+
+    const titleBar = document.querySelector(".title-bar");
+    const submitButton = document.querySelector(".btn.submit");
+    const cancelButton = document.getElementById("cancel-application");
+
+    if (titleBar) {
+        titleBar.textContent = "EDIT SENIOR CITIZEN ID APPLICATION";
+    }
+
+    if (cancelButton) {
+        cancelButton.textContent = "Close";
+    }
+
+    if (mode === "edit") {
+
+        if (submitButton) {
+            submitButton.textContent = "Save Changes";
+        }
+
+    } else if (mode === "request-edit") {
+
+        if (submitButton) {
+            submitButton.textContent = "OK";
+        }
+
+    }
+
+}
+
 function setupFaceCamera() {
   const openButton = document.getElementById("open-face-camera");
   const closeButton = document.getElementById("close-face-camera");
@@ -1878,6 +1921,7 @@ function showSuccessNotification(message, onClose) {
 
 document.addEventListener("DOMContentLoaded", function () {
   protectApplicationForm();
+  setupFormMode();
   blockNonNumericInput();
   wireFamilyRowButton();
   setupSpecifyForCheckboxes();

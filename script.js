@@ -431,6 +431,97 @@ function setupFormMode() {
 
 }
 
+async function loadApplicationForEditing() {
+  const isFormPage =
+    window.location.pathname.endsWith("form.html");
+
+  if (!isFormPage) {
+    return;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get("mode");
+  const applicationId = params.get("id");
+
+  const isEditMode =
+    mode === "edit" ||
+    mode === "request-edit";
+
+  if (!isEditMode || !applicationId) {
+    return;
+  }
+
+  const setValue = function (id, value) {
+    const field = document.getElementById(id);
+
+    if (!field) {
+      return;
+    }
+
+    field.value = value ?? "";
+  };
+
+  try {
+    const response = await fetch(
+      "https://osca-backend.onrender.com/api/applications/" +
+      encodeURIComponent(applicationId)
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.message || "Unable to load the application."
+      );
+    }
+
+    const data = result.data;
+    const application = data.application || {};
+    const membership = data.membership || {};
+
+    setValue("surname", application.surname);
+    setValue("firstname", application.first_name);
+    setValue("middlename", application.middle_name);
+    setValue("dob", application.date_of_birth);
+    setValue("age", application.age);
+    setValue("sex", application.sex);
+    setValue("birthplace", application.place_of_birth);
+    setValue("civil-status", application.civil_status);
+    setValue("address", application.house_street);
+    setValue("barangay", application.barangay_district);
+
+    let education = application.educational_attainment;
+
+    if (education === "Not Attend Any School") {
+      education = "Not Attended Any School";
+    }
+
+    setValue("education", education);
+    setValue("religion", application.religion);
+    setValue("occupation", application.occupation);
+    setValue("id-osca", application.osca_id_number);
+    setValue("id-sss", application.sss_id_number);
+    setValue("id-philhealth", application.philhealth_id_number);
+    setValue("id-gsis", application.gsis_id_number);
+    setValue("id-tin", application.tin_id_number);
+    setValue("contact-number", application.contact_number);
+
+    setValue("assoc-name", membership.association_name);
+    setValue("assoc-address", membership.association_address);
+    setValue("assoc-date", membership.association_date);
+    setValue("assoc-position", membership.position);
+
+  } catch (error) {
+    showSuccessNotification(
+      "Unable to load application: " +
+      (error.message || "Unknown error"),
+      function () {
+        window.location.href = "trackstatus.html";
+      }
+    );
+  }
+}
+
 function setupFaceCamera() {
   const openButton = document.getElementById("open-face-camera");
   const closeButton = document.getElementById("close-face-camera");
@@ -1922,6 +2013,7 @@ function showSuccessNotification(message, onClose) {
 document.addEventListener("DOMContentLoaded", function () {
   protectApplicationForm();
   setupFormMode();
+  loadApplicationForEditing();
   blockNonNumericInput();
   wireFamilyRowButton();
   setupSpecifyForCheckboxes();

@@ -1,6 +1,28 @@
 import { supabase } from "../supabase.js";
 import { uploadFile } from "./storageService.js";
 
+async function createSignedFileUrl(filePath) {
+    if (!filePath) {
+        return null;
+    }
+
+    const { data, error } = await supabase.storage
+        .from("documents")
+        .createSignedUrl(filePath, 60 * 30);
+
+    if (error) {
+        console.error(
+            "Unable to create signed URL for:",
+            filePath,
+            error
+        );
+
+        return null;
+    }
+
+    return data?.signedUrl || null;
+}
+
 export async function registerApplication(payload, files) {
 
     const {
@@ -287,13 +309,79 @@ export async function getApplicationById(applicationId) {
         return null;
     }
 
+    const applicationFiles =
+        applicationFilesResult.data || null;
+
+    let filesWithSignedUrls = null;
+
+    if (applicationFiles) {
+        const [
+            validIdFrontSignedUrl,
+            validIdBackSignedUrl,
+            latestPhotoSignedUrl,
+            birthCertificateSignedUrl,
+            communityTaxSignedUrl,
+            signatureSignedUrl
+        ] = await Promise.all([
+            createSignedFileUrl(
+                applicationFiles.valid_id_url
+            ),
+
+            createSignedFileUrl(
+                applicationFiles.valid_id_back_url
+            ),
+
+            createSignedFileUrl(
+                applicationFiles.latest_photo_url
+            ),
+
+            createSignedFileUrl(
+                applicationFiles.birth_certificate_url
+            ),
+
+            createSignedFileUrl(
+                applicationFiles.community_tax_certificate_url
+            ),
+
+            createSignedFileUrl(
+                applicationFiles.signature_url
+            )
+        ]);
+
+        filesWithSignedUrls = {
+            ...applicationFiles,
+
+            valid_id_signed_url:
+                validIdFrontSignedUrl,
+
+            valid_id_back_signed_url:
+                validIdBackSignedUrl,
+
+            latest_photo_signed_url:
+                latestPhotoSignedUrl,
+
+            birth_certificate_signed_url:
+                birthCertificateSignedUrl,
+
+            community_tax_certificate_signed_url:
+                communityTaxSignedUrl,
+
+            signature_signed_url:
+                signatureSignedUrl
+        };
+    }
+
     return {
         application: applicationResult.data,
         familyComposition: familyResult.data || [],
         membership: membershipResult.data || null,
-        personalBackground: personalBackgroundResult.data || null,
-        problemsNeeds: problemsNeedsResult.data || null,
-        applicationFiles: applicationFilesResult.data || null,
-        confirmations: confirmationsResult.data || null
+        personalBackground:
+            personalBackgroundResult.data || null,
+        problemsNeeds:
+            problemsNeedsResult.data || null,
+        applicationFiles:
+            filesWithSignedUrls,
+        confirmations:
+            confirmationsResult.data || null
     };
 }

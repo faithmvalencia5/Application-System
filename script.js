@@ -531,6 +531,95 @@ async function loadApplicationForEditing() {
     }
   };
 
+  const getFileNameFromPath = function (filePath) {
+    if (!filePath) {
+      return "";
+    }
+
+    const segments = String(filePath).split("/");
+    return segments[segments.length - 1] || "";
+  };
+
+  const showExistingFile = function (
+    inputId,
+    filePath,
+    signedUrl
+  ) {
+    const input = document.getElementById(inputId);
+
+    if (!input || !filePath) {
+      return;
+    }
+
+    const uploadBox = input.nextElementSibling;
+
+    if (
+      !uploadBox ||
+      !uploadBox.classList.contains("upload-box")
+    ) {
+      return;
+    }
+
+    const fileNameLabel =
+      uploadBox.querySelector(".upload-file-name");
+
+    const actions =
+      uploadBox.nextElementSibling &&
+      uploadBox.nextElementSibling.classList.contains(
+        "upload-actions"
+      )
+        ? uploadBox.nextElementSibling
+        : null;
+
+    const viewButton =
+      actions?.querySelector(".view-btn");
+
+    const changeButton =
+      actions?.querySelector(".change-btn");
+
+    input.dataset.existingFilePath = filePath;
+    input.dataset.existingFileUrl = signedUrl || "";
+
+    uploadBox.classList.add("has-file");
+
+    if (fileNameLabel) {
+      fileNameLabel.textContent =
+        getFileNameFromPath(filePath);
+    }
+
+    if (viewButton) {
+      viewButton.hidden = !signedUrl;
+      viewButton.disabled = !signedUrl;
+
+      viewButton.addEventListener(
+        "click",
+        function (event) {
+          if (
+            input.files &&
+            input.files.length > 0
+          ) {
+            return;
+          }
+
+          event.stopImmediatePropagation();
+
+          if (signedUrl) {
+            window.open(
+              signedUrl,
+              "_blank",
+              "noopener,noreferrer"
+            );
+          }
+        },
+        true
+      );
+    }
+
+    if (changeButton) {
+      changeButton.hidden = false;
+    }
+  };
+
   try {
     const response = await fetch(
       "https://osca-backend.onrender.com/api/applications/" +
@@ -550,6 +639,9 @@ async function loadApplicationForEditing() {
     const membership = data.membership || {};
     const familyComposition = data.familyComposition || [];
     const personalBackground = data.personalBackground || {};
+    const problemsNeeds = data.problemsNeeds || {};
+    const applicationFiles = data.applicationFiles || {};
+    const confirmations = data.confirmations || {};
 
     setValue("surname", application.surname);
     setValue("firstname", application.first_name);
@@ -955,6 +1047,249 @@ async function loadApplicationForEditing() {
         personalBackground.involvement_other,
         personalBackground.involvement_other_specify
       );
+
+      // ECONOMIC PROBLEMS
+      setCheckboxOption(
+        "economic",
+        "lack of income resource",
+        problemsNeeds.economic_lack_income
+      );
+
+      setCheckboxOption(
+        "economic",
+        "skills capability training",
+        problemsNeeds.economic_skills_training,
+        problemsNeeds.economic_skills_training_specify
+      );
+
+      setCheckboxOption(
+        "economic",
+        "livelihood opportunities",
+        problemsNeeds.economic_livelihood,
+        problemsNeeds.economic_livelihood_specify
+      );
+
+      setCheckboxOption(
+        "economic",
+        "others specify",
+        problemsNeeds.economic_other,
+        problemsNeeds.economic_other_specify
+      );
+
+
+      // SOCIAL OR EMOTIONAL
+      setCheckboxOption(
+        "social emotional",
+        "feeling of neglect rejection",
+        problemsNeeds.social_neglect_rejection
+      );
+
+      setCheckboxOption(
+        "social emotional",
+        "feeling of helplessness worthlessness",
+        problemsNeeds.social_helplessness
+      );
+
+      setCheckboxOption(
+        "social emotional",
+        "feeling of loneliness isolation",
+        problemsNeeds.social_loneliness
+      );
+
+      setCheckboxOption(
+        "social emotional",
+        "inadequate leisure recreational activities",
+        problemsNeeds.social_inadequate_recreation
+      );
+
+      setCheckboxOption(
+        "social emotional",
+        "senior citizens friendly environment",
+        problemsNeeds.social_senior_friendly_environment
+      );
+
+      setCheckboxOption(
+        "social emotional",
+        "others specify",
+        problemsNeeds.social_other,
+        problemsNeeds.social_other_specify
+      );
+
+
+      // HEALTH
+      setCheckboxOption(
+        "health",
+        "high cost of medicines",
+        problemsNeeds.health_high_cost_medicine
+      );
+
+      setCheckboxOption(
+        "health",
+        "lack of medical professionals",
+        problemsNeeds.health_lack_medical_professionals
+      );
+
+      setCheckboxOption(
+        "health",
+        "lack no access of sanitation",
+        problemsNeeds.health_no_sanitation
+      );
+
+      setCheckboxOption(
+        "health",
+        "lack no health insurance",
+        problemsNeeds.health_no_insurance
+      );
+
+      setCheckboxOption(
+        "health",
+        "lack of hospitals medical facilities",
+        problemsNeeds.health_lack_hospital
+      );
+
+      setCheckboxOption(
+        "health",
+        "health problems ailments specify",
+        problemsNeeds.health_problem,
+        problemsNeeds.health_problem_specify
+      );
+
+
+      // HOUSING
+      setCheckboxOption(
+        "housing",
+        "overcrowding in family home",
+        problemsNeeds.housing_overcrowding
+      );
+
+      setCheckboxOption(
+        "housing",
+        "no permanent housing",
+        problemsNeeds.housing_no_permanent_home
+      );
+
+      setCheckboxOption(
+        "housing",
+        "longing for independent living quiet atmosphere",
+        problemsNeeds.housing_independent_living
+      );
+
+      setCheckboxOption(
+        "housing",
+        "lost privacy",
+        problemsNeeds.housing_lost_privacy
+      );
+
+      setCheckboxOption(
+        "housing",
+        "living in squatter s area",
+        problemsNeeds.housing_squatter_area
+      );
+
+      setCheckboxOption(
+        "housing",
+        "high cost of rental",
+        problemsNeeds.housing_high_rental
+      );
+
+      setCheckboxOption(
+        "housing",
+        "others specify",
+        problemsNeeds.housing_other,
+        problemsNeeds.housing_other_specify
+      );
+
+      // COMMUNITY SERVICE
+      setCheckboxOption(
+        "community service",
+        "desire to participate",
+        problemsNeeds.community_desire_participate
+      );
+
+      setCheckboxOption(
+        "community service",
+        "skills resource to share",
+        problemsNeeds.community_skills_to_share
+      );
+
+      setCheckboxOption(
+        "community service",
+        "others specify",
+        problemsNeeds.community_other,
+        problemsNeeds.community_other_specify
+      );
+
+
+      // OTHER SPECIFIC NEEDS
+      setValue(
+        "specific-needs",
+        problemsNeeds.other_specific_needs
+      );
+
+      setValue(
+        "date-application",
+        applicationFiles.application_date
+      );
+
+      const setChecked = function (id, value) {
+        const checkbox = document.getElementById(id);
+
+        if (checkbox) {
+          checkbox.checked = Boolean(value);
+        }
+      };
+
+      setChecked(
+        "consent-1",
+        confirmations.info_true
+      );
+
+      setChecked(
+        "consent-2",
+        confirmations.full_knowledge
+      );
+
+      setChecked(
+        "consent-3",
+        confirmations.personal_consent
+      );
+
+      setChecked(
+        "consent-4",
+        confirmations.understand_storage
+      );
+
+      setChecked(
+        "consent-5",
+        confirmations.agree_all
+      );
+
+      setValue(
+        "assisted-by",
+        confirmations.assisted_by
+      );
+
+      setValue(
+        "relation-registrant",
+        confirmations.relation
+      );
+
+      [
+        "consent-1",
+        "consent-2",
+        "consent-3",
+        "consent-4",
+        "consent-5"
+      ].forEach(function (id) {
+        const checkbox =
+          document.getElementById(id);
+
+        if (checkbox) {
+          checkbox.dispatchEvent(
+            new Event("change")
+          );
+        }
+      });
     }
 
     let education = application.educational_attainment;
@@ -965,6 +1300,27 @@ async function loadApplicationForEditing() {
 
     setValue("education", education);
     setValue("religion", application.religion);
+    const religionField =
+      document.getElementById("religion");
+
+    if (religionField) {
+      religionField.dispatchEvent(
+        new Event("change")
+      );
+
+      const religionSpecifyInput =
+        religionField.nextElementSibling;
+
+      if (
+        religionSpecifyInput &&
+        religionSpecifyInput.classList.contains(
+          "specify-input"
+        )
+      ) {
+        religionSpecifyInput.value =
+          application.religion_specify || "";
+      }
+    }
     setValue("occupation", application.occupation);
     setValue("id-osca", application.osca_id_number);
     setValue("id-sss", application.sss_id_number);
@@ -978,6 +1334,42 @@ async function loadApplicationForEditing() {
     setValue("assoc-date", membership.association_date);
     setValue("assoc-position", membership.position);
 
+    showExistingFile(
+      "upload-valid-id-front",
+      applicationFiles.valid_id_url,
+      applicationFiles.valid_id_signed_url
+    );
+
+    showExistingFile(
+      "upload-valid-id-back",
+      applicationFiles.valid_id_back_url,
+      applicationFiles.valid_id_back_signed_url
+    );
+
+    showExistingFile(
+      "upload-latest-photo",
+      applicationFiles.latest_photo_url,
+      applicationFiles.latest_photo_signed_url
+    );
+
+    showExistingFile(
+      "upload-birth-certificate",
+      applicationFiles.birth_certificate_url,
+      applicationFiles.birth_certificate_signed_url
+    );
+
+    showExistingFile(
+      "upload-cedula",
+      applicationFiles.community_tax_certificate_url,
+      applicationFiles.community_tax_certificate_signed_url
+    );
+
+    showExistingFile(
+      "upload-signature",
+      applicationFiles.signature_url,
+      applicationFiles.signature_signed_url
+    );
+  
   } catch (error) {
     showSuccessNotification(
       "Unable to load application: " +

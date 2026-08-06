@@ -478,6 +478,7 @@ async function loadApplicationForEditing() {
     const data = result.data;
     const application = data.application || {};
     const membership = data.membership || {};
+    const familyComposition = data.familyComposition || [];
 
     setValue("surname", application.surname);
     setValue("firstname", application.first_name);
@@ -489,6 +490,80 @@ async function loadApplicationForEditing() {
     setValue("civil-status", application.civil_status);
     setValue("address", application.house_street);
     setValue("barangay", application.barangay_district);
+
+    const familyBody = document.getElementById("family-body");
+
+    if (familyBody) {
+      familyBody.innerHTML = "";
+
+      const familyRows =
+        familyComposition.length > 0
+          ? familyComposition
+          : [{}];
+
+      familyRows.forEach(function (member) {
+        const row = createFamilyRow();
+
+        const nameField =
+          row.querySelector(
+            'input[aria-label="Family member name"]'
+          );
+
+        const relationshipField =
+          row.querySelector(
+            'input[aria-label="Family relationship"]'
+          );
+
+        const ageField =
+          row.querySelector(
+            'input[aria-label="Family age"]'
+          );
+
+        const civilStatusField =
+          row.querySelector(
+            'select[aria-label="Family civil status"]'
+          );
+
+        const occupationField =
+          row.querySelector(
+            'input[aria-label="Family occupation"]'
+          );
+
+        const incomeField =
+          row.querySelector(
+            'input[aria-label="Family income"]'
+          );
+
+        if (nameField) {
+          nameField.value = member.name ?? "";
+        }
+
+        if (relationshipField) {
+          relationshipField.value =
+            member.relationship ?? "";
+        }
+
+        if (ageField) {
+          ageField.value = member.age ?? "";
+        }
+
+        if (civilStatusField) {
+          civilStatusField.value =
+            member.civil_status ?? "";
+        }
+
+        if (occupationField) {
+          occupationField.value =
+            member.occupation ?? "";
+        }
+
+        if (incomeField) {
+          incomeField.value = member.income ?? "";
+        }
+
+        familyBody.appendChild(row);
+      });
+    }
 
     let education = application.educational_attainment;
 

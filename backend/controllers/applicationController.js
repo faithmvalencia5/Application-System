@@ -1,7 +1,8 @@
 import { supabase } from "../supabase.js";
 import {
     registerApplication as registerApplicationService,
-    getApplicationById as getApplicationByIdService
+    getApplicationById as getApplicationByIdService,
+    updateApplication as updateApplicationService
 } from "../services/applicationService.js";
 
 
@@ -79,4 +80,38 @@ export async function getApplicationById(req, res) {
                 "Unable to retrieve application."
         });
     }
+}
+
+export async function updateApplication(req, res) {
+
+    const applicationId = req.params.applicationId;
+
+    try {
+
+        const payload = JSON.parse(req.body.payload);
+
+        const result = await updateApplicationService(
+            applicationId,
+            payload,
+            req.files
+        );
+
+        return res.status(200).json({
+            success: true,
+            application: result
+        });
+
+    } catch (error) {
+
+        console.error("Update application:", error);
+
+        return res.status(500).json({
+            success: false,
+            message:
+                error.message ||
+                "Unable to update application."
+        });
+
+    }
+
 }

@@ -385,3 +385,387 @@ export async function getApplicationById(applicationId) {
             confirmationsResult.data || null
     };
 }
+
+export async function updateApplication(
+    applicationId,
+    payload,
+    files
+) {
+    const {
+        applicationsData,
+        familyRowsData,
+        membershipsData,
+        personalBackgroundData,
+        problemsNeedsData,
+        applicationFilesData,
+        confirmationsData
+    } = payload;
+
+    if (!applicationId) {
+        throw new Error("Application ID is required.");
+    }
+
+    /*
+     * Confirm that the application exists and is still Pending.
+     * The frontend button is not enough protection because someone
+     * could manually call the API.
+     */
+    const {
+        data: existingApplication,
+        error: existingApplicationError
+    } = await supabase
+        .from("applications")
+        .select("application_id, application_status")
+        .eq("application_id", applicationId)
+        .maybeSingle();
+
+    if (existingApplicationError) {
+        throw existingApplicationError;
+    }
+
+    if (!existingApplication) {
+        throw new Error("Application not found.");
+    }
+
+    const currentStatus = String(
+        existingApplication.application_status || ""
+    )
+        .trim()
+        .toLowerCase();
+
+    if (currentStatus !== "pending") {
+        throw new Error(
+            "This application can no longer be edited because its status is not Pending."
+        );
+    }
+
+    /*
+     * Retrieve the existing file paths.
+     * These paths must remain unchanged unless the applicant selects
+     * replacement files.
+     */
+    const {
+        data: existingApplicationFiles,
+        error: existingFilesError
+    } = await supabase
+        .from("application_files")
+        .select("*")
+        .eq("application_id", applicationId)
+        .maybeSingle();
+
+    if (existingFilesError) {
+        throw existingFilesError;
+    }
+
+    /*
+     * Upload only newly selected replacement files.
+     * uploadFile() returns null when no new file was selected.
+     */
+    const [
+        newValidIdFrontPath,
+        newValidIdBackPath,
+        newLatestPhotoPath,
+        newBirthCertificatePath,
+        newCommunityTaxPath,
+        newSignaturePath
+    ] = await Promise.all([
+        uploadFile(
+            applicationId,
+            files?.valid_id_front?.[0],
+            "valid_id_front"
+        ),
+
+        uploadFile(
+            applicationId,
+            files?.valid_id_back?.[0],
+            "valid_id_back"
+        ),
+
+        uploadFile(
+            applicationId,
+            files?.latest_photo?.[0],
+            "latest_photo"
+        ),
+
+        uploadFile(
+            applicationId,
+            files?.birth_certificate?.[0],
+            "birth_certificate"
+        ),
+
+        uploadFile(
+            applicationId,
+            files?.community_tax_certificate?.[0],
+            "community_tax_certificate"
+        ),
+
+        uploadFile(
+            applicationId,
+            files?.signature?.[0],
+            "signature"
+        )
+    ]);
+
+    /*
+     * TABLE 1: APPLICATIONS
+     *
+     * Do not allow the form payload to change application_id or
+     * application_status. The application must remain Pending.
+     */
+    if (applicationsData) {
+        const safeApplicationsData = {
+            ...applicationsData
+        };
+
+        delete safeApplicationsData.application_id;
+        delete safeApplicationsData.application_status;
+
+        const {
+            data: updatedApplication,
+            error: applicationError
+        } = await supabase
+            .from("applications")
+            .update(safeApplicationsData)
+            .eq("application_id", applicationId)
+            .select()
+            .single();
+
+        if (applicationError) {
+            throw applicationError;
+        }
+
+        /*
+         * TABLE 2: FAMILY COMPOSITION
+         *
+         * Delete the old rows and insert the current rows from the form.
+         * This supports adding, editing, and removing family members.
+         */
+        const { error: deleteFamilyError } = await supabase
+            .from("family_composition")
+            .delete()
+            .eq("application_id", applicationId);
+
+        if (deleteFamilyError) {
+            throw deleteFamilyError;
+        }
+
+        if (
+            Array.isArray(familyRowsData) &&
+            familyRowsData.length > 0
+        ) {
+            const familyData = familyRowsData.map(function (member) {
+                const cleanMember = {
+                    ...member,
+                    application_id: applicationId
+                };
+
+                /*
+                 * Remove any old primary key returned by the GET endpoint.
+                 * Supabase should generate a fresh row ID.
+                 */
+                delete cleanMember.id;
+
+                return cleanMember;
+            });
+
+            const { error: insertFamilyError } = await supabase
+                .from("family_composition")
+                .insert(familyData);
+
+            if (insertFamilyError) {
+                throw insertFamilyError;
+            }
+        }
+
+        /*
+         * TABLE 3: MEMBERSHIPS
+         *
+         * If every membership field is empty, remove the existing
+         * membership record. Otherwise, update or create it.
+         */
+        const hasMembershipData =
+            membershipsData &&
+            (
+                membershipsData.association_name ||
+                membershipsData.association_address ||
+                membershipsData.association_date ||
+                membershipsData.position
+            );
+
+        if (hasMembershipData) {
+            const membershipRecord = {
+                ...membershipsData,
+                application_id: applicationId
+            };
+
+            delete membershipRecord.id;
+
+            const { error: membershipError } = await supabase
+                .from("memberships")
+                .upsert(
+                    [membershipRecord],
+                    {
+                        onConflict: "application_id"
+                    }
+                );
+
+            if (membershipError) {
+                throw membershipError;
+            }
+        } else {
+            const { error: deleteMembershipError } = await supabase
+                .from("memberships")
+                .delete()
+                .eq("application_id", applicationId);
+
+            if (deleteMembershipError) {
+                throw deleteMembershipError;
+            }
+        }
+
+        /*
+         * TABLE 4: PERSONAL BACKGROUND
+         */
+        if (personalBackgroundData) {
+            const personalBackgroundRecord = {
+                ...personalBackgroundData,
+                application_id: applicationId
+            };
+
+            delete personalBackgroundRecord.id;
+
+            const { error: personalBackgroundError } =
+                await supabase
+                    .from("personal_background")
+                    .upsert(
+                        [personalBackgroundRecord],
+                        {
+                            onConflict: "application_id"
+                        }
+                    );
+
+            if (personalBackgroundError) {
+                throw personalBackgroundError;
+            }
+        }
+
+        /*
+         * TABLE 5: PROBLEMS AND NEEDS
+         */
+        if (problemsNeedsData) {
+            const problemsNeedsRecord = {
+                ...problemsNeedsData,
+                application_id: applicationId
+            };
+
+            delete problemsNeedsRecord.id;
+
+            const { error: problemsNeedsError } =
+                await supabase
+                    .from("problems_needs")
+                    .upsert(
+                        [problemsNeedsRecord],
+                        {
+                            onConflict: "application_id"
+                        }
+                    );
+
+            if (problemsNeedsError) {
+                throw problemsNeedsError;
+            }
+        }
+
+        /*
+         * TABLE 6: APPLICATION FILES
+         *
+         * Preserve each old file path unless a new replacement file
+         * was successfully uploaded.
+         */
+        const updatedFilesRecord = {
+            application_id: applicationId,
+
+            valid_id_url:
+                newValidIdFrontPath ||
+                existingApplicationFiles?.valid_id_url ||
+                null,
+
+            valid_id_back_url:
+                newValidIdBackPath ||
+                existingApplicationFiles?.valid_id_back_url ||
+                null,
+
+            latest_photo_url:
+                newLatestPhotoPath ||
+                existingApplicationFiles?.latest_photo_url ||
+                null,
+
+            birth_certificate_url:
+                newBirthCertificatePath ||
+                existingApplicationFiles?.birth_certificate_url ||
+                null,
+
+            community_tax_certificate_url:
+                newCommunityTaxPath ||
+                existingApplicationFiles
+                    ?.community_tax_certificate_url ||
+                null,
+
+            signature_url:
+                newSignaturePath ||
+                existingApplicationFiles?.signature_url ||
+                null,
+
+            application_date:
+                applicationFilesData?.application_date ||
+                existingApplicationFiles?.application_date ||
+                null
+        };
+
+        const { error: applicationFilesError } = await supabase
+            .from("application_files")
+            .upsert(
+                [updatedFilesRecord],
+                {
+                    onConflict: "application_id"
+                }
+            );
+
+        if (applicationFilesError) {
+            throw applicationFilesError;
+        }
+
+        /*
+         * TABLE 7: CONFIRMATIONS
+         */
+        if (confirmationsData) {
+            const confirmationsRecord = {
+                ...confirmationsData,
+                application_id: applicationId
+            };
+
+            delete confirmationsRecord.id;
+
+            const { error: confirmationsError } =
+                await supabase
+                    .from("confirmations")
+                    .upsert(
+                        [confirmationsRecord],
+                        {
+                            onConflict: "application_id"
+                        }
+                    );
+
+            if (confirmationsError) {
+                throw confirmationsError;
+            }
+        }
+
+        /*
+         * Do not add a new status-history record because editing
+         * information does not change the application's status.
+         */
+        return updatedApplication;
+    }
+
+    throw new Error("Application data is missing.");
+}

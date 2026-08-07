@@ -446,8 +446,30 @@ export async function updateApplication(
         throw new Error("Application not found.");
     }
 
+    const {
+        data: latestStatusRows,
+        error: latestStatusError
+    } = await supabase
+        .from("application_status_history")
+        .select("status, updated_at")
+        .eq("application_id", applicationId)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+
+    if (latestStatusError) {
+        throw latestStatusError;
+    }
+
+    const latestStatus =
+        latestStatusRows &&
+        latestStatusRows.length > 0
+            ? latestStatusRows[0].status
+            : null;
+
     const currentStatus = String(
-        existingApplication.application_status || ""
+        latestStatus ||
+        existingApplication.application_status ||
+        ""
     )
         .trim()
         .toLowerCase();
@@ -896,7 +918,9 @@ export async function submitIdRequest(
         );
     }
 
-    // Verify the application is Completed
+    // Verify the application is Completed.
+    // Use the same status logic as the Track Status page.
+
     const {
         data: application,
         error: applicationError
@@ -914,8 +938,38 @@ export async function submitIdRequest(
         throw new Error("Application not found.");
     }
 
+
+    // Get the latest status-history record
+    const {
+        data: statusHistoryRows,
+        error: statusHistoryError
+    } = await supabase
+        .from("application_status_history")
+        .select("status, updated_at")
+        .eq("application_id", applicationId)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+
+    if (statusHistoryError) {
+        throw statusHistoryError;
+    }
+
+    const latestStatus =
+        statusHistoryRows &&
+        statusHistoryRows.length > 0
+            ? statusHistoryRows[0].status
+            : null;
+
+
+    // Same rule used by Track Status:
+    // latest status history first,
+    // applications.application_status second.
     const currentStatus =
-        String(application.application_status || "")
+        String(
+            latestStatus ||
+            application.application_status ||
+            "Pending"
+        )
             .trim()
             .toLowerCase();
 

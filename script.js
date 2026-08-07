@@ -2175,7 +2175,6 @@ function setupFormSubmitConfirmation() {
       gsis_id_number: toNull(getInputValue('id-gsis')),
       tin_id_number: toNull(getInputValue('id-tin')),
       contact_number: toNull(getInputValue('contact-number')),
-      application_status: 'Pending'
     };
 
     const membershipsData = {

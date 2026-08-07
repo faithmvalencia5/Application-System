@@ -1639,6 +1639,89 @@ function setupFormCancelButton() {
   });
 }
 
+function openRequestEditFileDatabase() {
+  return new Promise(function (resolve, reject) {
+    const request =
+      indexedDB.open("oscaRequestEditFiles", 1);
+
+    request.onupgradeneeded = function () {
+      const database = request.result;
+
+      if (!database.objectStoreNames.contains("files")) {
+        database.createObjectStore("files");
+      }
+    };
+
+    request.onsuccess = function () {
+      resolve(request.result);
+    };
+
+    request.onerror = function () {
+      reject(request.error);
+    };
+  });
+}
+
+
+async function saveRequestEditFiles(applicationId) {
+  const database =
+    await openRequestEditFileDatabase();
+
+  const transaction =
+    database.transaction("files", "readwrite");
+
+  const store =
+    transaction.objectStore("files");
+
+  const fileInputs = {
+    valid_id_front:
+      document.getElementById("upload-valid-id-front"),
+
+    valid_id_back:
+      document.getElementById("upload-valid-id-back"),
+
+    latest_photo:
+      document.getElementById("upload-latest-photo"),
+
+    birth_certificate:
+      document.getElementById("upload-birth-certificate"),
+
+    community_tax_certificate:
+      document.getElementById("upload-cedula"),
+
+    signature:
+      document.getElementById("upload-signature")
+  };
+
+  Object.entries(fileInputs).forEach(
+    function ([fileType, input]) {
+      const file =
+        input?.files?.[0] || null;
+
+      const key =
+        applicationId + ":" + fileType;
+
+      if (file) {
+        store.put(file, key);
+      } else {
+        store.delete(key);
+      }
+    }
+  );
+
+  return new Promise(function (resolve, reject) {
+    transaction.oncomplete = function () {
+      database.close();
+      resolve();
+    };
+
+    transaction.onerror = function () {
+      database.close();
+      reject(transaction.error);
+    };
+  });
+}
+
 function setupFormSubmitConfirmation() {
   const submitButton = document.querySelector('.btn.submit');
   if (!submitButton) {
@@ -2349,13 +2432,23 @@ function setupFormSubmitConfirmation() {
       mode === "edit" &&
       Boolean(existingApplicationId);
 
-    const confirmationTitle = isPendingEdit
-      ? "Save Changes?"
-      : "Submit Application?";
+    const isRequestEdit =
+      mode === "request-edit" &&
+      Boolean(existingApplicationId);
+    
+    const confirmationTitle =
+      isPendingEdit
+        ? "Save Changes?"
+        : isRequestEdit
+          ? "Confirm Changes?"
+          : "Submit Application?";
 
-    const confirmationMessage = isPendingEdit
-      ? "Are you sure you want to save the changes made to this application?"
-      : "Are you sure you want to submit this application? Please confirm that all information is correct before submitting.";
+    const confirmationMessage =
+      isPendingEdit
+        ? "Are you sure you want to save the changes made to this application?"
+        : isRequestEdit
+          ? "Are you sure the information is correct? These changes will only be saved when you submit your ID request."
+          : "Are you sure you want to submit this application? Please confirm that all information is correct before submitting.";
 
     showConfirmationModal(
       confirmationTitle,
@@ -2366,11 +2459,40 @@ function setupFormSubmitConfirmation() {
         const originalText =
           submitButton.textContent;
 
-        submitButton.textContent = isPendingEdit
-          ? "Saving..."
-          : "Submitting...";
+        submitButton.textContent =
+          isPendingEdit
+            ? "Saving..."
+            : isRequestEdit
+              ? "Processing..."
+              : "Submitting...";
 
         try {
+          if (isRequestEdit) {
+            const temporaryPayload =
+              collectAllPayloads();
+
+            sessionStorage.setItem(
+              "pendingRequestApplicationId",
+              existingApplicationId
+            );
+
+            sessionStorage.setItem(
+              "pendingRequestApplicationChanges",
+              JSON.stringify(temporaryPayload)
+            );
+
+            await saveRequestEditFiles(
+              existingApplicationId
+            );
+
+            window.location.href =
+              "trackstatus.html?id=" +
+              encodeURIComponent(existingApplicationId) +
+              "&step=3";
+
+            return;
+          }
+
           const result = await saveApplication();
 
           if (isPendingEdit) {
@@ -2426,7 +2548,9 @@ function setupFormSubmitConfirmation() {
             (
               isPendingEdit
                 ? "Saving failed: "
-                : "Submission failed: "
+                : isRequestEdit
+                  ? "Unable to keep changes: "
+                  : "Submission failed: "
             ) + message
           );
 

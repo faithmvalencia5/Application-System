@@ -635,13 +635,90 @@ async function loadApplicationForEditing() {
     }
 
     const data = result.data;
-    const application = data.application || {};
-    const membership = data.membership || {};
-    const familyComposition = data.familyComposition || [];
-    const personalBackground = data.personalBackground || {};
-    const problemsNeeds = data.problemsNeeds || {};
-    const applicationFiles = data.applicationFiles || {};
-    const confirmations = data.confirmations || {};
+
+    /*
+    * Normally use data currently stored in the database.
+    */
+    let application =
+      data.application || {};
+
+    let membership =
+      data.membership || {};
+
+    let familyComposition =
+      data.familyComposition || [];
+
+    let personalBackground =
+      data.personalBackground || {};
+
+    let problemsNeeds =
+      data.problemsNeeds || {};
+
+    const applicationFiles =
+      data.applicationFiles || {};
+
+    let confirmations =
+      data.confirmations || {};
+
+
+    /*
+    * REQUEST-EDIT MODE:
+    *
+    * If this applicant already edited the form and clicked OK,
+    * use those temporary edits instead of the old database values.
+    */
+    if (mode === "request-edit") {
+
+      const temporaryApplicationId =
+        sessionStorage.getItem(
+          "pendingRequestApplicationId"
+        );
+
+      const temporaryChangesRaw =
+        sessionStorage.getItem(
+          "pendingRequestApplicationChanges"
+        );
+
+      if (
+        temporaryApplicationId === applicationId &&
+        temporaryChangesRaw
+      ) {
+        try {
+          const temporaryChanges =
+            JSON.parse(temporaryChangesRaw);
+
+          application =
+            temporaryChanges.applicationsData ||
+            application;
+
+          familyComposition =
+            temporaryChanges.familyRowsData ||
+            familyComposition;
+
+          membership =
+            temporaryChanges.membershipsData ||
+            membership;
+
+          personalBackground =
+            temporaryChanges.personalBackgroundData ||
+            personalBackground;
+
+          problemsNeeds =
+            temporaryChanges.problemsNeedsData ||
+            problemsNeeds;
+
+          confirmations =
+            temporaryChanges.confirmationsData ||
+            confirmations;
+
+        } catch (error) {
+          console.error(
+            "Unable to restore temporary request edits:",
+            error
+          );
+        }
+      }
+    }
 
     setValue("surname", application.surname);
     setValue("firstname", application.first_name);
@@ -1374,6 +1451,73 @@ async function loadApplicationForEditing() {
       applicationFiles.signature_url,
       applicationFiles.signature_signed_url
     );
+
+    if (mode === "request-edit") {
+
+      try {
+        const temporaryFiles =
+          await getRequestEditFiles(
+            applicationId
+          );
+
+        const inputMap = {
+          valid_id_front:
+            "upload-valid-id-front",
+
+          valid_id_back:
+            "upload-valid-id-back",
+
+          latest_photo:
+            "upload-latest-photo",
+
+          birth_certificate:
+            "upload-birth-certificate",
+
+          community_tax_certificate:
+            "upload-cedula",
+
+          signature:
+            "upload-signature"
+        };
+
+        Object.entries(
+          temporaryFiles
+        ).forEach(function ([fileType, file]) {
+
+          const inputId =
+            inputMap[fileType];
+
+          const input =
+            document.getElementById(inputId);
+
+          if (!input || !file) {
+            return;
+          }
+
+          /*
+          * Restore the temporary File into the browser
+          * input without uploading it.
+          */
+          const transfer =
+            new DataTransfer();
+
+          transfer.items.add(file);
+
+          input.files =
+            transfer.files;
+
+          input.dispatchEvent(
+            new Event("change")
+          );
+        });
+
+      } catch (error) {
+        console.error(
+          "Unable to restore temporary files:",
+          error
+        );
+      }
+    }
   
   } catch (error) {
     showSuccessNotification(
@@ -3103,6 +3247,27 @@ function setupVerificationPage() {
       return;
     }
 
+    const reasonSelect =
+      document.getElementById("request-reason-select");
+
+    const otherReasonInput =
+      document.getElementById("other-reason-input");
+
+    sessionStorage.setItem(
+      "pendingRequestReasonApplicationId",
+      currentApplicationId
+    );
+
+    sessionStorage.setItem(
+      "pendingRequestReason",
+      reasonSelect?.value || ""
+    );
+
+    sessionStorage.setItem(
+      "pendingRequestOtherReason",
+      otherReasonInput?.value || ""
+    );
+
     window.location.href =
       "form.html?mode=request-edit&id=" +
       encodeURIComponent(currentApplicationId) +
@@ -3145,13 +3310,75 @@ function setupRequestIdModal() {
   const showRequestIdModal = function () {
     statusStep.hidden = true;
     requestIdModal.hidden = false;
-    reasonSelect.value = "";
-    if (otherReasonInput) {
-      otherReasonInput.value = "";
+
+    const applicationId =
+      (
+        document.getElementById(
+          "verified-application-id"
+        )?.textContent ||
+        new URLSearchParams(
+          window.location.search
+        ).get("id") ||
+        ""
+      ).trim();
+
+    const savedApplicationId =
+      sessionStorage.getItem(
+        "pendingRequestReasonApplicationId"
+      );
+
+    const savedReason =
+      sessionStorage.getItem(
+        "pendingRequestReason"
+      );
+
+    const savedOtherReason =
+      sessionStorage.getItem(
+        "pendingRequestOtherReason"
+      );
+
+    if (
+      savedApplicationId === applicationId &&
+      savedReason
+    ) {
+      reasonSelect.value = savedReason;
+
+      if (savedReason === "other") {
+        if (otherReasonWrapper) {
+          otherReasonWrapper.style.display = "block";
+        }
+
+        if (otherReasonInput) {
+          otherReasonInput.value =
+            savedOtherReason || "";
+        }
+
+      } else {
+        if (otherReasonWrapper) {
+          otherReasonWrapper.style.display = "none";
+        }
+
+        if (otherReasonInput) {
+          otherReasonInput.value = "";
+        }
+      }
+
+    } else {
+      reasonSelect.value = "";
+
+      if (otherReasonInput) {
+        otherReasonInput.value = "";
+      }
+
+      if (otherReasonWrapper) {
+        otherReasonWrapper.style.display = "none";
+      }
     }
+
     if (requestReasonError) {
       requestReasonError.textContent = "";
     }
+
     window.setTimeout(function () {
       reasonSelect.focus();
     }, 0);
@@ -3160,10 +3387,7 @@ function setupRequestIdModal() {
   const closeRequestIdModal = function () {
     requestIdModal.hidden = true;
     statusStep.hidden = false;
-    reasonSelect.value = "";
-    if (otherReasonInput) {
-      otherReasonInput.value = "";
-    }
+    
     if (otherReasonWrapper) {
       otherReasonWrapper.style.display = "none";
     }
@@ -3173,18 +3397,60 @@ function setupRequestIdModal() {
   };
 
   reasonSelect.addEventListener("change", function () {
+
+    const applicationId =
+      (
+        document.getElementById(
+          "verified-application-id"
+        )?.textContent ||
+        new URLSearchParams(
+          window.location.search
+        ).get("id") ||
+        ""
+      ).trim();
+
+    if (applicationId) {
+      sessionStorage.setItem(
+        "pendingRequestReasonApplicationId",
+        applicationId
+      );
+    }
+
+    sessionStorage.setItem(
+      "pendingRequestReason",
+      reasonSelect.value || ""
+    );
+
     if (otherReasonWrapper && otherReasonInput) {
       if (reasonSelect.value === "other") {
         otherReasonWrapper.style.display = "block";
+
         window.setTimeout(function () {
           otherReasonInput.focus();
         }, 0);
+
       } else {
         otherReasonWrapper.style.display = "none";
         otherReasonInput.value = "";
+
+        sessionStorage.removeItem(
+          "pendingRequestOtherReason"
+        );
       }
     }
   });
+
+  if (otherReasonInput) {
+  otherReasonInput.addEventListener(
+    "input",
+    function () {
+      sessionStorage.setItem(
+        "pendingRequestOtherReason",
+        otherReasonInput.value
+      );
+    }
+  );
+}
 
   requestIdButton.addEventListener("click", showRequestIdModal);
 
@@ -3389,6 +3655,18 @@ function setupRequestIdModal() {
 
         sessionStorage.removeItem(
           "pendingRequestApplicationChanges"
+        );
+
+        sessionStorage.removeItem(
+          "pendingRequestReasonApplicationId"
+        );
+
+        sessionStorage.removeItem(
+          "pendingRequestReason"
+        );
+
+        sessionStorage.removeItem(
+          "pendingRequestOtherReason"
         );
 
         await clearRequestEditFiles(

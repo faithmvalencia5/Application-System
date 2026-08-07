@@ -407,7 +407,8 @@ export async function getApplicationById(applicationId) {
 export async function updateApplication(
     applicationId,
     payload,
-    files
+    files,
+    allowedStatuses = ["pending"]
 ) {
     const {
         applicationsData,
@@ -451,9 +452,9 @@ export async function updateApplication(
         .trim()
         .toLowerCase();
 
-    if (currentStatus !== "pending") {
+    if (!allowedStatuses.includes(currentStatus)) {
         throw new Error(
-            "This application can no longer be edited because its status is not Pending."
+            "This application cannot be edited in its current status."
         );
     }
 
@@ -853,4 +854,143 @@ export async function updateApplication(
     }
 
     throw new Error("Application data is missing.");
+}
+
+export async function submitIdRequest(
+    applicationId,
+    requestData,
+    files
+) {
+    const {
+        applicationChanges,
+        reason,
+        otherReason
+    } = requestData;
+
+    if (!applicationId) {
+        throw new Error("Application ID is required.");
+    }
+
+    const normalizedReason =
+        String(reason || "").trim();
+
+    const allowedReasons = [
+        "Lost",
+        "Damage",
+        "Change Address",
+        "Other"
+    ];
+
+    if (!allowedReasons.includes(normalizedReason)) {
+        throw new Error(
+            "Please select a valid ID request reason."
+        );
+    }
+
+    if (
+        normalizedReason === "Other" &&
+        !String(otherReason || "").trim()
+    ) {
+        throw new Error(
+            "Please specify the reason for your ID request."
+        );
+    }
+
+    // Verify the application is Completed
+    const {
+        data: application,
+        error: applicationError
+    } = await supabase
+        .from("applications")
+        .select("application_id, application_status")
+        .eq("application_id", applicationId)
+        .maybeSingle();
+
+    if (applicationError) {
+        throw applicationError;
+    }
+
+    if (!application) {
+        throw new Error("Application not found.");
+    }
+
+    const currentStatus =
+        String(application.application_status || "")
+            .trim()
+            .toLowerCase();
+
+    if (currentStatus !== "completed") {
+        throw new Error(
+            "An ID request can only be submitted for a Completed application."
+        );
+    }
+
+    // Prevent duplicate active requests
+    const {
+        data: existingRequest,
+        error: existingRequestError
+    } = await supabase
+        .from("id_requests")
+        .select("id, request_status")
+        .eq("application_id", applicationId)
+        .in(
+            "request_status",
+            ["Pending", "Under Review", "Approved"]
+        )
+        .maybeSingle();
+
+    if (existingRequestError) {
+        throw existingRequestError;
+    }
+
+    if (existingRequest) {
+        throw new Error(
+            "There is already an active ID request for this application."
+        );
+    }
+
+    /*
+     * If the applicant edited their application before
+     * submitting the request, save those changes now.
+     */
+    let updatedApplication = application;
+
+    if (applicationChanges) {
+        updatedApplication =
+            await updateApplication(
+                applicationId,
+                applicationChanges,
+                files,
+                ["completed"]
+            );
+    }
+
+    // Create the ID request
+    const {
+        data: idRequest,
+        error: idRequestError
+    } = await supabase
+        .from("id_requests")
+        .insert([
+            {
+                application_id: applicationId,
+                reason: normalizedReason,
+                other_reason:
+                    normalizedReason === "Other"
+                        ? String(otherReason || "").trim()
+                        : null,
+                request_status: "Pending"
+            }
+        ])
+        .select()
+        .single();
+
+    if (idRequestError) {
+        throw idRequestError;
+    }
+
+    return {
+        application: updatedApplication,
+        idRequest
+    };
 }

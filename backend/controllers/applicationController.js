@@ -2,7 +2,8 @@ import { supabase } from "../supabase.js";
 import {
     registerApplication as registerApplicationService,
     getApplicationById as getApplicationByIdService,
-    updateApplication as updateApplicationService
+    updateApplication as updateApplicationService,
+    submitIdRequest as submitIdRequestService
 } from "../services/applicationService.js";
 
 
@@ -114,4 +115,39 @@ export async function updateApplication(req, res) {
 
     }
 
+}
+
+export async function submitIdRequest(req, res) {
+    const applicationId =
+        req.params.applicationId;
+
+    try {
+        const payload =
+            JSON.parse(req.body.payload);
+
+        const result =
+            await submitIdRequestService(
+                applicationId,
+                payload,
+                req.files
+            );
+
+        return res.status(201).json({
+            success: true,
+            data: result
+        });
+
+    } catch (error) {
+        console.error(
+            "Submit ID request error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message:
+                error.message ||
+                "Unable to submit ID request."
+        });
+    }
 }

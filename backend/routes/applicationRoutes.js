@@ -4,7 +4,8 @@ import {
     testDatabase,
     registerApplication,
     getApplicationById,
-    updateApplication
+    updateApplication,
+    submitIdRequest
 } from "../controllers/applicationController.js";
 
 import { getApplicationStatus } from "../controllers/statusController.js";
@@ -25,6 +26,16 @@ router.post(
     registerApplication
 );
 router.get("/status/:applicationId", getApplicationStatus);
+router.post("/:applicationId/id-request",
+    upload.fields([
+        { name: "valid_id_front", maxCount: 1 },
+        { name: "valid_id_back", maxCount: 1 },
+        { name: "latest_photo", maxCount: 1 },
+        { name: "birth_certificate", maxCount: 1 },
+        { name: "community_tax_certificate", maxCount: 1 },
+        { name: "signature", maxCount: 1 }
+    ]),
+    submitIdRequest);
 router.get("/:applicationId", getApplicationById);
 
 router.put(

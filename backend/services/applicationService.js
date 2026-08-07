@@ -434,7 +434,7 @@ export async function updateApplication(
         error: existingApplicationError
     } = await supabase
         .from("applications")
-        .select("application_id, application_status")
+        .select("application_id")
         .eq("application_id", applicationId)
         .maybeSingle();
 
@@ -468,7 +468,6 @@ export async function updateApplication(
 
     const currentStatus = String(
         latestStatus ||
-        existingApplication.application_status ||
         ""
     )
         .trim()
@@ -926,7 +925,7 @@ export async function submitIdRequest(
         error: applicationError
     } = await supabase
         .from("applications")
-        .select("application_id, application_status")
+        .select("application_id")
         .eq("application_id", applicationId)
         .maybeSingle();
 
@@ -967,7 +966,6 @@ export async function submitIdRequest(
     const currentStatus =
         String(
             latestStatus ||
-            application.application_status ||
             "Pending"
         )
             .trim()

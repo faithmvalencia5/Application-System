@@ -18,7 +18,7 @@ export async function getApplicationStatus(req, res) {
         } = await supabase
             .from("applications")
             .select(
-                "application_id, first_name, middle_name, surname, application_status"
+                "application_id, first_name, middle_name, surname"
             )
             .eq("application_id", applicationId)
             .maybeSingle();
@@ -56,7 +56,6 @@ export async function getApplicationStatus(req, res) {
 
         const statusText =
             latestStatus?.status ||
-            applicationRow.application_status ||
             "Pending";
 
         const {

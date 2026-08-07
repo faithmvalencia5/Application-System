@@ -1956,6 +1956,44 @@ async function clearRequestEditFiles(applicationId) {
   });
 }
 
+async function clearPendingIdRequest(applicationId) {
+  // Clear temporary edited application data
+  sessionStorage.removeItem(
+    "pendingRequestApplicationId"
+  );
+
+  sessionStorage.removeItem(
+    "pendingRequestApplicationChanges"
+  );
+
+  // Clear temporary selected reason
+  sessionStorage.removeItem(
+    "pendingRequestReasonApplicationId"
+  );
+
+  sessionStorage.removeItem(
+    "pendingRequestReason"
+  );
+
+  sessionStorage.removeItem(
+    "pendingRequestOtherReason"
+  );
+
+  // Clear temporary replacement files
+  if (applicationId) {
+    try {
+      await clearRequestEditFiles(
+        applicationId
+      );
+    } catch (error) {
+      console.error(
+        "Unable to clear temporary request files:",
+        error
+      );
+    }
+  }
+}
+
 function setupFormSubmitConfirmation() {
   const submitButton = document.querySelector('.btn.submit');
   if (!submitButton) {
@@ -3301,7 +3339,45 @@ function setupRequestIdModal() {
   const otherReasonInput = document.getElementById("other-reason-input");
   const requestReasonError = document.getElementById("request-reason-error");
   const closeRequestIdModalButton = document.getElementById("close-request-id-modal");
-  const cancelRequestIdButton = document.getElementById("cancel-request-id");
+  cancelRequestIdButton.addEventListener(
+    "click",
+    async function () {
+
+      const applicationId =
+        (
+          document.getElementById(
+            "verified-application-id"
+          )?.textContent ||
+          new URLSearchParams(
+            window.location.search
+          ).get("id") ||
+          ""
+        ).trim();
+
+      await clearPendingIdRequest(
+        applicationId
+      );
+
+      // Clear the visible selected reason
+      reasonSelect.value = "";
+
+      if (otherReasonInput) {
+        otherReasonInput.value = "";
+      }
+
+      if (otherReasonWrapper) {
+        otherReasonWrapper.style.display =
+          "none";
+      }
+
+      if (requestReasonError) {
+        requestReasonError.textContent = "";
+      }
+
+      // Return from Step 3 to Step 2
+      closeRequestIdModal();
+    }
+  );
 
   if (!requestIdButton || !requestIdModal || !statusStep || !requestIdForm || !reasonSelect) {
     return;

@@ -23,6 +23,24 @@ async function createSignedFileUrl(filePath) {
     return data?.signedUrl || null;
 }
 
+async function deleteStorageFile(filePath) {
+    if (!filePath) {
+        return;
+    }
+
+    const { error } = await supabase.storage
+        .from("documents")
+        .remove([filePath]);
+
+    if (error) {
+        console.error(
+            "Unable to delete replaced file:",
+            filePath,
+            error
+        );
+    }
+}
+
 export async function registerApplication(payload, files) {
 
     const {
@@ -761,9 +779,76 @@ export async function updateApplication(
         }
 
         /*
-         * Do not add a new status-history record because editing
-         * information does not change the application's status.
-         */
+        * Delete old storage files only after all database
+        * updates have completed successfully.
+        */
+        const filesToDelete = [];
+
+        if (
+            newValidIdFrontPath &&
+            existingApplicationFiles?.valid_id_url
+        ) {
+            filesToDelete.push(
+                existingApplicationFiles.valid_id_url
+            );
+        }
+
+        if (
+            newValidIdBackPath &&
+            existingApplicationFiles?.valid_id_back_url
+        ) {
+            filesToDelete.push(
+                existingApplicationFiles.valid_id_back_url
+            );
+        }
+
+        if (
+            newLatestPhotoPath &&
+            existingApplicationFiles?.latest_photo_url
+        ) {
+            filesToDelete.push(
+                existingApplicationFiles.latest_photo_url
+            );
+        }
+
+        if (
+            newBirthCertificatePath &&
+            existingApplicationFiles?.birth_certificate_url
+        ) {
+            filesToDelete.push(
+                existingApplicationFiles.birth_certificate_url
+            );
+        }
+
+        if (
+            newCommunityTaxPath &&
+            existingApplicationFiles
+                ?.community_tax_certificate_url
+        ) {
+            filesToDelete.push(
+                existingApplicationFiles
+                    .community_tax_certificate_url
+            );
+        }
+
+        if (
+            newSignaturePath &&
+            existingApplicationFiles?.signature_url
+        ) {
+            filesToDelete.push(
+                existingApplicationFiles.signature_url
+            );
+        }
+
+        await Promise.all(
+            filesToDelete.map(function (filePath) {
+                return deleteStorageFile(filePath);
+            })
+        );
+
+        /*
+        * Editing information does not change the status.
+        */
         return updatedApplication;
     }
 

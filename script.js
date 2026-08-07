@@ -1264,6 +1264,11 @@ async function loadApplicationForEditing() {
         confirmations.agree_all
       );
 
+      setChecked(
+        "consent-assisted",
+        confirmations.assisted_certified
+      );
+
       setValue(
         "assisted-by",
         confirmations.assisted_by
@@ -1592,13 +1597,38 @@ function showConfirmationModal(title, message, onConfirm) {
 }
 
 function setupFormCancelButton() {
-  const cancelButton = document.getElementById("cancel-application");
+  const cancelButton =
+    document.getElementById("cancel-application");
 
   if (!cancelButton) {
     return;
   }
 
   cancelButton.addEventListener("click", function () {
+    const params =
+      new URLSearchParams(window.location.search);
+
+    const mode = params.get("mode");
+    const applicationId = params.get("id");
+
+    if (
+      applicationId &&
+      (mode === "edit" || mode === "request-edit")
+    ) {
+      const step =
+        mode === "request-edit"
+          ? "3"
+          : "2";
+
+      window.location.href =
+        "trackstatus.html?id=" +
+        encodeURIComponent(applicationId) +
+        "&step=" +
+        step;
+
+      return;
+    }
+
     showConfirmationModal(
       "Cancel Application?",
       "Are you sure you want to cancel this application? Your data will not be saved.",
@@ -1685,7 +1715,7 @@ function setupFormSubmitConfirmation() {
         });
 
         const text = normalizeText(clone.textContent || '');
-        const specifyInput = label.parentElement ? label.parentElement.nextElementSibling : null;
+        const specifyInput = label.nextElementSibling;
         const specifyValue = specifyInput && specifyInput.classList && specifyInput.classList.contains('specify-input')
           ? toNull(specifyInput.value)
           : null;
@@ -1918,13 +1948,37 @@ function setupFormSubmitConfirmation() {
     };
 
     const confirmationsData = {
-      info_true: Boolean(document.getElementById('consent-1')?.checked),
-      full_knowledge: Boolean(document.getElementById('consent-2')?.checked),
-      personal_consent: Boolean(document.getElementById('consent-3')?.checked),
-      understand_storage: Boolean(document.getElementById('consent-4')?.checked),
-      agree_all: Boolean(document.getElementById('consent-5')?.checked),
-      assisted_by: toNull(getInputValue('assisted-by')),
-      relation: toNull(getInputValue('relation-registrant'))
+      info_true: Boolean(
+        document.getElementById("consent-1")?.checked
+      ),
+
+      full_knowledge: Boolean(
+        document.getElementById("consent-2")?.checked
+      ),
+
+      personal_consent: Boolean(
+        document.getElementById("consent-3")?.checked
+      ),
+
+      understand_storage: Boolean(
+        document.getElementById("consent-4")?.checked
+      ),
+
+      agree_all: Boolean(
+        document.getElementById("consent-5")?.checked
+      ),
+
+      assisted_certified: Boolean(
+        document.getElementById("consent-assisted")?.checked
+      ),
+
+      assisted_by: toNull(
+        getInputValue("assisted-by")
+      ),
+
+      relation: toNull(
+        getInputValue("relation-registrant")
+      )
     };
 
     const statusHistoryData = {
@@ -2715,6 +2769,22 @@ function setupVerificationPage() {
     entryStep.hidden = true;
     statusStep.hidden = false;
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    const returnParams =
+      new URLSearchParams(window.location.search);
+
+    const requestedStep =
+      returnParams.get("step");
+
+    if (
+      requestedStep === "3" &&
+      currentApplicationStatus === "completed" &&
+      requestIdButton
+    ) {
+      window.setTimeout(function () {
+        requestIdButton.click();
+      }, 0);
+    }
   };
 
   const closeVerificationPage = function () {
@@ -2806,6 +2876,19 @@ function setupVerificationPage() {
   });
 
   showEntryStep();
+
+  const returnParams =
+    new URLSearchParams(window.location.search);
+
+  const returnApplicationId =
+    returnParams.get("id");
+
+  if (returnApplicationId) {
+    inputField.value =
+      returnApplicationId;
+
+    entryForm.requestSubmit();
+  }
 }
 
 function setupRequestIdModal() {

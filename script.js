@@ -1722,6 +1722,96 @@ async function saveRequestEditFiles(applicationId) {
   });
 }
 
+async function getRequestEditFiles(applicationId) {
+  const database =
+    await openRequestEditFileDatabase();
+
+  const fileTypes = [
+    "valid_id_front",
+    "valid_id_back",
+    "latest_photo",
+    "birth_certificate",
+    "community_tax_certificate",
+    "signature"
+  ];
+
+  const transaction =
+    database.transaction("files", "readonly");
+
+  const store =
+    transaction.objectStore("files");
+
+  const files = {};
+
+  await Promise.all(
+    fileTypes.map(function (fileType) {
+      return new Promise(function (resolve, reject) {
+        const key =
+          applicationId + ":" + fileType;
+
+        const request = store.get(key);
+
+        request.onsuccess = function () {
+          if (request.result) {
+            files[fileType] =
+              request.result;
+          }
+
+          resolve();
+        };
+
+        request.onerror = function () {
+          reject(request.error);
+        };
+      });
+    })
+  );
+
+  database.close();
+
+  return files;
+}
+
+
+async function clearRequestEditFiles(applicationId) {
+  const database =
+    await openRequestEditFileDatabase();
+
+  const fileTypes = [
+    "valid_id_front",
+    "valid_id_back",
+    "latest_photo",
+    "birth_certificate",
+    "community_tax_certificate",
+    "signature"
+  ];
+
+  const transaction =
+    database.transaction("files", "readwrite");
+
+  const store =
+    transaction.objectStore("files");
+
+  fileTypes.forEach(function (fileType) {
+    const key =
+      applicationId + ":" + fileType;
+
+    store.delete(key);
+  });
+
+  return new Promise(function (resolve, reject) {
+    transaction.oncomplete = function () {
+      database.close();
+      resolve();
+    };
+
+    transaction.onerror = function () {
+      database.close();
+      reject(transaction.error);
+    };
+  });
+}
+
 function setupFormSubmitConfirmation() {
   const submitButton = document.querySelector('.btn.submit');
   if (!submitButton) {
@@ -3080,39 +3170,249 @@ function setupRequestIdModal() {
   closeRequestIdModalButton.addEventListener("click", closeRequestIdModal);
   cancelRequestIdButton.addEventListener("click", closeRequestIdModal);
 
-  requestIdForm.addEventListener("submit", function (event) {
-    event.preventDefault();
+  requestIdForm.addEventListener(
+    "submit",
+    async function (event) {
+      event.preventDefault();
 
-    const selectedReason = reasonSelect.value;
-    let requestMessage = "";
-
-    if (!selectedReason) {
       if (requestReasonError) {
-        requestReasonError.textContent = "Please select a reason.";
+        requestReasonError.textContent = "";
       }
-      return;
-    }
 
-    if (selectedReason === "other") {
-      const otherReason = otherReasonInput ? otherReasonInput.value.trim() : "";
-      if (!otherReason) {
+      const selectedReason =
+        reasonSelect.value;
+
+      if (!selectedReason) {
         if (requestReasonError) {
-          requestReasonError.textContent = "Please specify your reason.";
+          requestReasonError.textContent =
+            "Please select a reason.";
         }
+
         return;
       }
-      requestMessage = "Other: " + otherReason;
-    } else if (selectedReason === "lost") {
-      requestMessage = "Lost";
-    } else if (selectedReason === "damage") {
-      requestMessage = "Damage";
-    } else if (selectedReason === "change") {
-      requestMessage = "Change Address";
-    }
 
-    showSuccessNotification("Reason: " + requestMessage + "\n\nWe will process your request soon.");
-    closeRequestIdModal();
-  });
+      let reason = "";
+      let otherReason = null;
+
+      if (selectedReason === "lost") {
+        reason = "Lost";
+
+      } else if (selectedReason === "damage") {
+        reason = "Damage";
+
+      } else if (selectedReason === "change") {
+        reason = "Change Address";
+
+      } else if (selectedReason === "other") {
+        reason = "Other";
+
+        otherReason =
+          otherReasonInput
+            ? otherReasonInput.value.trim()
+            : "";
+
+        if (!otherReason) {
+          if (requestReasonError) {
+            requestReasonError.textContent =
+              "Please specify your reason.";
+          }
+
+          return;
+        }
+      }
+
+      /*
+      * Get the Application ID currently being tracked.
+      */
+      const verifiedApplicationId =
+        document.getElementById(
+          "verified-application-id"
+        );
+
+      const applicationId =
+        (
+          verifiedApplicationId?.textContent ||
+          new URLSearchParams(
+            window.location.search
+          ).get("id") ||
+          ""
+        ).trim();
+
+      if (!applicationId) {
+        if (requestReasonError) {
+          requestReasonError.textContent =
+            "Unable to determine the Application ID.";
+        }
+
+        return;
+      }
+
+      /*
+      * Get temporary form edits, if the applicant used
+      * Edit Application on Step 3.
+      */
+      let applicationChanges = null;
+
+      const savedApplicationId =
+        sessionStorage.getItem(
+          "pendingRequestApplicationId"
+        );
+
+      const savedChanges =
+        sessionStorage.getItem(
+          "pendingRequestApplicationChanges"
+        );
+
+      if (
+        savedApplicationId === applicationId &&
+        savedChanges
+      ) {
+        try {
+          applicationChanges =
+            JSON.parse(savedChanges);
+        } catch (error) {
+          console.error(
+            "Unable to read temporary application changes:",
+            error
+          );
+
+          if (requestReasonError) {
+            requestReasonError.textContent =
+              "Unable to read your edited application data. Please edit the application again.";
+          }
+
+          return;
+        }
+      }
+
+      const submitRequestButton =
+        requestIdForm.querySelector(
+          'button[type="submit"]'
+        );
+
+      const originalText =
+        submitRequestButton
+          ? submitRequestButton.textContent
+          : "Submit Request";
+
+      if (submitRequestButton) {
+        submitRequestButton.disabled = true;
+        submitRequestButton.textContent =
+          "Submitting...";
+      }
+
+      try {
+        /*
+        * Retrieve replacement files temporarily stored
+        * when the applicant clicked OK on the edit page.
+        */
+        const temporaryFiles =
+          await getRequestEditFiles(
+            applicationId
+          );
+
+        const formData =
+          new FormData();
+
+        const requestPayload = {
+          applicationChanges:
+            applicationChanges,
+          reason: reason,
+          otherReason: otherReason
+        };
+
+        formData.append(
+          "payload",
+          JSON.stringify(requestPayload)
+        );
+
+        Object.entries(
+          temporaryFiles
+        ).forEach(function ([fileType, file]) {
+          if (file) {
+            formData.append(
+              fileType,
+              file
+            );
+          }
+        });
+
+        const response =
+          await fetch(
+            "https://osca-backend.onrender.com/api/applications/" +
+            encodeURIComponent(applicationId) +
+            "/id-request",
+            {
+              method: "POST",
+              body: formData
+            }
+          );
+
+        const result =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result.message ||
+            "Unable to submit ID request."
+          );
+        }
+
+        /*
+        * Only clear temporary edits AFTER the backend
+        * confirms everything was saved successfully.
+        */
+        sessionStorage.removeItem(
+          "pendingRequestApplicationId"
+        );
+
+        sessionStorage.removeItem(
+          "pendingRequestApplicationChanges"
+        );
+
+        await clearRequestEditFiles(
+          applicationId
+        );
+
+        showSuccessNotification(
+          "Your ID request has been submitted successfully.\n\n" +
+          "Reason: " +
+          (
+            reason === "Other"
+              ? "Other: " + otherReason
+              : reason
+          ) +
+          "\n\nOSCA will process your request.",
+          function () {
+            window.location.href =
+              "trackstatus.html?id=" +
+              encodeURIComponent(applicationId);
+          }
+        );
+
+      } catch (error) {
+        console.error(
+          "ID request submission error:",
+          error
+        );
+
+        if (requestReasonError) {
+          requestReasonError.textContent =
+            error.message ||
+            "Unable to submit ID request.";
+        }
+
+      } finally {
+        if (submitRequestButton) {
+          submitRequestButton.disabled =
+            false;
+
+          submitRequestButton.textContent =
+            originalText;
+        }
+      }
+    }
+  );
 }
 
 function showSuccessNotification(message, onClose) {

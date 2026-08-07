@@ -2921,7 +2921,13 @@ function setupVerificationPage() {
     return {
       applicant: result.applicant,
       status: toTimelineStatus(result.status),
-      note: result.note
+      note: result.note,
+
+      hasActiveIdRequest:
+        Boolean(result.has_active_id_request),
+
+      idRequest:
+        result.id_request || null
     };
   };
 
@@ -2942,6 +2948,19 @@ function setupVerificationPage() {
     currentApplicationId = applicationId;
     verifiedApplicant.textContent = record.applicant;
     verificationNote.textContent = getDefaultNoteByStatus(record.status);
+    if (
+      record.hasActiveIdRequest &&
+      record.idRequest
+    ) {
+      const requestStatus =
+        record.idRequest.status || "Pending";
+
+      verificationNote.textContent =
+        "Your ID request has already been submitted. " +
+        "Current request status: " +
+        requestStatus +
+        ".";
+    }
 
     currentApplicationStatus =
       String(record.status || "").trim().toLowerCase();
@@ -2950,10 +2969,12 @@ function setupVerificationPage() {
       currentApplicationStatus === "pending";
 
     const canRequestId =
-      currentApplicationStatus === "completed";
+      currentApplicationStatus === "completed" &&
+      !record.hasActiveIdRequest;
 
     const canEditFromStep3 =
-      currentApplicationStatus === "completed";
+      currentApplicationStatus === "completed" &&
+      !record.hasActiveIdRequest;
 
     if (editApplicationStep2) {
       editApplicationStep2.hidden = !canEditFromStep2;

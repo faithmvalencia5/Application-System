@@ -59,6 +59,23 @@ export async function getApplicationStatus(req, res) {
             applicationRow.application_status ||
             "Pending";
 
+        const {
+            data: activeIdRequest,
+            error: idRequestError
+        } = await supabase
+            .from("id_requests")
+            .select("id, request_status, reason, other_reason, requested_at")
+            .eq("application_id", applicationId)
+            .in(
+                "request_status",
+                ["Pending", "Under Review", "Approved"]
+            )
+            .maybeSingle();
+
+        if (idRequestError) {
+            throw idRequestError;
+        }
+
         const applicantName = [
             applicationRow.first_name,
             applicationRow.middle_name,
@@ -72,7 +89,19 @@ export async function getApplicationStatus(req, res) {
             success: true,
             application_id: applicationRow.application_id,
             applicant: applicantName || "Applicant",
-            status: statusText
+            status: statusText,
+
+            has_active_id_request: Boolean(activeIdRequest),
+
+            id_request: activeIdRequest
+                ? {
+                    id: activeIdRequest.id,
+                    status: activeIdRequest.request_status,
+                    reason: activeIdRequest.reason,
+                    other_reason: activeIdRequest.other_reason,
+                    requested_at: activeIdRequest.requested_at
+                }
+                : null
         });
 
     } catch (error) {

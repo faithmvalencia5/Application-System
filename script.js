@@ -3330,56 +3330,45 @@ function setupVerificationPage() {
 }
 
 function setupRequestIdModal() {
-  const requestIdButton = document.getElementById("request-id-button");
-  const requestIdModal = document.getElementById("verify-request-id-modal");
-  const statusStep = document.getElementById("verify-step-status");
-  const requestIdForm = document.getElementById("request-id-form");
-  const reasonSelect = document.getElementById("request-reason-select");
-  const otherReasonWrapper = document.getElementById("other-reason-wrapper");
-  const otherReasonInput = document.getElementById("other-reason-input");
-  const requestReasonError = document.getElementById("request-reason-error");
-  const closeRequestIdModalButton = document.getElementById("close-request-id-modal");
-  cancelRequestIdButton.addEventListener(
-    "click",
-    async function () {
+  const requestIdButton =
+    document.getElementById("request-id-button");
 
-      const applicationId =
-        (
-          document.getElementById(
-            "verified-application-id"
-          )?.textContent ||
-          new URLSearchParams(
-            window.location.search
-          ).get("id") ||
-          ""
-        ).trim();
+  const requestIdModal =
+    document.getElementById("verify-request-id-modal");
 
-      await clearPendingIdRequest(
-        applicationId
-      );
+  const statusStep =
+    document.getElementById("verify-step-status");
 
-      // Clear the visible selected reason
-      reasonSelect.value = "";
+  const requestIdForm =
+    document.getElementById("request-id-form");
 
-      if (otherReasonInput) {
-        otherReasonInput.value = "";
-      }
+  const reasonSelect =
+    document.getElementById("request-reason-select");
 
-      if (otherReasonWrapper) {
-        otherReasonWrapper.style.display =
-          "none";
-      }
+  const otherReasonWrapper =
+    document.getElementById("other-reason-wrapper");
 
-      if (requestReasonError) {
-        requestReasonError.textContent = "";
-      }
+  const otherReasonInput =
+    document.getElementById("other-reason-input");
 
-      // Return from Step 3 to Step 2
-      closeRequestIdModal();
-    }
-  );
+  const requestReasonError =
+    document.getElementById("request-reason-error");
 
-  if (!requestIdButton || !requestIdModal || !statusStep || !requestIdForm || !reasonSelect) {
+  const closeRequestIdModalButton =
+    document.getElementById("close-request-id-modal");
+
+  const cancelRequestIdButton =
+    document.getElementById("cancel-request-id");
+
+  if (
+    !requestIdButton ||
+    !requestIdModal ||
+    !statusStep ||
+    !requestIdForm ||
+    !reasonSelect ||
+    !closeRequestIdModalButton ||
+    !cancelRequestIdButton
+  ) {
     return;
   }
 
@@ -3531,7 +3520,42 @@ function setupRequestIdModal() {
   requestIdButton.addEventListener("click", showRequestIdModal);
 
   closeRequestIdModalButton.addEventListener("click", closeRequestIdModal);
-  cancelRequestIdButton.addEventListener("click", closeRequestIdModal);
+  cancelRequestIdButton.addEventListener(
+    "click",
+    async function () {
+      const applicationId =
+        (
+          document.getElementById(
+            "verified-application-id"
+          )?.textContent ||
+          new URLSearchParams(
+            window.location.search
+          ).get("id") ||
+          ""
+        ).trim();
+
+      await clearPendingIdRequest(
+        applicationId
+      );
+
+      reasonSelect.value = "";
+
+      if (otherReasonInput) {
+        otherReasonInput.value = "";
+      }
+
+      if (otherReasonWrapper) {
+        otherReasonWrapper.style.display =
+          "none";
+      }
+
+      if (requestReasonError) {
+        requestReasonError.textContent = "";
+      }
+
+      closeRequestIdModal();
+    }
+  );
 
   requestIdForm.addEventListener(
     "submit",

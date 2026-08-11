@@ -2815,7 +2815,7 @@ function setupFormSubmitConfirmation() {
               ? error.message
               : "Unknown error";
 
-          showSuccessNotification(
+          showErrorNotification(
             (
               isPendingEdit
                 ? "Saving failed: "

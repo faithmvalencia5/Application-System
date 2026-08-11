@@ -120,10 +120,35 @@ export async function registerApplication(payload, files) {
         const duplicate = await findDuplicateApplicant(applicationsData);
 
         if (duplicate) {
+
+            const [
+                updateSession,
+                recoverSession
+            ] = await Promise.all([
+                createDuplicateVerificationSession(
+                    duplicate.application_id,
+                    "update_existing"
+                ),
+
+                createDuplicateVerificationSession(
+                    duplicate.application_id,
+                    "recover_application_id"
+                )
+            ]);
+
             return {
                 duplicate: true,
-                duplicateApplicationId:
-                    duplicate.application_id
+
+                verificationSessions: {
+                    updateExisting:
+                        updateSession.id,
+
+                    recoverApplicationId:
+                        recoverSession.id
+                },
+
+                expiresAt:
+                    updateSession.expires_at
             };
         }
 

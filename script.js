@@ -2777,7 +2777,10 @@ function setupFormSubmitConfirmation() {
             !isPendingEdit &&
             result?.duplicate === true
           ) {
-            showDuplicateRecordModal();
+            showDuplicateRecordModal(
+              result.verificationSessions
+            );
+
             return;
           }
 
@@ -3888,7 +3891,9 @@ function showErrorNotification(message, onClose) {
     showNotification(message, "error", onClose);
 }
 
-function showDuplicateRecordModal() {
+function showDuplicateRecordModal(
+  verificationSessions
+) {
   const overlay =
     document.getElementById(
       "duplicate-record-overlay"
@@ -3898,6 +3903,23 @@ function showDuplicateRecordModal() {
     document.getElementById(
       "duplicate-record-modal"
     );
+  
+  const updateSessionId =
+    verificationSessions?.updateExisting;
+
+  const recoverSessionId =
+    verificationSessions?.recoverApplicationId;
+
+  if (
+    !updateSessionId ||
+    !recoverSessionId
+  ) {
+    showErrorNotification(
+      "Unable to start secure verification. Please try again."
+    );
+
+    return;
+  }
 
   const updateButton =
     document.getElementById(
@@ -3932,19 +3954,17 @@ function showDuplicateRecordModal() {
     modal.hidden = true;
   };
 
-  /*
-   * We will connect these securely
-   * in the next step.
-   */
   updateButton.onclick = function () {
     console.log(
-      "Update Existing Record selected."
+      "Update verification session:",
+      updateSessionId
     );
   };
 
   recoverButton.onclick = function () {
     console.log(
-      "Recover Application ID selected."
+      "Recovery verification session:",
+      recoverSessionId
     );
   };
 }

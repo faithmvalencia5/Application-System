@@ -3,7 +3,8 @@ import {
     registerApplication as registerApplicationService,
     getApplicationById as getApplicationByIdService,
     updateApplication as updateApplicationService,
-    submitIdRequest as submitIdRequestService
+    submitIdRequest as submitIdRequestService,
+    createDuplicateVerificationSession
 } from "../services/applicationService.js";
 
 
@@ -30,9 +31,19 @@ export async function registerApplication(req, res) {
         if (result.duplicate) {
             return res.status(409).json({
                 success: false,
+
                 duplicate: true,
+
                 verificationRequired: true,
-                message: "A similar application already exists."
+
+                verificationSessions:
+                    result.verificationSessions,
+
+                expiresAt:
+                    result.expiresAt,
+
+                message:
+                    "A similar application already exists."
             });
         }
 

@@ -3828,15 +3828,20 @@ function showNotification(message, type = "success", onClose) {
     return;
   }
 
+  notificationIcon.classList.remove(
+      "notification-icon-success",
+      "notification-icon-error"
+  );
+
   if (type === "error") {
       notificationTitle.textContent = "Submission Failed";
       notificationIcon.textContent = "⚠";
-      notificationIcon.style.backgroundColor = "#dc2626";
+      notificationIcon.classList.add("notification-icon-error");
   }
   else {
       notificationTitle.textContent = "Submission Successful";
       notificationIcon.textContent = "✔";
-      notificationIcon.style.backgroundColor = "#22c55e";
+      notificationIcon.classList.add("notification-icon-success");
   }
 
   notificationMessage.textContent = message;

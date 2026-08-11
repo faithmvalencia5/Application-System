@@ -3830,7 +3830,7 @@ function showNotification(message, type = "success", onClose) {
 
   if (type === "error") {
       notificationTitle.textContent = "Submission Failed";
-      notificationIcon.textContent = "!";
+      notificationIcon.textContent = "⚠";
       notificationIcon.style.backgroundColor = "#dc2626";
   }
   else {

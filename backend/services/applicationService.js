@@ -40,6 +40,30 @@ async function deleteStorageFile(filePath) {
         );
     }
 }
+async function findDuplicateApplicant(applicationsData) {
+
+    const { data, error } = await supabase
+        .from("applications")
+        .select(`
+            application_id,
+            surname,
+            first_name,
+            middle_name,
+            date_of_birth,
+            barangay_district
+        `)
+        .eq("surname", applicationsData.surname)
+        .eq("first_name", applicationsData.first_name)
+        .eq("date_of_birth", applicationsData.date_of_birth)
+        .eq("barangay_district", applicationsData.barangay_district)
+        .limit(1);
+
+    if (error) {
+        throw error;
+    }
+
+    return data.length > 0 ? data[0] : null;
+}
 
 export async function registerApplication(payload, files) {
 
@@ -57,6 +81,16 @@ export async function registerApplication(payload, files) {
     let applicationId = null;
 
     try {
+        const duplicate = await findDuplicateApplicant(applicationsData);
+
+        if (duplicate) {
+
+            return {
+                duplicate: true,
+                application: duplicate
+            };
+
+        }
 
         // TABLE 1: APPLICATIONS
         const { data: application, error: applicationError } = await supabase

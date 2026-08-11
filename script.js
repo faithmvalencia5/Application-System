@@ -3813,17 +3813,30 @@ function setupRequestIdModal() {
   );
 }
 
-function showSuccessNotification(message, onClose) {
+function showNotification(message, type = "success", onClose) {
   const overlay = document.getElementById("success-notification-overlay");
   const notification = document.getElementById("success-notification");
   const notificationMessage = document.getElementById("notification-message");
+  const notificationTitle = document.getElementById("notification-title");
+  const notificationIcon = document.getElementById("notification-icon");
   const closeButton = document.getElementById("notification-close-button");
 
-  if (!overlay || !notification || !notificationMessage || !closeButton) {
+  if (!overlay || !notification || !notificationMessage || !notificationTitle || !notificationIcon || !closeButton) {
     if (typeof onClose === 'function') {
       try { onClose(); } catch (e) { /* ignore */ }
     }
     return;
+  }
+
+  if (type === "error") {
+      notificationTitle.textContent = "Submission Failed";
+      notificationIcon.textContent = "!";
+      notificationIcon.style.backgroundColor = "#dc2626";
+  }
+  else {
+      notificationTitle.textContent = "Submission Successful";
+      notificationIcon.textContent = "✔";
+      notificationIcon.style.backgroundColor = "#22c55e";
   }
 
   notificationMessage.textContent = message;
@@ -3845,6 +3858,14 @@ function showSuccessNotification(message, onClose) {
     }
   }, { once: true });
 
+}
+
+function showSuccessNotification(message, onClose) {
+    showNotification(message, "success", onClose);
+}
+
+function showErrorNotification(message, onClose) {
+    showNotification(message, "error", onClose);
 }
 
 document.addEventListener("DOMContentLoaded", function () {

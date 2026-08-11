@@ -2821,7 +2821,7 @@ function setupFormSubmitConfirmation() {
                 ? "Saving failed: "
                 : isRequestEdit
                   ? "Unable to keep changes: "
-                  : "Submission failed: "
+                  : ""
             ) + message
           );
 

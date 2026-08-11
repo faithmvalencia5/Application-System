@@ -31,7 +31,7 @@ export async function registerApplication(req, res) {
             return res.status(409).json({
                 success: false,
                 duplicate: true,
-                application: result.application,
+                verificationRequired: true,
                 message: "A similar application already exists."
             });
         }

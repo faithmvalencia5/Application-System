@@ -2509,6 +2509,13 @@ function setupFormSubmitConfirmation() {
 
     const result = await response.json();
 
+    if (
+      response.status === 409 &&
+      result.duplicate === true
+    ) {
+      return result;
+    }
+
     if (!response.ok) {
       throw new Error(
         result.message ||
@@ -2765,6 +2772,14 @@ function setupFormSubmitConfirmation() {
           }
 
           const result = await saveApplication();
+
+          if (
+            !isPendingEdit &&
+            result?.duplicate === true
+          ) {
+            showDuplicateRecordModal();
+            return;
+          }
 
           if (isPendingEdit) {
             const returnedApplicationId =
@@ -3871,6 +3886,67 @@ function showSuccessNotification(message, onClose) {
 
 function showErrorNotification(message, onClose) {
     showNotification(message, "error", onClose);
+}
+
+function showDuplicateRecordModal() {
+  const overlay =
+    document.getElementById(
+      "duplicate-record-overlay"
+    );
+
+  const modal =
+    document.getElementById(
+      "duplicate-record-modal"
+    );
+
+  const updateButton =
+    document.getElementById(
+      "duplicate-update-button"
+    );
+
+  const recoverButton =
+    document.getElementById(
+      "duplicate-recover-button"
+    );
+
+  const cancelButton =
+    document.getElementById(
+      "duplicate-cancel-button"
+    );
+
+  if (
+    !overlay ||
+    !modal ||
+    !updateButton ||
+    !recoverButton ||
+    !cancelButton
+  ) {
+    return;
+  }
+
+  overlay.hidden = false;
+  modal.hidden = false;
+
+  cancelButton.onclick = function () {
+    overlay.hidden = true;
+    modal.hidden = true;
+  };
+
+  /*
+   * We will connect these securely
+   * in the next step.
+   */
+  updateButton.onclick = function () {
+    console.log(
+      "Update Existing Record selected."
+    );
+  };
+
+  recoverButton.onclick = function () {
+    console.log(
+      "Recover Application ID selected."
+    );
+  };
 }
 
 document.addEventListener("DOMContentLoaded", function () {

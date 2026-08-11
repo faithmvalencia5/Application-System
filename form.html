@@ -641,6 +641,66 @@
         </div>
       </div>
     </div>
+    <div id="duplicate-record-overlay" class="notification-overlay" hidden>
+      <div
+        id="duplicate-record-modal"
+        class="notification-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="duplicate-record-title"
+      >
+        <div class="notification-body">
+
+          <div class="notification-icon notification-icon-error">
+            ⚠
+          </div>
+
+          <div>
+            <strong
+              id="duplicate-record-title"
+              class="notification-title"
+            >
+              Existing Record Found
+            </strong>
+
+            <p>
+              A record with similar information already exists.
+              For your security, please choose how you would like
+              to continue.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="notification-actions duplicate-actions">
+
+          <button
+            id="duplicate-update-button"
+            type="button"
+            class="table-btn"
+          >
+            Update Existing Record
+          </button>
+
+          <button
+            id="duplicate-recover-button"
+            type="button"
+            class="table-btn"
+          >
+            Recover Application ID
+          </button>
+
+          <button
+            id="duplicate-cancel-button"
+            type="button"
+            class="btn cancel"
+          >
+            Cancel
+          </button>
+
+        </div>
+      </div>
+    </div>
     <script type="module" src="supabase.js"></script>
   </body>
 </html>

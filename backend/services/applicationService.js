@@ -65,6 +65,42 @@ async function findDuplicateApplicant(applicationsData) {
     return data.length > 0 ? data[0] : null;
 }
 
+export async function createDuplicateVerificationSession(
+    applicationId,
+    purpose
+) {
+    const allowedPurposes = [
+        "update_existing",
+        "recover_application_id"
+    ];
+
+    if (!allowedPurposes.includes(purpose)) {
+        throw new Error(
+            "Invalid duplicate verification purpose."
+        );
+    }
+
+    const {
+        data,
+        error
+    } = await supabase
+        .from("duplicate_verification_sessions")
+        .insert([
+            {
+                application_id: applicationId,
+                purpose: purpose
+            }
+        ])
+        .select("id, expires_at")
+        .single();
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
 export async function registerApplication(payload, files) {
 
     const {
@@ -84,12 +120,11 @@ export async function registerApplication(payload, files) {
         const duplicate = await findDuplicateApplicant(applicationsData);
 
         if (duplicate) {
-
             return {
                 duplicate: true,
-                application: duplicate
+                duplicateApplicationId:
+                    duplicate.application_id
             };
-
         }
 
         // TABLE 1: APPLICATIONS

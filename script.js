@@ -2523,13 +2523,27 @@ function setupFormSubmitConfirmation() {
   const saveApplication = async function () {
     const payload = collectAllPayloads();
 
-    const params = new URLSearchParams(window.location.search);
-    const mode = params.get("mode");
-    const applicationId = params.get("id");
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const mode =
+      params.get("mode");
+
+    const applicationId =
+      params.get("id");
+
+    const duplicateSessionId =
+      params.get("session");
 
     const isPendingEdit =
       mode === "edit" &&
       Boolean(applicationId);
+
+    const isDuplicateUpdate =
+      mode === "duplicate-update" &&
+      Boolean(duplicateSessionId);
 
     const formData = new FormData();
 
@@ -2580,14 +2594,36 @@ function setupFormSubmitConfirmation() {
       formData.append("signature", signature);
     }
 
-    const requestUrl = isPendingEdit
-      ? "https://osca-backend.onrender.com/api/applications/" +
-        encodeURIComponent(applicationId)
-      : "https://osca-backend.onrender.com/api/applications/register";
+    let requestUrl = "";
+    let requestMethod = "";
 
-    const requestMethod = isPendingEdit
-      ? "PUT"
-      : "POST";
+    if (isDuplicateUpdate) {
+
+      requestUrl =
+        "https://osca-backend.onrender.com/api/applications/duplicate/verified/" +
+        encodeURIComponent(
+          duplicateSessionId
+        );
+
+      requestMethod = "PUT";
+
+    } else if (isPendingEdit) {
+
+      requestUrl =
+        "https://osca-backend.onrender.com/api/applications/" +
+        encodeURIComponent(
+          applicationId
+        );
+
+      requestMethod = "PUT";
+
+    } else {
+
+      requestUrl =
+        "https://osca-backend.onrender.com/api/applications/register";
+
+      requestMethod = "POST";
+    }
 
     const response = await fetch(requestUrl, {
       method: requestMethod,
@@ -2800,16 +2836,23 @@ function setupFormSubmitConfirmation() {
     const isRequestEdit =
       mode === "request-edit" &&
       Boolean(existingApplicationId);
+
+    const duplicateSessionId =
+      params.get("session");
+
+    const isDuplicateUpdate =
+      mode === "duplicate-update" &&
+      Boolean(duplicateSessionId);
     
     const confirmationTitle =
-      isPendingEdit
+      isPendingEdit || isDuplicateUpdate
         ? "Save Changes?"
         : isRequestEdit
           ? "Confirm Changes?"
           : "Submit Application?";
 
     const confirmationMessage =
-      isPendingEdit
+      isPendingEdit || isDuplicateUpdate
         ? "Are you sure you want to save the changes made to this application?"
         : isRequestEdit
           ? "Are you sure the information is correct? These changes will only be saved when you submit your ID request."
@@ -2825,7 +2868,7 @@ function setupFormSubmitConfirmation() {
           submitButton.textContent;
 
         submitButton.textContent =
-          isPendingEdit
+          isPendingEdit || isDuplicateUpdate
             ? "Saving..."
             : isRequestEdit
               ? "Processing..."
@@ -2866,6 +2909,23 @@ function setupFormSubmitConfirmation() {
           ) {
             showDuplicateRecordModal(
               result.verificationSessions
+            );
+
+            return;
+          }
+
+          if (isDuplicateUpdate) {
+
+            sessionStorage.removeItem(
+              "duplicateUpdateSession"
+            );
+
+            showSuccessNotification(
+              "Your existing record has been updated successfully.",
+              function () {
+                window.location.href =
+                  "index.html";
+              }
             );
 
             return;

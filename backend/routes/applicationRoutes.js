@@ -7,7 +7,8 @@ import {
     updateApplication,
     submitIdRequest,
     verifyDuplicateApplicant,
-    getVerifiedDuplicateRecord
+    getVerifiedDuplicateRecord,
+    updateVerifiedDuplicateRecord
 } from "../controllers/applicationController.js";
 
 import { getApplicationStatus } from "../controllers/statusController.js";
@@ -30,6 +31,21 @@ router.post(
 router.get(
     "/duplicate/verified/:sessionId",
     getVerifiedDuplicateRecord
+);
+router.put(
+    "/duplicate/verified/:sessionId",
+    upload.fields([
+        { name: "valid_id_front", maxCount: 1 },
+        { name: "valid_id_back", maxCount: 1 },
+        { name: "latest_photo", maxCount: 1 },
+        { name: "birth_certificate", maxCount: 1 },
+        {
+            name: "community_tax_certificate",
+            maxCount: 1
+        },
+        { name: "signature", maxCount: 1 }
+    ]),
+    updateVerifiedDuplicateRecord
 );
 router.get("/status/:applicationId", getApplicationStatus);
 router.post("/:applicationId/id-request",

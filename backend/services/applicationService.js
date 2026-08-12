@@ -1320,3 +1320,119 @@ export async function getVerifiedDuplicateApplication(
 
     return applicationData;
 }
+
+export async function updateVerifiedDuplicateApplication(
+    sessionId,
+    payload,
+    files
+) {
+    const {
+        data: session,
+        error: sessionError
+    } = await supabase
+        .from("duplicate_verification_sessions")
+        .select(`
+            id,
+            application_id,
+            purpose,
+            verified,
+            expires_at
+        `)
+        .eq("id", sessionId)
+        .maybeSingle();
+
+    if (sessionError) {
+        throw sessionError;
+    }
+
+    if (!session) {
+        throw new Error(
+            "Verification session not found."
+        );
+    }
+
+    if (
+        new Date(session.expires_at).getTime() <
+        Date.now()
+    ) {
+        throw new Error(
+            "Verification session has expired."
+        );
+    }
+
+    if (!session.verified) {
+        throw new Error(
+            "Identity verification is required."
+        );
+    }
+
+    if (
+        session.purpose !== "update_existing"
+    ) {
+        throw new Error(
+            "This verification session cannot be used to update a record."
+        );
+    }
+
+    /*
+     * A verified duplicate update is allowed regardless
+     * of the application's current status because the
+     * applicant is updating an existing duplicate record.
+     */
+    const {
+        data: latestStatusRows,
+        error: latestStatusError
+    } = await supabase
+        .from("application_status_history")
+        .select("status, updated_at")
+        .eq(
+            "application_id",
+            session.application_id
+        )
+        .order(
+            "updated_at",
+            { ascending: false }
+        )
+        .limit(1);
+
+    if (latestStatusError) {
+        throw latestStatusError;
+    }
+
+    const currentStatus =
+        String(
+            latestStatusRows?.[0]?.status ||
+            "Pending"
+        )
+            .trim()
+            .toLowerCase();
+
+    const updatedApplication =
+        await updateApplication(
+            session.application_id,
+            payload,
+            files,
+            [currentStatus]
+        );
+
+    /*
+     * Make the session one-time-use after a
+     * successful update.
+     */
+    const { error: deleteSessionError } =
+        await supabase
+            .from(
+                "duplicate_verification_sessions"
+            )
+            .delete()
+            .eq("id", session.id);
+
+    if (deleteSessionError) {
+        console.error(
+            "Unable to remove used duplicate session:",
+            deleteSessionError
+        );
+    }
+
+    return updatedApplication;
+}

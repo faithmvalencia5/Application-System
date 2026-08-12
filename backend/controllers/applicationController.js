@@ -6,7 +6,8 @@ import {
     submitIdRequest as submitIdRequestService,
     createDuplicateVerificationSession,
     verifyDuplicateIdentity,
-    getVerifiedDuplicateApplication as getVerifiedDuplicateApplicationService
+    getVerifiedDuplicateApplication as getVerifiedDuplicateApplicationService,
+    updateVerifiedDuplicateApplication as updateVerifiedDuplicateApplicationService
 } from "../services/applicationService.js";
 
 
@@ -282,6 +283,52 @@ export async function getVerifiedDuplicateRecord(
             message:
                 error.message ||
                 "Unable to access the existing record."
+        });
+    }
+}
+
+export async function updateVerifiedDuplicateRecord(
+    req,
+    res
+) {
+    try {
+        const sessionId =
+            req.params.sessionId;
+
+        if (!sessionId) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Verification session is required."
+            });
+        }
+
+        const payload =
+            JSON.parse(req.body.payload);
+
+        const result =
+            await updateVerifiedDuplicateApplicationService(
+                sessionId,
+                payload,
+                req.files
+            );
+
+        return res.status(200).json({
+            success: true,
+            application: result
+        });
+
+    } catch (error) {
+        console.error(
+            "Update verified duplicate record error:",
+            error
+        );
+
+        return res.status(403).json({
+            success: false,
+            message:
+                error.message ||
+                "Unable to update the existing record."
         });
     }
 }

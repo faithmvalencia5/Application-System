@@ -368,7 +368,8 @@ function protectApplicationForm() {
 
   const isEditMode =
     mode === "edit" ||
-    mode === "request-edit";
+    mode === "request-edit" ||
+    mode === "duplicate-update";
 
   // Existing applications may open the form directly
   // from the Track Status page.
@@ -390,45 +391,86 @@ function protectApplicationForm() {
 
 function setupFormMode() {
 
-    if (!window.location.pathname.endsWith("form.html")) {
-        return;
+  if (
+    !window.location.pathname.endsWith(
+      "form.html"
+    )
+  ) {
+    return;
+  }
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  const mode =
+    params.get("mode");
+
+  const applicationId =
+    params.get("id");
+
+  const sessionId =
+    params.get("session");
+
+  const isNormalEdit =
+    (mode === "edit" ||
+      mode === "request-edit") &&
+    Boolean(applicationId);
+
+  const isDuplicateUpdate =
+    mode === "duplicate-update" &&
+    Boolean(sessionId);
+
+  if (
+    !isNormalEdit &&
+    !isDuplicateUpdate
+  ) {
+    return;
+  }
+
+  const titleBar =
+    document.querySelector(
+      ".title-bar"
+    );
+
+  const submitButton =
+    document.querySelector(
+      ".btn.submit"
+    );
+
+  const cancelButton =
+    document.getElementById(
+      "cancel-application"
+    );
+
+  if (titleBar) {
+    titleBar.textContent =
+      "EDIT SENIOR CITIZEN ID APPLICATION";
+  }
+
+  if (cancelButton) {
+    cancelButton.textContent =
+      "Close";
+  }
+
+  if (
+    mode === "edit" ||
+    mode === "duplicate-update"
+  ) {
+    if (submitButton) {
+      submitButton.textContent =
+        "Save Changes";
     }
 
-    const params = new URLSearchParams(window.location.search);
-
-    const mode = params.get("mode");
-    const applicationId = params.get("id");
-
-    if (!mode || !applicationId) {
-        return;
+  } else if (
+    mode === "request-edit"
+  ) {
+    if (submitButton) {
+      submitButton.textContent =
+        "OK";
     }
-
-    const titleBar = document.querySelector(".title-bar");
-    const submitButton = document.querySelector(".btn.submit");
-    const cancelButton = document.getElementById("cancel-application");
-
-    if (titleBar) {
-        titleBar.textContent = "EDIT SENIOR CITIZEN ID APPLICATION";
-    }
-
-    if (cancelButton) {
-        cancelButton.textContent = "Close";
-    }
-
-    if (mode === "edit") {
-
-        if (submitButton) {
-            submitButton.textContent = "Save Changes";
-        }
-
-    } else if (mode === "request-edit") {
-
-        if (submitButton) {
-            submitButton.textContent = "OK";
-        }
-
-    }
-
+  }
 }
 
 async function loadApplicationForEditing() {
@@ -439,15 +481,45 @@ async function loadApplicationForEditing() {
     return;
   }
 
-  const params = new URLSearchParams(window.location.search);
-  const mode = params.get("mode");
-  const applicationId = params.get("id");
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
 
-  const isEditMode =
+  const mode =
+    params.get("mode");
+
+  const applicationId =
+    params.get("id");
+
+  const sessionId =
+    params.get("session");
+
+  const isNormalEdit =
     mode === "edit" ||
     mode === "request-edit";
 
-  if (!isEditMode || !applicationId) {
+  const isDuplicateUpdate =
+    mode === "duplicate-update";
+
+  if (
+    isNormalEdit &&
+    !applicationId
+  ) {
+    return;
+  }
+
+  if (
+    isDuplicateUpdate &&
+    !sessionId
+  ) {
+    return;
+  }
+
+  if (
+    !isNormalEdit &&
+    !isDuplicateUpdate
+  ) {
     return;
   }
 
@@ -621,12 +693,27 @@ async function loadApplicationForEditing() {
   };
 
   try {
-    const response = await fetch(
-      "https://osca-backend.onrender.com/api/applications/" +
-      encodeURIComponent(applicationId)
-    );
 
-    const result = await response.json();
+    let loadUrl = "";
+
+    if (isDuplicateUpdate) {
+
+      loadUrl =
+        "https://osca-backend.onrender.com/api/applications/duplicate/verified/" +
+        encodeURIComponent(sessionId);
+
+    } else {
+
+      loadUrl =
+        "https://osca-backend.onrender.com/api/applications/" +
+        encodeURIComponent(applicationId);
+    }
+
+    const response =
+      await fetch(loadUrl);
+
+    const result =
+      await response.json();
 
     if (!response.ok) {
       throw new Error(
@@ -3891,6 +3978,48 @@ function showErrorNotification(message, onClose) {
     showNotification(message, "error", onClose);
 }
 
+async function verifyDuplicateApplicant(sessionId) {
+  const surname =
+    document.getElementById("surname")?.value.trim() || "";
+
+  const firstName =
+    document.getElementById("firstname")?.value.trim() || "";
+
+  const middleName =
+    document.getElementById("middlename")?.value.trim() || "";
+
+  const dateOfBirth =
+    document.getElementById("dob")?.value || "";
+
+  const response = await fetch(
+    "https://osca-backend.onrender.com/api/applications/duplicate/verify",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        sessionId,
+        surname,
+        firstName,
+        middleName,
+        dateOfBirth
+      })
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result.message ||
+      "Identity verification failed."
+    );
+  }
+
+  return result;
+}
+
 function showDuplicateRecordModal(
   verificationSessions
 ) {
@@ -3954,18 +4083,105 @@ function showDuplicateRecordModal(
     modal.hidden = true;
   };
 
-  updateButton.onclick = function () {
-    console.log(
-      "Update verification session:",
-      updateSessionId
-    );
+  updateButton.onclick = async function () {
+    const originalText =
+      updateButton.textContent;
+
+    try {
+      updateButton.disabled = true;
+      recoverButton.disabled = true;
+      cancelButton.disabled = true;
+
+      updateButton.textContent =
+        "Verifying...";
+
+      const result =
+        await verifyDuplicateApplicant(
+          updateSessionId
+        );
+
+      if (!result.verified) {
+        throw new Error(
+          "Identity verification failed."
+        );
+      }
+
+      overlay.hidden = true;
+      modal.hidden = true;
+
+      sessionStorage.setItem(
+        "duplicateUpdateSession",
+        updateSessionId
+      );
+
+      window.location.href =
+        "form.html?mode=duplicate-update&session=" +
+        encodeURIComponent(updateSessionId);
+
+    } catch (error) {
+      showErrorNotification(
+        error.message ||
+        "Unable to verify your identity."
+      );
+
+    } finally {
+      updateButton.disabled = false;
+      recoverButton.disabled = false;
+      cancelButton.disabled = false;
+
+      updateButton.textContent =
+        originalText;
+    }
   };
 
-  recoverButton.onclick = function () {
-    console.log(
-      "Recovery verification session:",
-      recoverSessionId
-    );
+  recoverButton.onclick = async function () {
+    const originalText =
+      recoverButton.textContent;
+
+    try {
+      updateButton.disabled = true;
+      recoverButton.disabled = true;
+      cancelButton.disabled = true;
+
+      recoverButton.textContent =
+        "Verifying...";
+
+      const result =
+        await verifyDuplicateApplicant(
+          recoverSessionId
+        );
+
+      if (!result.verified) {
+        throw new Error(
+          "Identity verification failed."
+        );
+      }
+
+      overlay.hidden = true;
+      modal.hidden = true;
+
+      showSuccessNotification(
+        "Identity verified successfully."
+      );
+
+      console.log(
+        "Verified for Application ID recovery."
+      );
+
+    } catch (error) {
+      showErrorNotification(
+        error.message ||
+        "Unable to verify your identity."
+      );
+
+    } finally {
+      updateButton.disabled = false;
+      recoverButton.disabled = false;
+      cancelButton.disabled = false;
+
+      recoverButton.textContent =
+        originalText;
+    }
   };
 }
 

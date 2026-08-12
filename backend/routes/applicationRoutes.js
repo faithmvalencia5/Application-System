@@ -5,7 +5,8 @@ import {
     registerApplication,
     getApplicationById,
     updateApplication,
-    submitIdRequest
+    submitIdRequest,
+    verifyDuplicateApplicant
 } from "../controllers/applicationController.js";
 
 import { getApplicationStatus } from "../controllers/statusController.js";
@@ -49,5 +50,9 @@ router.put(
         { name: "signature", maxCount: 1 }
     ]),
     updateApplication
+);
+router.post(
+  "/duplicate/verify",
+  verifyDuplicateApplicant
 );
 export default router;

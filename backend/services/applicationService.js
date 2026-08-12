@@ -1140,3 +1140,183 @@ export async function submitIdRequest(
         idRequest
     };
 }
+
+export async function verifyDuplicateIdentity(
+  sessionId,
+  surname,
+  firstName,
+  middleName,
+  dateOfBirth
+) {
+  // Get the temporary verification session
+  const { data: session, error: sessionError } =
+    await supabase
+      .from("duplicate_verification_sessions")
+      .select(`
+        id,
+        application_id,
+        purpose,
+        verified,
+        expires_at
+      `)
+      .eq("id", sessionId)
+      .single();
+
+  if (sessionError || !session) {
+    return {
+      verified: false,
+      reason: "invalid_session"
+    };
+  }
+
+  // Check expiration
+  if (
+    new Date(session.expires_at).getTime() <
+    Date.now()
+  ) {
+    return {
+      verified: false,
+      reason: "expired"
+    };
+  }
+
+  // Get the existing applicant
+  const { data: applicant, error: applicantError } =
+    await supabase
+      .from("applications")
+      .select(`
+        application_id,
+        surname,
+        first_name,
+        middle_name,
+        date_of_birth
+      `)
+      .eq(
+        "application_id",
+        session.application_id
+      )
+      .single();
+
+  if (applicantError || !applicant) {
+    return {
+      verified: false,
+      reason: "record_not_found"
+    };
+  }
+
+  const normalize = (value) =>
+    String(value || "")
+      .trim()
+      .toLowerCase();
+
+  const surnameMatches =
+    normalize(applicant.surname) ===
+    normalize(surname);
+
+  const firstNameMatches =
+    normalize(applicant.first_name) ===
+    normalize(firstName);
+
+  const middleNameMatches =
+    normalize(applicant.middle_name) ===
+    normalize(middleName);
+
+  const birthdateMatches =
+    String(applicant.date_of_birth) ===
+    String(dateOfBirth);
+
+  if (
+    !surnameMatches ||
+    !firstNameMatches ||
+    !middleNameMatches ||
+    !birthdateMatches
+  ) {
+    return {
+      verified: false,
+      reason: "identity_mismatch"
+    };
+  }
+
+  // Mark session as verified
+  const { error: updateError } =
+    await supabase
+      .from("duplicate_verification_sessions")
+      .update({
+        verified: true
+      })
+      .eq("id", session.id);
+
+  if (updateError) {
+    throw updateError;
+  }
+
+  return {
+    verified: true,
+    purpose: session.purpose
+  };
+}
+
+export async function getVerifiedDuplicateApplication(
+    sessionId
+) {
+    const {
+        data: session,
+        error: sessionError
+    } = await supabase
+        .from("duplicate_verification_sessions")
+        .select(`
+            id,
+            application_id,
+            purpose,
+            verified,
+            expires_at
+        `)
+        .eq("id", sessionId)
+        .maybeSingle();
+
+    if (sessionError) {
+        throw sessionError;
+    }
+
+    if (!session) {
+        throw new Error(
+            "Verification session not found."
+        );
+    }
+
+    if (
+        new Date(session.expires_at).getTime() <
+        Date.now()
+    ) {
+        throw new Error(
+            "Verification session has expired."
+        );
+    }
+
+    if (!session.verified) {
+        throw new Error(
+            "Identity verification is required."
+        );
+    }
+
+    if (
+        session.purpose !== "update_existing"
+    ) {
+        throw new Error(
+            "This verification session cannot be used to update a record."
+        );
+    }
+
+    const applicationData =
+        await getApplicationById(
+            session.application_id
+        );
+
+    if (!applicationData) {
+        throw new Error(
+            "Existing application record not found."
+        );
+    }
+
+    return applicationData;
+}

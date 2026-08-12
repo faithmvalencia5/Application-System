@@ -4,7 +4,9 @@ import {
     getApplicationById as getApplicationByIdService,
     updateApplication as updateApplicationService,
     submitIdRequest as submitIdRequestService,
-    createDuplicateVerificationSession
+    createDuplicateVerificationSession,
+    verifyDuplicateIdentity,
+    getVerifiedDuplicateApplication as getVerifiedDuplicateApplicationService
 } from "../services/applicationService.js";
 
 
@@ -167,6 +169,119 @@ export async function submitIdRequest(req, res) {
             message:
                 error.message ||
                 "Unable to submit ID request."
+        });
+    }
+}
+
+export async function verifyDuplicateApplicant(
+  req,
+  res
+) {
+  try {
+    const {
+      sessionId,
+      surname,
+      firstName,
+      middleName,
+      dateOfBirth
+    } = req.body;
+
+    if (
+      !sessionId ||
+      !surname ||
+      !firstName ||
+      !dateOfBirth
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Required verification information is missing."
+      });
+    }
+
+    const result =
+      await verifyDuplicateIdentity(
+        sessionId,
+        surname,
+        firstName,
+        middleName || "",
+        dateOfBirth
+      );
+
+    if (!result.verified) {
+      let message =
+        "Identity verification failed.";
+
+      if (result.reason === "expired") {
+        message =
+          "Your verification session has expired. Please submit the form again.";
+      }
+
+      return res.status(403).json({
+        success: false,
+        verified: false,
+        reason: result.reason,
+        message
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      verified: true,
+      purpose: result.purpose
+    });
+
+  } catch (error) {
+    console.error(
+      "Duplicate identity verification error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to verify your identity right now."
+    });
+  }
+}
+
+export async function getVerifiedDuplicateRecord(
+    req,
+    res
+) {
+    try {
+        const sessionId =
+            req.params.sessionId;
+
+        if (!sessionId) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Verification session is required."
+            });
+        }
+
+        const data =
+            await getVerifiedDuplicateApplicationService(
+                sessionId
+            );
+
+        return res.status(200).json({
+            success: true,
+            data: data
+        });
+
+    } catch (error) {
+        console.error(
+            "Get verified duplicate record error:",
+            error
+        );
+
+        return res.status(403).json({
+            success: false,
+            message:
+                error.message ||
+                "Unable to access the existing record."
         });
     }
 }

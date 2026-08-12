@@ -692,6 +692,70 @@ async function loadApplicationForEditing() {
     }
   };
 
+  if (mode === "duplicate-update") {
+    try {
+      const draftFiles =
+        await getRequestEditFiles(
+          sessionId
+        );
+
+      const inputMap = {
+        valid_id_front:
+          "upload-valid-id-front",
+
+        valid_id_back:
+          "upload-valid-id-back",
+
+        latest_photo:
+          "upload-latest-photo",
+
+        birth_certificate:
+          "upload-birth-certificate",
+
+        community_tax_certificate:
+          "upload-cedula",
+
+        signature:
+          "upload-signature"
+      };
+
+      Object.entries(
+        draftFiles
+      ).forEach(function ([fileType, file]) {
+
+        const inputId =
+          inputMap[fileType];
+
+        const input =
+          document.getElementById(
+            inputId
+          );
+
+        if (!input || !file) {
+          return;
+        }
+
+        const transfer =
+          new DataTransfer();
+
+        transfer.items.add(file);
+
+        input.files =
+          transfer.files;
+
+        input.dispatchEvent(
+          new Event("change")
+        );
+      });
+
+    } catch (error) {
+      console.error(
+        "Unable to restore duplicate update files:",
+        error
+      );
+    }
+  }
+
   try {
 
     let loadUrl = "";
@@ -747,13 +811,59 @@ async function loadApplicationForEditing() {
     let confirmations =
       data.confirmations || {};
 
+    if (mode === "duplicate-update") {
 
-    /*
-    * REQUEST-EDIT MODE:
-    *
-    * If this applicant already edited the form and clicked OK,
-    * use those temporary edits instead of the old database values.
-    */
+      const savedSessionId =
+        sessionStorage.getItem(
+          "duplicateUpdateDraftSession"
+        );
+
+      const savedDraftRaw =
+        sessionStorage.getItem(
+          "duplicateUpdateDraft"
+        );
+
+      if (
+        savedSessionId === sessionId &&
+        savedDraftRaw
+      ) {
+        try {
+          const savedDraft =
+            JSON.parse(savedDraftRaw);
+
+          application =
+            savedDraft.applicationsData ||
+            application;
+
+          familyComposition =
+            savedDraft.familyRowsData ||
+            familyComposition;
+
+          membership =
+            savedDraft.membershipsData ||
+            membership;
+
+          personalBackground =
+            savedDraft.personalBackgroundData ||
+            personalBackground;
+
+          problemsNeeds =
+            savedDraft.problemsNeedsData ||
+            problemsNeeds;
+
+          confirmations =
+            savedDraft.confirmationsData ||
+            confirmations;
+
+        } catch (error) {
+          console.error(
+            "Unable to restore duplicate update draft:",
+            error
+          );
+        }
+      }
+    }
+
     if (mode === "request-edit") {
 
       const temporaryApplicationId =
@@ -2907,6 +3017,32 @@ function setupFormSubmitConfirmation() {
             !isPendingEdit &&
             result?.duplicate === true
           ) {
+            const updateSessionId =
+              result.verificationSessions?.updateExisting;
+
+            if (!updateSessionId) {
+              throw new Error(
+                "Unable to prepare the existing record update."
+              );
+            }
+
+            const duplicateDraft =
+              collectAllPayloads();
+
+            sessionStorage.setItem(
+              "duplicateUpdateDraftSession",
+              updateSessionId
+            );
+
+            sessionStorage.setItem(
+              "duplicateUpdateDraft",
+              JSON.stringify(duplicateDraft)
+            );
+
+            await saveRequestEditFiles(
+              updateSessionId
+            );
+
             showDuplicateRecordModal(
               result.verificationSessions
             );
@@ -2916,15 +3052,48 @@ function setupFormSubmitConfirmation() {
 
           if (isDuplicateUpdate) {
 
+            const existingApplicationId =
+              result?.applicationId;
+
+            if (!existingApplicationId) {
+              throw new Error(
+                "The record was updated, but the Application ID was not returned."
+              );
+            }
+
             sessionStorage.removeItem(
               "duplicateUpdateSession"
             );
 
+            sessionStorage.removeItem(
+              "duplicateUpdateDraftSession"
+            );
+
+            sessionStorage.removeItem(
+              "duplicateUpdateDraft"
+            );
+
+            await clearRequestEditFiles(
+              duplicateSessionId
+            );
+
             showSuccessNotification(
-              "Your existing record has been updated successfully.",
+              "Your existing information has been updated successfully.\n\n" +
+
+              "A request for an updated Senior Citizen ID has also been submitted.\n\n" +
+
+              "Application ID: " +
+              existingApplicationId +
+              "\n\n" +
+
+              "Please take note of this Application ID. You will need it to track your application and ID request.",
+
               function () {
                 window.location.href =
-                  "index.html";
+                  "trackstatus.html?id=" +
+                  encodeURIComponent(
+                    existingApplicationId
+                  );
               }
             );
 

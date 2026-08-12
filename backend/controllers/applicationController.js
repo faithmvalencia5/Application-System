@@ -315,7 +315,15 @@ export async function updateVerifiedDuplicateRecord(
 
         return res.status(200).json({
             success: true,
-            application: result
+
+            application:
+                result.application,
+
+            applicationId:
+                result.applicationId,
+
+            idRequest:
+                result.idRequest
         });
 
     } catch (error) {

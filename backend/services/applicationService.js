@@ -1434,5 +1434,14 @@ export async function updateVerifiedDuplicateApplication(
         );
     }
 
-    return updatedApplication;
+    return {
+        application:
+            updatedApplication,
+
+        applicationId:
+            session.application_id,
+
+        idRequest:
+            idRequest
+    };
 }

@@ -1416,6 +1416,71 @@ export async function updateVerifiedDuplicateApplication(
         );
 
     /*
+    * Create an ID request because the applicant
+    * updated information on an existing record.
+    */
+    let idRequest = null;
+
+    const {
+        data: existingActiveRequest,
+        error: existingRequestError
+    } = await supabase
+        .from("id_requests")
+        .select("id, request_status")
+        .eq(
+            "application_id",
+            session.application_id
+        )
+        .in(
+            "request_status",
+            [
+                "Pending",
+                "Under Review",
+                "Approved"
+            ]
+        )
+        .maybeSingle();
+
+    if (existingRequestError) {
+        throw existingRequestError;
+    }
+
+    if (existingActiveRequest) {
+
+        idRequest = existingActiveRequest;
+
+    } else {
+
+        const {
+            data: createdRequest,
+            error: requestError
+        } = await supabase
+            .from("id_requests")
+            .insert([
+                {
+                    application_id:
+                        session.application_id,
+
+                    reason: "Other",
+
+                    other_reason:
+                        "Applicant information updated from an existing record.",
+
+                    request_status:
+                        "Pending"
+                }
+            ])
+            .select()
+            .single();
+
+        if (requestError) {
+            throw requestError;
+        }
+
+        idRequest = createdRequest;
+    }
+
+    /*
      * Make the session one-time-use after a
      * successful update.
      */

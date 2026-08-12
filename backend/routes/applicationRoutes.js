@@ -6,7 +6,8 @@ import {
     getApplicationById,
     updateApplication,
     submitIdRequest,
-    verifyDuplicateApplicant
+    verifyDuplicateApplicant,
+    getVerifiedDuplicateRecord
 } from "../controllers/applicationController.js";
 
 import { getApplicationStatus } from "../controllers/statusController.js";
@@ -25,6 +26,10 @@ router.post(
         { name: "signature", maxCount: 1 }
     ]),
     registerApplication
+);
+router.get(
+    "/duplicate/verified/:sessionId",
+    getVerifiedDuplicateRecord
 );
 router.get("/status/:applicationId", getApplicationStatus);
 router.post("/:applicationId/id-request",

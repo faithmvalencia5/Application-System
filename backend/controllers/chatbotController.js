@@ -31,9 +31,18 @@ export async function sendChatMessage(
 
     return res.status(200).json({
       success: true,
-      reply: result.reply,
+
+      reply:
+        result.reply,
+
       interactionId:
-        result.interactionId
+        result.interactionId,
+
+      source:
+        result.source || "gemini",
+
+      faqId:
+        result.faqId || null
     });
 
   } catch (error) {

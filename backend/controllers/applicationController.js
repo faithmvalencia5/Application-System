@@ -4,10 +4,11 @@ import {
     getApplicationById as getApplicationByIdService,
     updateApplication as updateApplicationService,
     submitIdRequest as submitIdRequestService,
-    createDuplicateVerificationSession,
-    verifyDuplicateIdentity,
+    createDuplicateVerificationSession as createDuplicateVerificationSessionService,
+    verifyDuplicateIdentity as verifyDuplicateIdentityService,
     getVerifiedDuplicateApplication as getVerifiedDuplicateApplicationService,
-    updateVerifiedDuplicateApplication as updateVerifiedDuplicateApplicationService
+    updateVerifiedDuplicateApplication as updateVerifiedDuplicateApplicationService,
+    recoverVerifiedApplicationId as recoverVerifiedApplicationIdService
 } from "../services/applicationService.js";
 
 
@@ -201,7 +202,7 @@ export async function verifyDuplicateApplicant(
     }
 
     const result =
-      await verifyDuplicateIdentity(
+      await verifyDuplicateIdentityService(
         sessionId,
         surname,
         firstName,
@@ -337,6 +338,48 @@ export async function updateVerifiedDuplicateRecord(
             message:
                 error.message ||
                 "Unable to update the existing record."
+        });
+    }
+}
+
+export async function recoverApplicationId(
+    req,
+    res
+) {
+    try {
+        const sessionId =
+            req.params.sessionId;
+
+        if (!sessionId) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Verification session is required."
+            });
+        }
+
+        const result =
+            await recoverVerifiedApplicationIdService(
+                sessionId
+            );
+
+        return res.status(200).json({
+            success: true,
+            applicationId:
+                result.applicationId
+        });
+
+    } catch (error) {
+        console.error(
+            "Recover Application ID error:",
+            error
+        );
+
+        return res.status(403).json({
+            success: false,
+            message:
+                error.message ||
+                "Unable to recover the Application ID."
         });
     }
 }

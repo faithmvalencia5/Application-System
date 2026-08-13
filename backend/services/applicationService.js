@@ -1510,3 +1510,81 @@ export async function updateVerifiedDuplicateApplication(
             idRequest
     };
 }
+
+export async function recoverVerifiedApplicationId(
+    sessionId
+) {
+    const {
+        data: session,
+        error: sessionError
+    } = await supabase
+        .from("duplicate_verification_sessions")
+        .select(`
+            id,
+            application_id,
+            purpose,
+            verified,
+            expires_at
+        `)
+        .eq("id", sessionId)
+        .maybeSingle();
+
+    if (sessionError) {
+        throw sessionError;
+    }
+
+    if (!session) {
+        throw new Error(
+            "Verification session not found."
+        );
+    }
+
+    if (
+        new Date(session.expires_at).getTime() <
+        Date.now()
+    ) {
+        throw new Error(
+            "Verification session has expired."
+        );
+    }
+
+    if (!session.verified) {
+        throw new Error(
+            "Identity verification is required."
+        );
+    }
+
+    if (
+        session.purpose !==
+        "recover_application_id"
+    ) {
+        throw new Error(
+            "This verification session cannot be used to recover an Application ID."
+        );
+    }
+
+    const applicationId =
+        session.application_id;
+
+    /*
+     * Make the recovery session one-time-use.
+     */
+    const { error: deleteSessionError } =
+        await supabase
+            .from(
+                "duplicate_verification_sessions"
+            )
+            .delete()
+            .eq("id", session.id);
+
+    if (deleteSessionError) {
+        console.error(
+            "Unable to remove recovery session:",
+            deleteSessionError
+        );
+    }
+
+    return {
+        applicationId
+    };
+}

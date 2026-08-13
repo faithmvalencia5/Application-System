@@ -4386,15 +4386,52 @@ function showDuplicateRecordModal(
         );
       }
 
+      const recoveryResponse =
+        await fetch(
+          "https://osca-backend.onrender.com/api/applications/duplicate/recover/" +
+          encodeURIComponent(
+            recoverSessionId
+          )
+        );
+
+      const recoveryResult =
+        await recoveryResponse.json();
+
+      if (!recoveryResponse.ok) {
+        throw new Error(
+          recoveryResult.message ||
+          "Unable to recover your Application ID."
+        );
+      }
+
+      const recoveredApplicationId =
+        recoveryResult.applicationId;
+
+      if (!recoveredApplicationId) {
+        throw new Error(
+          "Application ID was not returned."
+        );
+      }
+
       overlay.hidden = true;
       modal.hidden = true;
 
       showSuccessNotification(
-        "Identity verified successfully."
-      );
+        "Identity verified successfully.\n\n" +
 
-      console.log(
-        "Verified for Application ID recovery."
+        "Your Application ID is:\n" +
+        recoveredApplicationId +
+        "\n\n" +
+
+        "Please take note of this Application ID. You will need it to track the status of your application.",
+
+        function () {
+          window.location.href =
+            "trackstatus.html?id=" +
+            encodeURIComponent(
+              recoveredApplicationId
+            );
+        }
       );
 
     } catch (error) {

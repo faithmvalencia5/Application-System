@@ -1945,12 +1945,27 @@ function setupFormCancelButton() {
     return;
   }
 
-  cancelButton.addEventListener("click", function () {
+  cancelButton.addEventListener("click", async function () {
     const params =
       new URLSearchParams(window.location.search);
 
     const mode = params.get("mode");
+    const duplicateSessionId = params.get("session");
     const applicationId = params.get("id");
+
+    if (
+      mode === "duplicate-update"
+    ) {
+
+      await clearDuplicateUpdateDraft(
+        duplicateSessionId
+      );
+
+      window.location.href =
+        "index.html";
+
+      return;
+    }
 
     if (
       applicationId &&
@@ -2185,6 +2200,33 @@ async function clearPendingIdRequest(applicationId) {
     } catch (error) {
       console.error(
         "Unable to clear temporary request files:",
+        error
+      );
+    }
+  }
+}
+
+async function clearDuplicateUpdateDraft(sessionId) {
+  sessionStorage.removeItem(
+    "duplicateUpdateSession"
+  );
+
+  sessionStorage.removeItem(
+    "duplicateUpdateDraftSession"
+  );
+
+  sessionStorage.removeItem(
+    "duplicateUpdateDraft"
+  );
+
+  if (sessionId) {
+    try {
+      await clearRequestEditFiles(
+        sessionId
+      );
+    } catch (error) {
+      console.error(
+        "Unable to clear temporary duplicate files:",
         error
       );
     }
@@ -4307,7 +4349,12 @@ function showDuplicateRecordModal(
   overlay.hidden = false;
   modal.hidden = false;
 
-  cancelButton.onclick = function () {
+  cancelButton.onclick = async function () {
+
+    await clearDuplicateUpdateDraft(
+      updateSessionId
+    );
+
     overlay.hidden = true;
     modal.hidden = true;
   };
@@ -4412,6 +4459,10 @@ function showDuplicateRecordModal(
           "Application ID was not returned."
         );
       }
+
+      await clearDuplicateUpdateDraft(
+        updateSessionId
+      );
 
       overlay.hidden = true;
       modal.hidden = true;

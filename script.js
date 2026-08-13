@@ -4596,6 +4596,7 @@ function setupOscaChatbot() {
 
 
   function closeChatbot() {
+    stopChatbotSpeech();
     windowElement.hidden = true;
 
     chatbot.classList.remove(
@@ -4608,6 +4609,150 @@ function setupOscaChatbot() {
     );
   }
 
+  let currentlySpeakingButton = null;
+
+  function stopChatbotSpeech() {
+    if (
+      "speechSynthesis" in window
+    ) {
+      window.speechSynthesis.cancel();
+    }
+
+    if (currentlySpeakingButton) {
+      const icon =
+        currentlySpeakingButton.querySelector(
+          ".material-symbols-outlined"
+        );
+
+      if (icon) {
+        icon.textContent = "volume_up";
+      }
+
+      currentlySpeakingButton = null;
+    }
+  }
+
+
+  function speakChatbotMessage(
+    text,
+    button
+  ) {
+    if (
+      !("speechSynthesis" in window)
+    ) {
+      console.warn(
+        "Text-to-speech is not supported by this browser."
+      );
+
+      return;
+    }
+
+    /*
+    * Clicking the same button while it is
+    * speaking stops the speech.
+    */
+    if (
+      currentlySpeakingButton === button &&
+      window.speechSynthesis.speaking
+    ) {
+      stopChatbotSpeech();
+      return;
+    }
+
+
+    stopChatbotSpeech();
+
+
+    const utterance =
+      new SpeechSynthesisUtterance(
+        text
+      );
+
+
+    /*
+    * Basic Filipino detection.
+    *
+    * This lets us choose Filipino pronunciation
+    * for common Filipino responses.
+    */
+    const filipinoPattern =
+      /\b(ang|mga|po|opo|para|kung|kailangan|maaari|senior|pagkuha|walang|may|hindi|ako|kayo|inyong|lamang)\b/i;
+
+    const isFilipino =
+      filipinoPattern.test(text);
+
+
+    utterance.lang =
+      isFilipino
+        ? "fil-PH"
+        : "en-PH";
+
+
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+
+    const icon =
+      button.querySelector(
+        ".material-symbols-outlined"
+      );
+
+
+    utterance.onstart = function () {
+      currentlySpeakingButton =
+        button;
+
+      if (icon) {
+        icon.textContent =
+          "stop_circle";
+      }
+    };
+
+
+    utterance.onend = function () {
+      if (
+        currentlySpeakingButton ===
+        button
+      ) {
+        currentlySpeakingButton =
+          null;
+
+        if (icon) {
+          icon.textContent =
+            "volume_up";
+        }
+      }
+    };
+
+
+    utterance.onerror = function (
+      event
+    ) {
+      console.error(
+        "Text-to-speech error:",
+        event
+      );
+
+      if (
+        currentlySpeakingButton ===
+        button
+      ) {
+        currentlySpeakingButton =
+          null;
+      }
+
+      if (icon) {
+        icon.textContent =
+          "volume_up";
+      }
+    };
+
+
+    window.speechSynthesis.speak(
+      utterance
+    );
+  }
 
   function addMessage(
     text,
@@ -4675,6 +4820,80 @@ function setupOscaChatbot() {
     content.appendChild(
       bubble
     );
+
+
+    /*
+    * Only Gemini/assistant responses
+    * get a text-to-speech button.
+    */
+    if (sender !== "user") {
+
+      const actions =
+        document.createElement("div");
+
+      actions.className =
+        "chat-message-actions";
+
+
+      const speakButton =
+        document.createElement(
+          "button"
+        );
+
+      speakButton.type =
+        "button";
+
+      speakButton.className =
+        "chat-speak-button";
+
+      speakButton.setAttribute(
+        "aria-label",
+        "Read response aloud"
+      );
+
+      speakButton.title =
+        "Read aloud";
+
+
+      const speakIcon =
+        document.createElement(
+          "span"
+        );
+
+      speakIcon.className =
+        "material-symbols-outlined";
+
+      speakIcon.textContent =
+        "volume_up";
+
+
+      speakButton.appendChild(
+        speakIcon
+      );
+
+
+      speakButton.addEventListener(
+        "click",
+        function () {
+
+          speakChatbotMessage(
+            text,
+            speakButton
+          );
+
+        }
+      );
+
+
+      actions.appendChild(
+        speakButton
+      );
+
+      content.appendChild(
+        actions
+      );
+    }
+
 
     message.appendChild(
       content

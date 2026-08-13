@@ -2999,3 +2999,49 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
     height: 58px;
   }
 }
+
+/* Chatbot text-to-speech */
+
+.chat-message-actions {
+  margin-top: 5px;
+
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+
+.chat-speak-button {
+  width: 30px;
+  height: 30px;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 50%;
+
+  display: grid;
+  place-items: center;
+
+  background: transparent;
+
+  color: var(--muted);
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+
+.chat-speak-button:hover {
+  background: var(--brand-soft);
+  color: var(--brand-dark);
+}
+
+
+.chat-speak-button
+.material-symbols-outlined {
+  font-size: 19px;
+}

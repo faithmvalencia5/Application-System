@@ -4521,3 +4521,347 @@ document.addEventListener("DOMContentLoaded", function () {
   setupRequestIdModal();
   setupFormSubmitConfirmation();
 });
+
+function setupOscaChatbot() {
+
+  const chatbot =
+    document.getElementById(
+      "osca-chatbot"
+    );
+
+  if (!chatbot) {
+    return;
+  }
+
+  const toggle =
+    document.getElementById(
+      "chatbot-toggle"
+    );
+
+  const closeButton =
+    document.getElementById(
+      "chatbot-close"
+    );
+
+  const windowElement =
+    document.getElementById(
+      "chatbot-window"
+    );
+
+  const form =
+    document.getElementById(
+      "chatbot-form"
+    );
+
+  const input =
+    document.getElementById(
+      "chatbot-input"
+    );
+
+  const sendButton =
+    document.getElementById(
+      "chatbot-send"
+    );
+
+  const messages =
+    document.getElementById(
+      "chatbot-messages"
+    );
+
+  const typing =
+    document.getElementById(
+      "chatbot-typing"
+    );
+
+
+  let previousInteractionId = null;
+
+
+  function openChatbot() {
+    windowElement.hidden = false;
+
+    chatbot.classList.add(
+      "chat-open"
+    );
+
+    toggle.setAttribute(
+      "aria-expanded",
+      "true"
+    );
+
+    setTimeout(function () {
+      input.focus();
+    }, 100);
+  }
+
+
+  function closeChatbot() {
+    windowElement.hidden = true;
+
+    chatbot.classList.remove(
+      "chat-open"
+    );
+
+    toggle.setAttribute(
+      "aria-expanded",
+      "false"
+    );
+  }
+
+
+  function addMessage(
+    text,
+    sender
+  ) {
+
+    const message =
+      document.createElement("div");
+
+    message.className =
+      "chat-message " +
+      (
+        sender === "user"
+          ? "user-message"
+          : "bot-message"
+      );
+
+
+    if (sender !== "user") {
+
+      const avatar =
+        document.createElement("div");
+
+      avatar.className =
+        "chat-message-avatar";
+
+      const icon =
+        document.createElement("span");
+
+      icon.className =
+        "material-symbols-outlined";
+
+      icon.textContent =
+        "smart_toy";
+
+      avatar.appendChild(icon);
+
+      message.appendChild(
+        avatar
+      );
+    }
+
+
+    const content =
+      document.createElement("div");
+
+    content.className =
+      "chat-message-content";
+
+
+    const bubble =
+      document.createElement("div");
+
+    bubble.className =
+      "chat-bubble";
+
+    /*
+     * textContent is intentional.
+     * Do not use innerHTML with AI output.
+     */
+    bubble.textContent =
+      text;
+
+
+    content.appendChild(
+      bubble
+    );
+
+    message.appendChild(
+      content
+    );
+
+    messages.appendChild(
+      message
+    );
+
+
+    messages.scrollTop =
+      messages.scrollHeight;
+  }
+
+
+  function setLoading(
+    loading
+  ) {
+
+    typing.hidden =
+      !loading;
+
+    sendButton.disabled =
+      loading;
+
+    input.disabled =
+      loading;
+
+    if (loading) {
+      messages.scrollTop =
+        messages.scrollHeight;
+    }
+  }
+
+
+  toggle.addEventListener(
+    "click",
+    function () {
+
+      if (windowElement.hidden) {
+        openChatbot();
+      } else {
+        closeChatbot();
+      }
+    }
+  );
+
+
+  closeButton.addEventListener(
+    "click",
+    closeChatbot
+  );
+
+
+  input.addEventListener(
+    "input",
+    function () {
+
+      this.style.height =
+        "auto";
+
+      this.style.height =
+        Math.min(
+          this.scrollHeight,
+          120
+        ) + "px";
+    }
+  );
+
+
+  input.addEventListener(
+    "keydown",
+    function (event) {
+
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey
+      ) {
+        event.preventDefault();
+
+        form.requestSubmit();
+      }
+    }
+  );
+
+
+  form.addEventListener(
+    "submit",
+    async function (event) {
+
+      event.preventDefault();
+
+      const message =
+        input.value.trim();
+
+      if (!message) {
+        return;
+      }
+
+
+      addMessage(
+        message,
+        "user"
+      );
+
+
+      input.value = "";
+      input.style.height = "auto";
+
+
+      setLoading(true);
+
+
+      try {
+
+        const response =
+          await fetch(
+            "https://osca-backend.onrender.com/api/chatbot/message",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body: JSON.stringify({
+                message:
+                  message,
+
+                previousInteractionId:
+                  previousInteractionId
+              })
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (!response.ok) {
+          throw new Error(
+            result.message ||
+            "Unable to get a response."
+          );
+        }
+
+
+        if (
+          result.interactionId
+        ) {
+          previousInteractionId =
+            result.interactionId;
+        }
+
+
+        addMessage(
+          result.reply,
+          "bot"
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Chatbot error:",
+          error
+        );
+
+        addMessage(
+          "I'm sorry, I couldn't respond right now. Please try again.",
+          "bot"
+        );
+
+      } finally {
+
+        setLoading(false);
+
+        input.focus();
+      }
+    }
+  );
+}
+
+
+document.addEventListener(
+  "DOMContentLoaded",
+  setupOscaChatbot
+);

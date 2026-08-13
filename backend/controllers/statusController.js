@@ -67,7 +67,7 @@ export async function getApplicationStatus(req, res) {
             .eq("application_id", applicationId)
             .in(
                 "request_status",
-                ["Pending", "Under Review", "In Process", "Ready for Release", "Completed"]
+                ["Pending", "Under Review", "Approved"]
             )
             .maybeSingle();
 

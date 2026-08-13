@@ -1081,7 +1081,7 @@ export async function submitIdRequest(
         .eq("application_id", applicationId)
         .in(
             "request_status",
-            ["Pending", "Under Review", "Approved"]
+            ["Pending", "Under Review", "In Process", "Ready for Release", "Completed"]
         )
         .maybeSingle();
 
@@ -1436,7 +1436,9 @@ export async function updateVerifiedDuplicateApplication(
             [
                 "Pending",
                 "Under Review",
-                "Approved"
+                "In Process",
+                "Ready for Release",
+                "Completed"
             ]
         )
         .maybeSingle();

@@ -4573,6 +4573,11 @@ function setupOscaChatbot() {
       "chatbot-typing"
     );
 
+  const suggestions =
+    document.getElementById(
+      "chatbot-suggestions"
+    );
+
 
   let previousInteractionId = null;
 
@@ -4980,103 +4985,175 @@ function setupOscaChatbot() {
   );
 
 
+  async function sendChatbotMessage(
+    message
+  ) {
+
+    const cleanMessage =
+      String(message || "").trim();
+
+    if (!cleanMessage) {
+      return;
+    }
+
+
+    addMessage(
+      cleanMessage,
+      "user"
+    );
+
+
+    /*
+    * Hide the initial suggestions once
+    * the conversation begins.
+    */
+    if (suggestions) {
+      suggestions.hidden = true;
+    }
+
+
+    setLoading(true);
+
+
+    try {
+
+      const response =
+        await fetch(
+          "https://osca-backend.onrender.com/api/chatbot/message",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              message:
+                cleanMessage,
+
+              previousInteractionId:
+                previousInteractionId
+            })
+          }
+        );
+
+
+      const result =
+        await response.json();
+
+
+      if (!response.ok) {
+        throw new Error(
+          result.message ||
+          "Unable to get a response."
+        );
+      }
+
+
+      if (
+        result.interactionId
+      ) {
+        previousInteractionId =
+          result.interactionId;
+      }
+
+
+      addMessage(
+        result.reply,
+        "bot"
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Chatbot error:",
+        error
+      );
+
+      addMessage(
+        "I'm sorry, I couldn't respond right now. Please try again.",
+        "bot"
+      );
+
+    } finally {
+
+      setLoading(false);
+
+      input.focus();
+    }
+  }
+
+
+  /*
+  * Typed message
+  */
   form.addEventListener(
     "submit",
     async function (event) {
 
       event.preventDefault();
 
+
       const message =
         input.value.trim();
+
 
       if (!message) {
         return;
       }
 
 
-      addMessage(
-        message,
-        "user"
-      );
-
-
       input.value = "";
-      input.style.height = "auto";
+
+      input.style.height =
+        "auto";
 
 
-      setLoading(true);
-
-
-      try {
-
-        const response =
-          await fetch(
-            "https://osca-backend.onrender.com/api/chatbot/message",
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
-
-              body: JSON.stringify({
-                message:
-                  message,
-
-                previousInteractionId:
-                  previousInteractionId
-              })
-            }
-          );
-
-
-        const result =
-          await response.json();
-
-
-        if (!response.ok) {
-          throw new Error(
-            result.message ||
-            "Unable to get a response."
-          );
-        }
-
-
-        if (
-          result.interactionId
-        ) {
-          previousInteractionId =
-            result.interactionId;
-        }
-
-
-        addMessage(
-          result.reply,
-          "bot"
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          "Chatbot error:",
-          error
-        );
-
-        addMessage(
-          "I'm sorry, I couldn't respond right now. Please try again.",
-          "bot"
-        );
-
-      } finally {
-
-        setLoading(false);
-
-        input.focus();
-      }
+      await sendChatbotMessage(
+        message
+      );
     }
   );
+
+
+  /*
+  * Suggested questions
+  */
+  if (suggestions) {
+
+    suggestions.addEventListener(
+      "click",
+      async function (event) {
+
+        const button =
+          event.target.closest(
+            ".chatbot-suggestion"
+          );
+
+
+        if (!button) {
+          return;
+        }
+
+
+        const question =
+          button.dataset.question;
+
+
+        if (!question) {
+          return;
+        }
+
+
+        await sendChatbotMessage(
+          question
+        );
+      }
+    );
+
+  }
 }
 
 

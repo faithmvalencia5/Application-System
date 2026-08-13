@@ -3045,3 +3045,102 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
 .material-symbols-outlined {
   font-size: 19px;
 }
+
+/* =====================================================
+   CHATBOT SUGGESTED QUESTIONS
+   ===================================================== */
+
+.chatbot-suggestions {
+  margin:
+    4px 0 18px 38px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+
+.chatbot-suggestions-label {
+  margin:
+    0 0 2px;
+
+  color: var(--muted);
+
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+
+.chatbot-suggestion {
+  max-width: 100%;
+
+  padding:
+    8px 11px;
+
+  border:
+    1px solid
+    rgba(13, 110, 110, 0.25);
+
+  border-radius: 12px;
+
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  background: #ffffff;
+
+  color: var(--brand-dark);
+
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+
+.chatbot-suggestion:hover {
+  background: var(--brand-soft);
+
+  border-color: var(--brand);
+
+  transform:
+    translateX(2px);
+}
+
+
+.chatbot-suggestion
+.material-symbols-outlined {
+  flex: 0 0 auto;
+
+  font-size: 18px;
+
+  color: var(--brand);
+}
+
+
+.chatbot-suggestion:focus-visible {
+  outline:
+    3px solid
+    rgba(13, 110, 110, 0.18);
+
+  outline-offset: 2px;
+}
+
+
+@media (max-width: 600px) {
+
+  .chatbot-suggestions {
+    margin-left: 38px;
+    margin-right: 4px;
+  }
+
+}

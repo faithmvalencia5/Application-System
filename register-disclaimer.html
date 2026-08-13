@@ -4,6 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Registration Disclaimer | OSCA Bauan</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet"
+  >
   <link rel="stylesheet" href="style.css">
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
@@ -79,6 +83,213 @@
       </div>
     </section>
   </main>
+
+  <!-- Gemini Applicant Assistant -->
+  <div id="osca-chatbot" class="osca-chatbot">
+
+    <section
+      id="chatbot-window"
+      class="chatbot-window"
+      aria-label="OSCA Virtual Assistant"
+      hidden
+    >
+
+      <div class="chatbot-header">
+        <div class="chatbot-header-info">
+
+          <div class="chatbot-avatar">
+            <span class="material-symbols-outlined">
+              smart_toy
+            </span>
+          </div>
+
+          <div>
+            <h2>OSCA Virtual Assistant</h2>
+
+            <p>
+              <span class="chatbot-status-dot"></span>
+              Online
+            </p>
+          </div>
+
+        </div>
+
+        <button
+          id="chatbot-close"
+          class="chatbot-icon-button"
+          type="button"
+          aria-label="Close chatbot"
+        >
+          <span class="material-symbols-outlined">
+            close
+          </span>
+        </button>
+      </div>
+
+
+      <div
+        id="chatbot-messages"
+        class="chatbot-messages"
+        aria-live="polite"
+      >
+
+        <div class="chat-message bot-message">
+
+          <div class="chat-message-avatar">
+            <span class="material-symbols-outlined">
+              smart_toy
+            </span>
+          </div>
+
+          <div class="chat-message-content">
+
+            <div class="chat-bubble">
+              Hello! I'm the OSCA Virtual Assistant.
+              How can I help you today?
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="chatbot-suggestions"
+          class="chatbot-suggestions"
+        >
+
+          <p class="chatbot-suggestions-label">
+            Mga maaari mong itanong / You may ask:
+          </p>
+
+          <button
+            type="button"
+            class="chatbot-suggestion"
+            data-question="Paano kung wala akong Birth Certificate?"
+          >
+            <span class="material-symbols-outlined">
+              description
+            </span>
+
+            Walang Birth Certificate
+          </button>
+
+
+          <button
+            type="button"
+            class="chatbot-suggestion"
+            data-question="Magkano ang bayad sa pagkuha ng Senior Citizen ID?"
+          >
+            <span class="material-symbols-outlined">
+              payments
+            </span>
+
+            Bayad sa Senior Citizen ID
+          </button>
+
+
+          <button
+            type="button"
+            class="chatbot-suggestion"
+            data-question="Bakit hindi pa ako napapasama sa Social Pension?"
+          >
+            <span class="material-symbols-outlined">
+              elderly
+            </span>
+
+            Social Pension
+          </button>
+
+
+          <button
+            type="button"
+            class="chatbot-suggestion"
+            data-question="Paano makakakuha ng National ID ang isang senior citizen na bedridden?"
+          >
+            <span class="material-symbols-outlined">
+              badge
+            </span>
+
+            National ID para sa Bedridden
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div
+        id="chatbot-typing"
+        class="chatbot-typing"
+        hidden
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+
+        <small>
+          Assistant is typing...
+        </small>
+      </div>
+
+
+      <form
+        id="chatbot-form"
+        class="chatbot-input-area"
+      >
+
+        <textarea
+          id="chatbot-input"
+          rows="1"
+          maxlength="1000"
+          placeholder="Type your message..."
+          aria-label="Message"
+        ></textarea>
+
+        <button
+          id="chatbot-send"
+          class="chatbot-send-button"
+          type="submit"
+          aria-label="Send message"
+        >
+          <span class="material-symbols-outlined">
+            send
+          </span>
+        </button>
+
+      </form>
+
+
+      <div class="chatbot-disclaimer">
+        AI-generated responses may contain errors.
+      </div>
+
+    </section>
+
+    <button
+      id="chatbot-toggle"
+      class="chatbot-toggle"
+      type="button"
+      aria-label="Open OSCA Virtual Assistant"
+      aria-expanded="false"
+    >
+
+      <span
+        class="material-symbols-outlined chatbot-toggle-chat"
+      >
+        chat
+      </span>
+
+      <span
+        class="material-symbols-outlined chatbot-toggle-close"
+      >
+        close
+      </span>
+
+    </button>
+
+  </div>
+
   <script src="script.js"></script>
   <script type="module" src="supabase.js"></script>
 </body>

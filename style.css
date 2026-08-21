@@ -3385,9 +3385,8 @@ body.camera-open .chatbot-button {
 #retake-face-button {
   border: 1px solid #0b8f87;
 
-  background: rgba(255, 255, 255, 0.95);
-
-  color: #087970;
+  background: #0b8f87;
+  color: white;
 }
 
 

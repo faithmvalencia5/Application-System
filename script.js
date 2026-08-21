@@ -2584,39 +2584,40 @@ function setupFaceCamera() {
     "click",
     async function () {
 
-      /*
-       * Require the ID before opening the camera.
-       */
-      const validIdFile =
-        validIdInput.files?.[0];
+      const newValidIdFile =
+        validIdInput.files?.[0] || null;
 
+      const existingValidIdUrl =
+        validIdInput.dataset.existingFileUrl || "";
 
-      if (!validIdFile) {
+      if (
+        !newValidIdFile &&
+        !existingValidIdUrl
+      ) {
 
         showErrorNotification(
           "Please upload the front of your valid government ID before scanning your face."
         );
-
 
         validIdInput.scrollIntoView({
           behavior: "smooth",
           block: "center"
         });
 
-
         return;
       }
 
-
       if (
-        !validIdFile.type ||
-        !validIdFile.type.startsWith("image/")
+        newValidIdFile &&
+        (
+          !newValidIdFile.type ||
+          !newValidIdFile.type.startsWith("image/")
+        )
       ) {
 
         showErrorNotification(
           "Please upload the front of your valid government ID as a JPG, JPEG, or PNG image before facial verification."
         );
-
 
         return;
       }

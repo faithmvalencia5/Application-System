@@ -25,8 +25,8 @@ router.post(
         { name: "latest_photo", maxCount: 1 },
         { name: "birth_certificate", maxCount: 1 },
         { name: "community_tax_certificate", maxCount: 1 },
+        { name: "verification_photo", maxCount: 1 },
         { name: "signature", maxCount: 1 },
-        { name: "verification_photo", maxCount: 1 }
     ]),
     registerApplication
 );
@@ -41,10 +41,8 @@ router.put(
         { name: "valid_id_back", maxCount: 1 },
         { name: "latest_photo", maxCount: 1 },
         { name: "birth_certificate", maxCount: 1 },
-        {
-            name: "community_tax_certificate",
-            maxCount: 1
-        },
+        {name: "community_tax_certificate", maxCount: 1 },
+        { name: "verification_photo", maxCount: 1 },
         { name: "signature", maxCount: 1 }
     ]),
     updateVerifiedDuplicateRecord
@@ -57,6 +55,7 @@ router.post("/:applicationId/id-request",
         { name: "latest_photo", maxCount: 1 },
         { name: "birth_certificate", maxCount: 1 },
         { name: "community_tax_certificate", maxCount: 1 },
+        { name: "verification_photo", maxCount: 1 },
         { name: "signature", maxCount: 1 }
     ]),
     submitIdRequest);
@@ -74,6 +73,7 @@ router.put(
         { name: "latest_photo", maxCount: 1 },
         { name: "birth_certificate", maxCount: 1 },
         { name: "community_tax_certificate", maxCount: 1 },
+        { name: "verification_photo", maxCount: 1 },
         { name: "signature", maxCount: 1 }
     ]),
     updateApplication

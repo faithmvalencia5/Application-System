@@ -3661,7 +3661,32 @@ function setupFormSubmitConfirmation() {
       body: formData
     });
 
-    const result = await response.json();
+    const responseText =
+      await response.text();
+
+    let result;
+
+    try {
+      result = responseText
+        ? JSON.parse(responseText)
+        : {};
+    } catch (error) {
+
+      console.error(
+        "Backend returned non-JSON response:",
+        {
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url,
+          body: responseText
+        }
+      );
+
+      throw new Error(
+        "The server returned an invalid response. " +
+        "Please check the backend logs."
+      );
+    }
 
     if (
       response.status === 409 &&

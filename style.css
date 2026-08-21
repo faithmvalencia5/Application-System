@@ -3144,3 +3144,219 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
   }
 
 }
+
+/* =====================================================
+   FACE VERIFICATION CAMERA
+===================================================== */
+
+.camera-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.88);
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+
+.camera-modal[hidden] {
+  display: none !important;
+}
+
+
+.camera-dialog {
+  width: min(520px, 100%);
+  max-height: calc(100dvh - 32px);
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background: #ffffff;
+  border-radius: 18px;
+}
+
+
+.camera-dialog-head {
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  padding: 18px 20px;
+
+  background: #ffffff;
+}
+
+
+.camera-dialog-head h3 {
+  margin: 0 0 5px;
+}
+
+
+.camera-status {
+  display: block;
+  line-height: 1.4;
+}
+
+
+.camera-close {
+  flex-shrink: 0;
+}
+
+
+#face-camera-video,
+#face-camera-canvas {
+  display: block;
+
+  width: 100%;
+  max-height: 60dvh;
+
+  object-fit: cover;
+
+  background: #111;
+}
+
+
+#face-camera-video[hidden],
+#face-camera-canvas[hidden] {
+  display: none !important;
+}
+
+
+/* =====================================================
+   VERIFICATION RESULT
+===================================================== */
+
+.face-verification-result {
+  flex-shrink: 0;
+
+  padding: 10px 18px;
+
+  font-size: 14px;
+  text-align: center;
+}
+
+
+.face-verification-result[hidden] {
+  display: none !important;
+}
+
+
+/* =====================================================
+   CAMERA BUTTONS
+===================================================== */
+
+.face-camera-actions {
+  flex-shrink: 0;
+
+  display: flex;
+  gap: 10px;
+
+  padding: 14px 18px 18px;
+
+  background: #ffffff;
+}
+
+
+.face-camera-actions button {
+  flex: 1;
+
+  min-height: 48px;
+
+  border-radius: 10px;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+#capture-face-button {
+  border: none;
+
+  background: #087f78;
+  color: #ffffff;
+}
+
+
+#retake-face-button {
+  border: 1px solid #087f78;
+
+  background: #ffffff;
+  color: #087f78;
+}
+
+
+#capture-face-button[hidden],
+#retake-face-button[hidden] {
+  display: none !important;
+}
+
+
+/* =====================================================
+   HIDE CHATBOT WHILE CAMERA IS OPEN
+===================================================== */
+
+body.camera-open #osca-chatbot {
+  display: none !important;
+}
+
+
+/* =====================================================
+   MOBILE CAMERA
+===================================================== */
+
+@media (max-width: 600px) {
+
+  .camera-modal {
+    padding: 0;
+
+    align-items: stretch;
+  }
+
+
+  .camera-dialog {
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+
+    border-radius: 0;
+  }
+
+
+  .camera-dialog-head {
+    padding:
+      max(16px, env(safe-area-inset-top))
+      18px
+      14px;
+  }
+
+
+  #face-camera-video,
+  #face-camera-canvas {
+    flex: 1;
+
+    min-height: 0;
+    max-height: none;
+
+    object-fit: cover;
+  }
+
+
+  .face-camera-actions {
+    padding:
+      12px
+      16px
+      max(16px, env(safe-area-inset-bottom));
+  }
+
+}

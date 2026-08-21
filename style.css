@@ -3662,3 +3662,21 @@ body.camera-open .chatbot-button {
     margin: 0;
   }
 }
+
+.face-verification-result.verification-success {
+  background: rgba(236, 253, 245, 0.96);
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.face-verification-result.verification-error {
+  background: rgba(254, 242, 242, 0.96);
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.face-verification-result.verification-loading {
+  background: rgba(239, 246, 255, 0.96);
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}

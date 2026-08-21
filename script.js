@@ -1728,16 +1728,51 @@ async function loadApplicationForEditing() {
 }
 
 function setupFaceCamera() {
-  const openButton = document.getElementById("open-face-camera");
-  const closeButton = document.getElementById("close-face-camera");
-  const previewWrap = document.getElementById("face-camera-preview");
-  const videoElement = document.getElementById("face-camera-video");
-  const canvasElement = document.getElementById("face-camera-canvas");
-  const captureButton = document.getElementById("capture-face-button");
-  const retakeButton = document.getElementById("retake-face-button");
-  const resultBox = document.getElementById("face-verification-result");
-  const statusLabel = document.getElementById("face-camera-status");
-  const fallbackInput = document.getElementById("upload-verification");
+  const openButton =
+    document.getElementById("open-face-camera");
+
+  const closeButton =
+    document.getElementById("close-face-camera");
+
+  const previewWrap =
+    document.getElementById("face-camera-preview");
+
+  const videoElement =
+    document.getElementById("face-camera-video");
+
+  const canvasElement =
+    document.getElementById("face-camera-canvas");
+
+  const captureButton =
+    document.getElementById("capture-face-button");
+
+  const retakeButton =
+    document.getElementById("retake-face-button");
+
+  const resultBox =
+    document.getElementById("face-verification-result");
+
+  const statusLabel =
+    document.getElementById("face-camera-status");
+
+  const fallbackInput =
+    document.getElementById("upload-verification");
+
+  const validIdInput =
+    document.getElementById("upload-valid-id-front");
+
+
+  /*
+   * IMPORTANT:
+   * This works on your LAPTOP while the Python
+   * FastAPI service is running locally.
+   *
+   * We will replace this URL later when we deploy
+   * the face-verification API online.
+   */
+  const FACE_VERIFICATION_API =
+    "http://127.0.0.1:8001/verify-face";
+
 
   if (
     !openButton ||
@@ -1747,12 +1782,19 @@ function setupFaceCamera() {
     !canvasElement ||
     !captureButton ||
     !retakeButton ||
-    !fallbackInput
+    !fallbackInput ||
+    !validIdInput
   ) {
     return;
   }
 
+
   let faceStream = null;
+
+
+  // =====================================================
+  // HELPERS
+  // =====================================================
 
   const setStatus = function (message) {
     if (statusLabel) {
@@ -1760,37 +1802,95 @@ function setupFaceCamera() {
     }
   };
 
+
+  const setVerificationResult = function (
+    message,
+    type
+  ) {
+    if (!resultBox) {
+      return;
+    }
+
+    resultBox.hidden = false;
+    resultBox.textContent = message;
+
+    resultBox.classList.remove(
+      "verification-success",
+      "verification-error",
+      "verification-loading"
+    );
+
+    if (type) {
+      resultBox.classList.add(
+        "verification-" + type
+      );
+    }
+  };
+
+
+  const clearVerification = function () {
+    /*
+     * A data attribute will let us know later
+     * whether facial verification was completed.
+     */
+    fallbackInput.dataset.faceVerified =
+      "false";
+
+    fallbackInput.dataset.faceSimilarity =
+      "";
+
+    if (resultBox) {
+      resultBox.hidden = true;
+      resultBox.textContent = "";
+
+      resultBox.classList.remove(
+        "verification-success",
+        "verification-error",
+        "verification-loading"
+      );
+    }
+  };
+
+
+  const stopLiveStream = function () {
+    if (faceStream) {
+      faceStream
+        .getTracks()
+        .forEach(function (track) {
+          track.stop();
+        });
+
+      faceStream = null;
+    }
+
+    videoElement.srcObject = null;
+  };
+
+
   const resetCaptureState = function () {
     videoElement.hidden = false;
     canvasElement.hidden = true;
 
     captureButton.hidden = false;
     captureButton.disabled = false;
+    captureButton.textContent =
+      "Capture & Verify";
 
     retakeButton.hidden = true;
 
-    if (resultBox) {
-      resultBox.hidden = true;
-      resultBox.textContent = "";
-    }
+    clearVerification();
 
     setStatus(
       "Position your face clearly inside the camera."
     );
   };
 
+
   const stopCamera = function () {
-    if (faceStream) {
-      faceStream.getTracks().forEach(function (track) {
-        track.stop();
-      });
-
-      faceStream = null;
-    }
-
-    videoElement.srcObject = null;
+    stopLiveStream();
 
     previewWrap.hidden = true;
+
     previewWrap.setAttribute(
       "aria-hidden",
       "true"
@@ -1806,6 +1906,11 @@ function setupFaceCamera() {
     );
   };
 
+
+  // =====================================================
+  // START CAMERA
+  // =====================================================
+
   const startCamera = async function () {
     resetCaptureState();
 
@@ -1814,16 +1919,17 @@ function setupFaceCamera() {
       !navigator.mediaDevices.getUserMedia
     ) {
       setStatus(
-        "Camera access is not supported in this browser. Opening file capture instead."
+        "Camera access is not supported in this browser."
       );
 
-      fallbackInput.click();
       return;
     }
 
+
     if (faceStream) {
-      return;
+      stopLiveStream();
     }
+
 
     try {
       faceStream =
@@ -1834,31 +1940,43 @@ function setupFaceCamera() {
           audio: false
         });
 
+
       videoElement.srcObject =
         faceStream;
 
+
+      /*
+       * Mirror only the live preview.
+       */
       videoElement.style.transform =
         "scaleX(-1)";
 
-      previewWrap.hidden = false;
+
+      previewWrap.hidden =
+        false;
+
 
       previewWrap.setAttribute(
         "aria-hidden",
         "false"
       );
 
+
       openButton.setAttribute(
         "aria-expanded",
         "true"
       );
 
+
       document.body.classList.add(
         "camera-open"
       );
 
+
       setStatus(
         "Position your face clearly inside the camera."
       );
+
 
     } catch (error) {
       console.error(
@@ -1866,15 +1984,67 @@ function setupFaceCamera() {
         error
       );
 
-      setStatus(
-        "Unable to access camera. Please allow permission, then try again."
-      );
 
-      fallbackInput.click();
+      setStatus(
+        "Unable to access the camera. Please allow camera permission and try again."
+      );
     }
   };
 
+
+  // =====================================================
+  // CAPTURE + VERIFY
+  // =====================================================
+
   const captureFace = function () {
+
+    // -------------------------------------------------
+    // Check Valid ID first
+    // -------------------------------------------------
+
+    const validIdFile =
+      validIdInput.files?.[0];
+
+
+    if (!validIdFile) {
+      setVerificationResult(
+        "Please upload the front of your valid government ID before scanning your face.",
+        "error"
+      );
+
+      setStatus(
+        "Valid ID is required for face verification."
+      );
+
+      return;
+    }
+
+
+    /*
+     * For now the Python face-recognition endpoint
+     * accepts images, not PDF documents.
+     */
+    if (
+      !validIdFile.type ||
+      !validIdFile.type.startsWith("image/")
+    ) {
+      setVerificationResult(
+        "Please upload the front of your valid ID as an image (JPG, JPEG, or PNG) for facial verification.",
+        "error"
+      );
+
+      setStatus(
+        "The uploaded ID must be an image."
+      );
+
+      return;
+    }
+
+
+    // -------------------------------------------------
+    // Make sure camera is ready
+    // -------------------------------------------------
+
     if (
       !videoElement.videoWidth ||
       !videoElement.videoHeight
@@ -1886,30 +2056,58 @@ function setupFaceCamera() {
       return;
     }
 
+
+    captureButton.disabled = true;
+
+    captureButton.textContent =
+      "Verifying...";
+
+
+    setStatus(
+      "Capturing and verifying your face..."
+    );
+
+
+    setVerificationResult(
+      "Please wait while your face is being verified.",
+      "loading"
+    );
+
+
+    // -------------------------------------------------
+    // Capture frame
+    // -------------------------------------------------
+
     const context =
       canvasElement.getContext("2d");
+
 
     canvasElement.width =
       videoElement.videoWidth;
 
+
     canvasElement.height =
       videoElement.videoHeight;
 
+
     /*
      * Mirror the captured image so it matches
-     * the preview shown to the applicant.
+     * what the applicant sees in the preview.
      */
     context.save();
+
 
     context.translate(
       canvasElement.width,
       0
     );
 
+
     context.scale(
       -1,
       1
     );
+
 
     context.drawImage(
       videoElement,
@@ -1919,17 +2117,37 @@ function setupFaceCamera() {
       canvasElement.height
     );
 
+
     context.restore();
 
+
     canvasElement.toBlob(
-      function (blob) {
+      async function (blob) {
+
         if (!blob) {
+          captureButton.disabled = false;
+
+          captureButton.textContent =
+            "Capture & Verify";
+
+
+          setVerificationResult(
+            "Unable to capture your face. Please try again.",
+            "error"
+          );
+
+
           setStatus(
-            "Unable to capture the image. Please try again."
+            "Unable to capture the image."
           );
 
           return;
         }
+
+
+        // ---------------------------------------------
+        // Turn camera frame into a File
+        // ---------------------------------------------
 
         const capturedFile =
           new File(
@@ -1941,87 +2159,382 @@ function setupFaceCamera() {
             }
           );
 
+
         /*
-         * Store the captured photo inside the
-         * existing upload-verification input.
+         * Save captured image to the existing
+         * verification file input.
          */
         const transfer =
           new DataTransfer();
+
 
         transfer.items.add(
           capturedFile
         );
 
+
         fallbackInput.files =
           transfer.files;
 
+
+        // ---------------------------------------------
+        // Show captured still frame
+        // ---------------------------------------------
+
+        videoElement.hidden =
+          true;
+
+
+        canvasElement.hidden =
+          false;
+
+
+        stopLiveStream();
+
+
+        // ---------------------------------------------
+        // Create request for FastAPI
+        // ---------------------------------------------
+
+        const verificationData =
+          new FormData();
+
+
         /*
-         * Show the captured still image.
+         * source_image = Valid ID
+         * target_image = Live camera capture
          */
-        videoElement.hidden = true;
-        canvasElement.hidden = false;
-
-        captureButton.hidden = true;
-        retakeButton.hidden = false;
-
-        setStatus(
-          "Face captured successfully."
+        verificationData.append(
+          "source_image",
+          validIdFile
         );
 
-        if (resultBox) {
-          resultBox.hidden = false;
-          resultBox.textContent =
-            "Face captured. Ready for verification.";
+
+        verificationData.append(
+          "target_image",
+          capturedFile
+        );
+
+
+        try {
+
+          // -------------------------------------------
+          // Call Python facial-verification API
+          // -------------------------------------------
+
+          const response =
+            await fetch(
+              FACE_VERIFICATION_API,
+              {
+                method: "POST",
+                body: verificationData
+              }
+            );
+
+
+          let result;
+
+
+          try {
+            result =
+              await response.json();
+
+          } catch (jsonError) {
+            throw new Error(
+              "The face verification service returned an invalid response."
+            );
+          }
+
+
+          if (!response.ok) {
+            throw new Error(
+              result.message ||
+              "Face verification service failed."
+            );
+          }
+
+
+          // ===========================================
+          // VERIFIED
+          // ===========================================
+
+          if (
+            result.success === true &&
+            result.verified === true
+          ) {
+
+            fallbackInput.dataset.faceVerified =
+              "true";
+
+
+            fallbackInput.dataset.faceSimilarity =
+              String(
+                result.similarity ?? ""
+              );
+
+
+            setStatus(
+              "Face verified successfully."
+            );
+
+
+            setVerificationResult(
+              "✓ Face verified successfully.",
+              "success"
+            );
+
+
+            captureButton.hidden =
+              true;
+
+
+            retakeButton.hidden =
+              false;
+
+
+            console.log(
+              "Face verification successful:",
+              result
+            );
+
+
+            return;
+          }
+
+
+          // ===========================================
+          // NOT VERIFIED
+          // ===========================================
+
+          fallbackInput.dataset.faceVerified =
+            "false";
+
+
+          fallbackInput.dataset.faceSimilarity =
+            String(
+              result.similarity ?? ""
+            );
+
+
+          setStatus(
+            "Face verification was unsuccessful."
+          );
+
+
+          let failureMessage =
+            result.message ||
+            "The scanned face does not match the person shown on the uploaded ID.";
+
+
+          /*
+           * Make technical API messages easier for
+           * applicants to understand.
+           */
+          if (
+            failureMessage
+              .toLowerCase()
+              .includes("no face")
+          ) {
+            failureMessage =
+              "No clear face was detected. Please make sure your face and the face on your ID are clearly visible.";
+          }
+
+
+          if (
+            failureMessage
+              .toLowerCase()
+              .includes("multiple faces")
+          ) {
+            failureMessage =
+              "Multiple faces were detected. Please make sure only one person is visible.";
+          }
+
+
+          if (
+            failureMessage ===
+            "The faces do not match."
+          ) {
+            failureMessage =
+              "The scanned face does not match the person shown on the uploaded valid ID.";
+          }
+
+
+          setVerificationResult(
+            "✕ " + failureMessage,
+            "error"
+          );
+
+
+          captureButton.hidden =
+            true;
+
+
+          retakeButton.hidden =
+            false;
+
+
+          console.log(
+            "Face verification failed:",
+            result
+          );
+
+
+        } catch (error) {
+
+          console.error(
+            "Face verification request error:",
+            error
+          );
+
+
+          fallbackInput.dataset.faceVerified =
+            "false";
+
+
+          setStatus(
+            "Unable to complete face verification."
+          );
+
+
+          setVerificationResult(
+            "Unable to connect to the face verification service. Please try again.",
+            "error"
+          );
+
+
+          captureButton.hidden =
+            true;
+
+
+          retakeButton.hidden =
+            false;
         }
-
-        /*
-         * Stop the live camera after capture.
-         */
-        if (faceStream) {
-          faceStream
-            .getTracks()
-            .forEach(function (track) {
-              track.stop();
-            });
-
-          faceStream = null;
-        }
-
-        videoElement.srcObject = null;
       },
+
       "image/jpeg",
       0.92
     );
   };
 
+
+  // =====================================================
+  // RETAKE
+  // =====================================================
+
   const retakeFace = async function () {
+
+    clearVerification();
+
+
     /*
-     * Remove the previous captured file.
+     * Remove old captured verification photo.
      */
     const emptyTransfer =
       new DataTransfer();
 
+
     fallbackInput.files =
       emptyTransfer.files;
 
-    canvasElement
-      .getContext("2d")
-      .clearRect(
-        0,
-        0,
-        canvasElement.width,
-        canvasElement.height
-      );
+
+    const context =
+      canvasElement.getContext("2d");
+
+
+    context.clearRect(
+      0,
+      0,
+      canvasElement.width,
+      canvasElement.height
+    );
+
 
     await startCamera();
   };
 
+
+  // =====================================================
+  // IF VALID ID CHANGES, VERIFICATION IS INVALID
+  // =====================================================
+
+  validIdInput.addEventListener(
+    "change",
+    function () {
+
+      /*
+       * A face verified against an old ID image
+       * must not remain valid after changing ID.
+       */
+      clearVerification();
+
+
+      const emptyTransfer =
+        new DataTransfer();
+
+
+      fallbackInput.files =
+        emptyTransfer.files;
+
+
+      if (!previewWrap.hidden) {
+        setStatus(
+          "Valid ID changed. Please scan your face again."
+        );
+      }
+    }
+  );
+
+
+  // =====================================================
+  // EVENTS
+  // =====================================================
+
   openButton.addEventListener(
     "click",
     async function () {
+
+      /*
+       * Require the ID before opening the camera.
+       */
+      const validIdFile =
+        validIdInput.files?.[0];
+
+
+      if (!validIdFile) {
+
+        showErrorNotification(
+          "Please upload the front of your valid government ID before scanning your face."
+        );
+
+
+        validIdInput.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+
+
+        return;
+      }
+
+
+      if (
+        !validIdFile.type ||
+        !validIdFile.type.startsWith("image/")
+      ) {
+
+        showErrorNotification(
+          "Please upload the front of your valid government ID as a JPG, JPEG, or PNG image before facial verification."
+        );
+
+
+        return;
+      }
+
+
       await startCamera();
     }
   );
+
 
   captureButton.addEventListener(
     "click",
@@ -2030,12 +2543,14 @@ function setupFaceCamera() {
     }
   );
 
+
   retakeButton.addEventListener(
     "click",
     async function () {
       await retakeFace();
     }
   );
+
 
   closeButton.addEventListener(
     "click",
@@ -2044,6 +2559,7 @@ function setupFaceCamera() {
     }
   );
 
+
   window.addEventListener(
     "beforeunload",
     function () {
@@ -2051,18 +2567,24 @@ function setupFaceCamera() {
     }
   );
 
+
   previewWrap.addEventListener(
     "click",
     function (event) {
-      if (event.target === previewWrap) {
+
+      if (
+        event.target === previewWrap
+      ) {
         stopCamera();
       }
     }
   );
 
+
   window.addEventListener(
     "keydown",
     function (event) {
+
       if (
         event.key === "Escape" &&
         !previewWrap.hidden

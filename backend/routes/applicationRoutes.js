@@ -25,7 +25,8 @@ router.post(
         { name: "latest_photo", maxCount: 1 },
         { name: "birth_certificate", maxCount: 1 },
         { name: "community_tax_certificate", maxCount: 1 },
-        { name: "signature", maxCount: 1 }
+        { name: "signature", maxCount: 1 },
+        { name: "verification_photo", maxCount: 1 }
     ]),
     registerApplication
 );

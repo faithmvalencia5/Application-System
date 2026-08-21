@@ -1,6 +1,174 @@
 import { supabase } from "../supabase.js";
 import { uploadFile } from "./storageService.js";
 
+const FACE_VERIFICATION_URL =
+    process.env.FACE_VERIFICATION_URL;
+
+
+async function verifyApplicantFace(files) {
+
+    const validIdFront =
+        files?.valid_id_front?.[0];
+
+    const verificationPhoto =
+        files?.verification_photo?.[0];
+
+
+    if (!validIdFront) {
+        throw new Error(
+            "The front of the valid government ID is required for face verification."
+        );
+    }
+
+
+    if (!verificationPhoto) {
+        throw new Error(
+            "Face verification must be completed before submitting the application."
+        );
+    }
+
+
+    if (
+        !validIdFront.mimetype ||
+        !validIdFront.mimetype.startsWith("image/")
+    ) {
+        throw new Error(
+            "The front of the valid government ID must be an image for face verification."
+        );
+    }
+
+
+    if (
+        !verificationPhoto.mimetype ||
+        !verificationPhoto.mimetype.startsWith("image/")
+    ) {
+        throw new Error(
+            "The captured verification photo is invalid."
+        );
+    }
+
+
+    if (!FACE_VERIFICATION_URL) {
+        throw new Error(
+            "Face verification service is not configured."
+        );
+    }
+
+
+    const formData =
+        new FormData();
+
+
+    const validIdBlob =
+        new Blob(
+            [validIdFront.buffer],
+            {
+                type:
+                    validIdFront.mimetype
+            }
+        );
+
+
+    const verificationBlob =
+        new Blob(
+            [verificationPhoto.buffer],
+            {
+                type:
+                    verificationPhoto.mimetype
+            }
+        );
+
+
+    formData.append(
+        "source_image",
+        validIdBlob,
+        validIdFront.originalname ||
+            "valid-id.jpg"
+    );
+
+
+    formData.append(
+        "target_image",
+        verificationBlob,
+        verificationPhoto.originalname ||
+            "face-verification.jpg"
+    );
+
+
+    let response;
+
+
+    try {
+
+        response = await fetch(
+            FACE_VERIFICATION_URL,
+            {
+                method: "POST",
+                body: formData
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Unable to reach face verification service:",
+            error
+        );
+
+        throw new Error(
+            "Face verification service is temporarily unavailable. Please try again."
+        );
+    }
+
+
+    let result;
+
+
+    try {
+
+        result =
+            await response.json();
+
+    } catch (error) {
+
+        throw new Error(
+            "Face verification service returned an invalid response."
+        );
+    }
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            result.message ||
+            "Face verification service failed."
+        );
+    }
+
+
+    /*
+     * All three conditions must pass.
+     *
+     * success          = Python request worked
+     * livenessPassed   = live person, not detected spoof
+     * verified         = face matches uploaded ID
+     */
+    if (
+        result.success !== true ||
+        result.livenessPassed !== true ||
+        result.verified !== true
+    ) {
+
+        throw new Error(
+            result.message ||
+            "Face verification failed."
+        );
+    }
+
+
+    return result;
+}
+
 async function createSignedFileUrl(filePath) {
     if (!filePath) {
         return null;
@@ -117,7 +285,17 @@ export async function registerApplication(payload, files) {
     let applicationId = null;
 
     try {
-        const duplicate = await findDuplicateApplicant(applicationsData);
+
+        const faceVerification =
+            await verifyApplicantFace(
+                files
+            );
+
+
+        const duplicate =
+            await findDuplicateApplicant(
+                applicationsData
+            );
 
         if (duplicate) {
 
@@ -164,6 +342,58 @@ export async function registerApplication(payload, files) {
         }
 
         applicationId = application.application_id;
+
+        // =================================================
+        // SAVE AUTHORITATIVE FACE VERIFICATION RESULT
+        // =================================================
+
+        const {
+            error: faceVerificationError
+        } = await supabase
+            .from(
+                "face_verifications"
+            )
+            .insert([
+                {
+                    application_id:
+                        applicationId,
+
+                    verified:
+                        true,
+
+                    similarity:
+                        faceVerification.similarity ??
+                        null,
+
+                    threshold:
+                        faceVerification.threshold ??
+                        null,
+
+                    source_face_confidence:
+                        faceVerification.sourceFaceConfidence ??
+                        null,
+
+                    target_face_confidence:
+                        faceVerification.targetFaceConfidence ??
+                        null,
+
+                    liveness_passed:
+                        faceVerification.livenessPassed ===
+                        true,
+
+                    liveness_score:
+                        faceVerification.livenessScore ??
+                        null,
+
+                    verification_method:
+                        "YuNet + MiniFASNetV2 + SFace"
+                }
+            ]);
+
+
+        if (faceVerificationError) {
+            throw faceVerificationError;
+        }
 
         const [
             validIdFrontPath,

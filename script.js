@@ -3533,6 +3533,18 @@ function setupFormSubmitConfirmation() {
       formData.append("signature", signature);
     }
 
+    const verificationPhoto =
+      document.getElementById(
+        "upload-verification"
+      )?.files?.[0];
+
+    if (verificationPhoto) {
+      formData.append(
+        "verification_photo",
+        verificationPhoto
+      );
+    }
+
     let requestUrl = "";
     let requestMethod = "";
 
@@ -3699,6 +3711,35 @@ function setupFormSubmitConfirmation() {
 
     if (!allConsentsChecked) {
       showInlineError('Please confirm all required statements before submitting the application.');
+      return false;
+    }
+
+    const verificationInput =
+      document.getElementById(
+        "upload-verification"
+      );
+
+    const faceVerified =
+      verificationInput?.dataset.faceVerified ===
+      "true";
+
+    if (!faceVerified) {
+      showInlineError(
+        "Please complete face verification before submitting your application."
+      );
+
+      const verificationSection =
+        document.getElementById(
+          "open-face-camera"
+        );
+
+      if (verificationSection) {
+        verificationSection.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+      }
+
       return false;
     }
 

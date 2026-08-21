@@ -4043,7 +4043,11 @@ function setupFormSubmitConfirmation() {
             return;
           }
 
-          const result = await saveApplication();
+          const attemptedApplicationDraft =
+            collectAllPayloads();
+
+          const result =
+            await saveApplication();
 
           if (
             !isPendingEdit &&
@@ -4058,8 +4062,41 @@ function setupFormSubmitConfirmation() {
               );
             }
 
-            const duplicateDraft =
-              collectAllPayloads();
+            /*
+            * Save the exact attempted application.
+            * This will later be merged on top of
+            * the database record.
+            */
+            sessionStorage.setItem(
+              "duplicateUpdateDraftSession",
+              updateSessionId
+            );
+
+            sessionStorage.setItem(
+              "duplicateUpdateDraft",
+              JSON.stringify(
+                attemptedApplicationDraft
+              )
+            );
+
+            await saveRequestEditFiles(
+              updateSessionId
+            );
+
+            showDuplicateRecordModal(
+              result.verificationSessions
+            );
+
+            return;
+          }
+            const updateSessionId =
+              result.verificationSessions?.updateExisting;
+
+            if (!updateSessionId) {
+              throw new Error(
+                "Unable to prepare the existing record update."
+              );
+            }
 
             sessionStorage.setItem(
               "duplicateUpdateDraftSession",

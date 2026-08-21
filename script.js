@@ -1619,6 +1619,17 @@ async function loadApplicationForEditing() {
       applicationFiles.valid_id_signed_url
     );
 
+    const existingValidIdInput =
+      document.getElementById(
+        "upload-valid-id-front"
+      );
+
+    if (existingValidIdInput) {
+      existingValidIdInput.dataset.existingFileUrl =
+        applicationFiles.valid_id_signed_url ||
+        "";
+    }
+
     showExistingFile(
       "upload-valid-id-back",
       applicationFiles.valid_id_back_url,
@@ -2010,18 +2021,86 @@ function setupFaceCamera() {
     // Check Valid ID first
     // -------------------------------------------------
 
-    const validIdFile =
-      validIdInput.files?.[0];
-
+    let validIdFile =
+      validIdInput.files?.[0] || null;
 
     if (!validIdFile) {
+
+      const existingFileUrl =
+        validIdInput.dataset.existingFileUrl;
+
+
+      if (existingFileUrl) {
+
+        try {
+
+          setVerificationResult(
+            "Loading your existing Valid ID...",
+            "loading"
+          );
+
+
+          const existingResponse =
+            await fetch(
+              existingFileUrl
+            );
+
+
+          if (!existingResponse.ok) {
+            throw new Error(
+              "Unable to load existing Valid ID."
+            );
+          }
+
+
+          const existingBlob =
+            await existingResponse.blob();
+
+
+          validIdFile =
+            new File(
+              [existingBlob],
+              "existing-valid-id.jpg",
+              {
+                type:
+                  existingBlob.type ||
+                  "image/jpeg",
+
+                lastModified:
+                  Date.now()
+              }
+            );
+
+
+        } catch (error) {
+
+          console.error(
+            "Unable to retrieve existing Valid ID:",
+            error
+          );
+
+
+          setVerificationResult(
+            "Unable to load your existing Valid ID. Please upload the Valid ID again.",
+            "error"
+          );
+
+
+          return;
+        }
+      }
+    }
+
+
+    /*
+    * Neither a newly selected ID nor an existing
+    * stored ID is available.
+    */
+    if (!validIdFile) {
+
       setVerificationResult(
         "Please upload the front of your valid government ID before scanning your face.",
         "error"
-      );
-
-      setStatus(
-        "Valid ID is required for face verification."
       );
 
       return;

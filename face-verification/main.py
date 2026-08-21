@@ -1,10 +1,21 @@
-from fastapi import FastAPI, UploadFile, File
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import (
+    FastAPI,
+    UploadFile,
+    File,
+    Form
+)
+
+from fastapi.middleware.cors import (
+    CORSMiddleware
+)
 
 import cv2
 import numpy as np
 import onnxruntime as ort
+import easyocr
+import re
 
+from datetime import datetime, date
 from pathlib import Path
 
 
@@ -45,14 +56,16 @@ SFACE_COSINE_THRESHOLD = 0.363
 
 ANTI_SPOOF_CROP_SCALE = 2.7
 
+MINIMUM_SENIOR_AGE = 60
+
 
 # =====================================================
 # FASTAPI APP
 # =====================================================
 
 app = FastAPI(
-    title="OSCA Face Verification API",
-    version="2.0.0"
+    title="OSCA Verification API",
+    version="3.0.0"
 )
 
 
@@ -66,10 +79,12 @@ app.add_middleware(
 
 
 # =====================================================
-# GLOBAL MODEL SESSION
+# GLOBAL MODEL SESSIONS
 # =====================================================
 
 anti_spoof_session = None
+
+ocr_reader = None
 
 
 # =====================================================
@@ -78,18 +93,21 @@ anti_spoof_session = None
 
 @app.get("/")
 def root():
+
     return {
         "success": True,
         "message":
-            "OSCA Face Verification API is running."
+            "OSCA Verification API is running."
     }
 
 
 @app.get("/health")
 def health_check():
+
     return {
         "success": True,
         "status": "healthy",
+
         "models": {
             "yunet":
                 YUNET_MODEL_PATH.exists(),
@@ -98,7 +116,10 @@ def health_check():
                 SFACE_MODEL_PATH.exists(),
 
             "minifasnet":
-                MINIFASNET_MODEL_PATH.exists()
+                MINIFASNET_MODEL_PATH.exists(),
+
+            "easyocr":
+                True
         }
     }
 
@@ -129,6 +150,7 @@ async def test_image(
 def decode_uploaded_image(
     image_bytes
 ):
+
     np_array = np.frombuffer(
         image_bytes,
         np.uint8
@@ -145,15 +167,11 @@ def decode_uploaded_image(
 def prepare_image_for_detection(
     image
 ):
+
     if image is None:
         return None
 
     height, width = image.shape[:2]
-
-    # Enlarge small images because ID photos,
-    # scanned documents and compressed photos
-    # may contain faces that are too small
-    # for reliable detection.
 
     min_dimension = min(
         width,
@@ -163,15 +181,21 @@ def prepare_image_for_detection(
     if min_dimension < 640:
 
         scale = (
-            640 / min_dimension
+            640
+            /
+            min_dimension
         )
 
         new_width = int(
-            width * scale
+            width
+            *
+            scale
         )
 
         new_height = int(
-            height * scale
+            height
+            *
+            scale
         )
 
         image = cv2.resize(
@@ -187,6 +211,305 @@ def prepare_image_for_detection(
 
 
 # =====================================================
+# EASYOCR
+# =====================================================
+
+def get_ocr_reader():
+
+    global ocr_reader
+
+    if ocr_reader is None:
+
+        print(
+            "Loading EasyOCR..."
+        )
+
+        ocr_reader = easyocr.Reader(
+            ["en"],
+            gpu=False
+        )
+
+        print(
+            "EasyOCR loaded successfully."
+        )
+
+    return ocr_reader
+
+
+# =====================================================
+# AGE VERIFICATION HELPERS
+# =====================================================
+
+def parse_birth_date(
+    value
+):
+
+    if not value:
+        return None
+
+    value = value.strip()
+
+    # Example:
+    #
+    # November 05,2005
+    #
+    # becomes:
+    #
+    # November 05, 2005
+
+    value = re.sub(
+        r",\s*",
+        ", ",
+        value
+    )
+
+
+    formats = [
+        "%B %d, %Y",
+        "%b %d, %Y",
+        "%m/%d/%Y",
+        "%d/%m/%Y",
+        "%Y-%m-%d"
+    ]
+
+
+    for date_format in formats:
+
+        try:
+
+            parsed = datetime.strptime(
+                value,
+                date_format
+            )
+
+            return parsed.date()
+
+        except ValueError:
+
+            continue
+
+
+    return None
+
+
+def calculate_age(
+    birth_date
+):
+
+    today = date.today()
+
+    age = (
+        today.year
+        -
+        birth_date.year
+    )
+
+
+    if (
+        (
+            today.month,
+            today.day
+        )
+        <
+        (
+            birth_date.month,
+            birth_date.day
+        )
+    ):
+
+        age -= 1
+
+
+    return age
+
+
+def extract_birth_date_from_image(
+    image_bytes
+):
+
+    reader = get_ocr_reader()
+
+
+    image = decode_uploaded_image(
+        image_bytes
+    )
+
+
+    if image is None:
+
+        return (
+            None,
+            None,
+            []
+        )
+
+
+    results = reader.readtext(
+        image,
+        detail=1
+    )
+
+
+    detected_text = []
+
+
+    for result in results:
+
+        box, text, confidence = result
+
+
+        detected_text.append(
+            {
+                "text":
+                    text,
+
+                "confidence":
+                    round(
+                        float(
+                            confidence
+                        ),
+                        4
+                    )
+            }
+        )
+
+
+    # =================================================
+    # FIRST METHOD:
+    #
+    # Find a DOB label and then inspect the text
+    # immediately following it.
+    # =================================================
+
+    for index, item in enumerate(
+        detected_text
+    ):
+
+        text_upper = (
+            item["text"]
+            .upper()
+        )
+
+
+        normalized_text = (
+            text_upper
+            .replace(
+                "0",
+                "O"
+            )
+        )
+
+
+        is_birth_date_label = (
+
+            "DATE OF BIRTH"
+            in normalized_text
+
+            or
+
+            "PETSA NG KAPANGANAKAN"
+            in normalized_text
+        )
+
+
+        if not is_birth_date_label:
+
+            continue
+
+
+        # Search the next few OCR results because
+        # the date normally follows the DOB label.
+
+        for offset in range(
+            1,
+            4
+        ):
+
+            candidate_index = (
+                index
+                +
+                offset
+            )
+
+
+            if (
+                candidate_index
+                >=
+                len(
+                    detected_text
+                )
+            ):
+
+                break
+
+
+            candidate = (
+                detected_text[
+                    candidate_index
+                ]
+            )
+
+
+            parsed_date = (
+                parse_birth_date(
+                    candidate[
+                        "text"
+                    ]
+                )
+            )
+
+
+            if parsed_date:
+
+                return (
+                    parsed_date,
+
+                    candidate[
+                        "confidence"
+                    ],
+
+                    detected_text
+                )
+
+
+    # =================================================
+    # FALLBACK:
+    #
+    # Search all OCR results for a recognizable date.
+    # =================================================
+
+    for item in detected_text:
+
+        parsed_date = (
+            parse_birth_date(
+                item[
+                    "text"
+                ]
+            )
+        )
+
+
+        if parsed_date:
+
+            return (
+                parsed_date,
+
+                item[
+                    "confidence"
+                ],
+
+                detected_text
+            )
+
+
+    return (
+        None,
+        None,
+        detected_text
+    )
+
+
+# =====================================================
 # YUNET FACE DETECTION
 # =====================================================
 
@@ -196,12 +519,16 @@ def create_face_detector(
 ):
 
     if not YUNET_MODEL_PATH.exists():
+
         raise FileNotFoundError(
             "YuNet face detection model is missing."
         )
 
+
     detector = cv2.FaceDetectorYN.create(
-        str(YUNET_MODEL_PATH),
+        str(
+            YUNET_MODEL_PATH
+        ),
         "",
         (
             width,
@@ -212,12 +539,14 @@ def create_face_detector(
         5000
     )
 
+
     detector.setInputSize(
         (
             width,
             height
         )
     )
+
 
     return detector
 
@@ -227,7 +556,12 @@ def detect_single_face(
 ):
 
     if image is None:
-        return None, "invalid_image"
+
+        return (
+            None,
+            "invalid_image"
+        )
+
 
     prepared_image = (
         prepare_image_for_detection(
@@ -235,14 +569,19 @@ def detect_single_face(
         )
     )
 
+
     height, width = (
         prepared_image.shape[:2]
     )
 
-    detector = create_face_detector(
-        width,
-        height
+
+    detector = (
+        create_face_detector(
+            width,
+            height
+        )
     )
+
 
     _, faces = detector.detect(
         prepared_image
@@ -253,8 +592,16 @@ def detect_single_face(
     # No face
     # -------------------------------------------------
 
-    if faces is None or len(faces) == 0:
-        return None, "no_face"
+    if (
+        faces is None
+        or
+        len(faces) == 0
+    ):
+
+        return (
+            None,
+            "no_face"
+        )
 
 
     # -------------------------------------------------
@@ -263,10 +610,15 @@ def detect_single_face(
 
     faces = sorted(
         faces,
+
         key=lambda face:
-            face[2] * face[3],
+            face[2]
+            *
+            face[3],
+
         reverse=True
     )
+
 
     largest_face = faces[0]
 
@@ -279,23 +631,30 @@ def detect_single_face(
 
         largest_area = (
             largest_face[2]
-            * largest_face[3]
+            *
+            largest_face[3]
         )
+
 
         second_area = (
             faces[1][2]
-            * faces[1][3]
+            *
+            faces[1][3]
         )
 
-        # Ignore tiny secondary detections.
-        # Reject when another face is large enough
-        # to plausibly represent a second person.
 
         if (
             second_area
-            >= largest_area * 0.40
+            >=
+            largest_area
+            *
+            0.40
         ):
-            return None, "multiple_faces"
+
+            return (
+                None,
+                "multiple_faces"
+            )
 
 
     return (
@@ -314,6 +673,7 @@ def detect_single_face(
             "detections":
                 len(faces)
         },
+
         None
     )
 
@@ -325,12 +685,16 @@ def detect_single_face(
 def create_face_recognizer():
 
     if not SFACE_MODEL_PATH.exists():
+
         raise FileNotFoundError(
             "SFace recognition model is missing."
         )
 
+
     return cv2.FaceRecognizerSF.create(
-        str(SFACE_MODEL_PATH),
+        str(
+            SFACE_MODEL_PATH
+        ),
         ""
     )
 
@@ -343,24 +707,31 @@ def create_anti_spoof_session():
 
     global anti_spoof_session
 
+
     if anti_spoof_session is not None:
+
         return anti_spoof_session
 
+
     if not MINIFASNET_MODEL_PATH.exists():
+
         raise FileNotFoundError(
             "MiniFASNetV2 anti-spoofing model is missing."
         )
+
 
     anti_spoof_session = (
         ort.InferenceSession(
             str(
                 MINIFASNET_MODEL_PATH
             ),
+
             providers=[
                 "CPUExecutionProvider"
             ]
         )
     )
+
 
     return anti_spoof_session
 
@@ -378,6 +749,7 @@ def softmax(
             keepdims=True
         )
     )
+
 
     return (
         exp_values
@@ -399,6 +771,7 @@ def crop_face_for_antispoof(
         image.shape[:2]
     )
 
+
     x = int(
         face[0]
     )
@@ -415,24 +788,25 @@ def crop_face_for_antispoof(
         face[3]
     )
 
+
     if (
         face_width <= 0
         or
         face_height <= 0
     ):
+
         return None
 
 
-    # -------------------------------------------------
-    # Expanded crop around detected face
-    # -------------------------------------------------
-
     effective_scale = min(
+
         (image_height - 1)
-        / face_height,
+        /
+        face_height,
 
         (image_width - 1)
-        / face_width,
+        /
+        face_width,
 
         scale
     )
@@ -440,12 +814,15 @@ def crop_face_for_antispoof(
 
     new_width = (
         face_width
-        * effective_scale
+        *
+        effective_scale
     )
+
 
     new_height = (
         face_height
-        * effective_scale
+        *
+        effective_scale
     )
 
 
@@ -454,6 +831,7 @@ def crop_face_for_antispoof(
         +
         face_width / 2
     )
+
 
     center_y = (
         y
@@ -471,6 +849,7 @@ def crop_face_for_antispoof(
         )
     )
 
+
     y1 = max(
         0,
         int(
@@ -480,6 +859,7 @@ def crop_face_for_antispoof(
         )
     )
 
+
     x2 = min(
         image_width - 1,
         int(
@@ -488,6 +868,7 @@ def crop_face_for_antispoof(
             new_width / 2
         )
     )
+
 
     y2 = min(
         image_height - 1,
@@ -506,6 +887,7 @@ def crop_face_for_antispoof(
 
 
     if cropped.size == 0:
+
         return None
 
 
@@ -536,23 +918,22 @@ def check_face_liveness(
     if cropped_face is None:
 
         return {
-            "isReal": False,
-            "label": "Invalid",
-            "score": 0.0,
-            "classIndex": -1,
-            "probabilities": []
+            "isReal":
+                False,
+
+            "label":
+                "Invalid",
+
+            "score":
+                0.0,
+
+            "classIndex":
+                -1,
+
+            "probabilities":
+                []
         }
 
-
-    # -------------------------------------------------
-    # MiniFASNet input
-    #
-    # Shape:
-    # [batch, channels, height, width]
-    #
-    # Expected:
-    # [1, 3, 80, 80]
-    # -------------------------------------------------
 
     input_tensor = (
         cropped_face
@@ -634,6 +1015,7 @@ def check_face_liveness(
 
 
     # MiniFASNetV2:
+    #
     # class 1 = real
     # other classes = spoof/fake
 
@@ -686,6 +1068,7 @@ async def detect_face(
         await image.read()
     )
 
+
     img = decode_uploaded_image(
         image_bytes
     )
@@ -717,6 +1100,7 @@ async def detect_face(
             "Face detection error:",
             exc
         )
+
 
         return {
             "success": False,
@@ -800,10 +1184,6 @@ async def check_liveness(
         }
 
 
-    # -------------------------------------------------
-    # Detect face
-    # -------------------------------------------------
-
     try:
 
         face_result, face_error = (
@@ -818,6 +1198,7 @@ async def check_liveness(
             "Liveness face detection error:",
             exc
         )
+
 
         return {
             "success": False,
@@ -850,10 +1231,6 @@ async def check_liveness(
         }
 
 
-    # -------------------------------------------------
-    # Anti-spoofing
-    # -------------------------------------------------
-
     try:
 
         liveness = (
@@ -861,6 +1238,7 @@ async def check_liveness(
                 face_result[
                     "image"
                 ],
+
                 face_result[
                     "face"
                 ]
@@ -873,6 +1251,7 @@ async def check_liveness(
             "Anti-spoofing error:",
             exc
         )
+
 
         return {
             "success": False,
@@ -920,6 +1299,227 @@ async def check_liveness(
                 else
                 "Possible photo or screen spoof detected."
             )
+    }
+
+
+# =====================================================
+# AGE VERIFICATION ENDPOINT
+# =====================================================
+
+@app.post("/verify-age")
+async def verify_age(
+
+    document:
+        UploadFile = File(...),
+
+    date_of_birth:
+        str = Form(...)
+):
+
+    # =================================================
+    # 1. VALIDATE ENTERED DOB
+    # =================================================
+
+    try:
+
+        entered_birth_date = (
+            datetime.strptime(
+                date_of_birth,
+                "%Y-%m-%d"
+            )
+            .date()
+        )
+
+    except ValueError:
+
+        return {
+            "success": False,
+            "verified": False,
+            "birthDateMatches": False,
+            "ageEligible": False,
+
+            "message":
+                "The entered date of birth is invalid."
+        }
+
+
+    # =================================================
+    # 2. READ DOCUMENT
+    # =================================================
+
+    document_bytes = (
+        await document.read()
+    )
+
+
+    if not document_bytes:
+
+        return {
+            "success": False,
+            "verified": False,
+            "birthDateMatches": False,
+            "ageEligible": False,
+
+            "message":
+                "The uploaded valid ID is empty."
+        }
+
+
+    # =================================================
+    # 3. OCR DATE OF BIRTH
+    # =================================================
+
+    try:
+
+        (
+            detected_birth_date,
+            ocr_confidence,
+            detected_text
+        ) = (
+            extract_birth_date_from_image(
+                document_bytes
+            )
+        )
+
+    except Exception as exc:
+
+        print(
+            "OCR age verification error:",
+            exc
+        )
+
+
+        return {
+            "success": False,
+            "verified": False,
+            "birthDateMatches": False,
+            "ageEligible": False,
+
+            "message":
+                "Unable to read the date of birth from the uploaded valid ID."
+        }
+
+
+    # =================================================
+    # 4. DOB NOT FOUND
+    # =================================================
+
+    if detected_birth_date is None:
+
+        return {
+            "success": True,
+            "verified": False,
+
+            "enteredBirthDate":
+                entered_birth_date.isoformat(),
+
+            "detectedBirthDate":
+                None,
+
+            "birthDateMatches":
+                False,
+
+            "age":
+                None,
+
+            "ageEligible":
+                False,
+
+            "ocrConfidence":
+                None,
+
+            "message":
+                "No recognizable date of birth was found on the uploaded valid ID."
+        }
+
+
+    # =================================================
+    # 5. COMPARE DOB
+    # =================================================
+
+    birth_date_matches = (
+        entered_birth_date
+        ==
+        detected_birth_date
+    )
+
+
+    # =================================================
+    # 6. CALCULATE AGE FROM DOCUMENT DOB
+    # =================================================
+
+    age = calculate_age(
+        detected_birth_date
+    )
+
+
+    age_eligible = (
+        age
+        >=
+        MINIMUM_SENIOR_AGE
+    )
+
+
+    # =================================================
+    # 7. FINAL RESULT
+    # =================================================
+
+    verified = (
+        birth_date_matches
+        and
+        age_eligible
+    )
+
+
+    if not birth_date_matches:
+
+        message = (
+            "The date of birth entered in the application "
+            "does not match the uploaded valid ID."
+        )
+
+    elif not age_eligible:
+
+        message = (
+            "The applicant is not yet 60 years old."
+        )
+
+    else:
+
+        message = (
+            "Age verification passed."
+        )
+
+
+    return {
+        "success": True,
+
+        "verified":
+            verified,
+
+        "enteredBirthDate":
+            entered_birth_date.isoformat(),
+
+        "detectedBirthDate":
+            detected_birth_date.isoformat(),
+
+        "birthDateMatches":
+            birth_date_matches,
+
+        "age":
+            age,
+
+        "minimumAge":
+            MINIMUM_SENIOR_AGE,
+
+        "ageEligible":
+            age_eligible,
+
+        "ocrConfidence":
+            ocr_confidence,
+
+        "message":
+            message
     }
 
 
@@ -1006,6 +1606,7 @@ async def verify_face(
             exc
         )
 
+
         return {
             "success": False,
             "verified": False,
@@ -1059,6 +1660,7 @@ async def verify_face(
             exc
         )
 
+
         return {
             "success": False,
             "verified": False,
@@ -1094,13 +1696,7 @@ async def verify_face(
 
 
     # =================================================
-    # 5. LIVENESS / ANTI-SPOOF CHECK
-    #
-    # IMPORTANT:
-    # Only the live camera image is checked.
-    #
-    # source = ID photograph
-    # target = camera capture
+    # 5. LIVENESS CHECK
     # =================================================
 
     try:
@@ -1110,6 +1706,7 @@ async def verify_face(
                 target_result[
                     "image"
                 ],
+
                 target_result[
                     "face"
                 ]
@@ -1123,6 +1720,7 @@ async def verify_face(
             exc
         )
 
+
         return {
             "success": False,
             "verified": False,
@@ -1134,7 +1732,7 @@ async def verify_face(
 
 
     # =================================================
-    # 6. REJECT PHOTO / SCREEN SPOOF
+    # 6. REJECT SPOOF
     # =================================================
 
     if not liveness[
@@ -1144,7 +1742,8 @@ async def verify_face(
         return {
             "success": True,
 
-            "verified": False,
+            "verified":
+                False,
 
             "livenessPassed":
                 False,
@@ -1191,6 +1790,7 @@ async def verify_face(
             exc
         )
 
+
         return {
             "success": False,
             "verified": False,
@@ -1202,7 +1802,7 @@ async def verify_face(
 
 
     # =================================================
-    # 8. ALIGN FACES
+    # 8. ALIGN AND COMPARE FACES
     # =================================================
 
     try:
@@ -1212,6 +1812,7 @@ async def verify_face(
                 source_result[
                     "image"
                 ],
+
                 source_result[
                     "face"
                 ]
@@ -1224,16 +1825,13 @@ async def verify_face(
                 target_result[
                     "image"
                 ],
+
                 target_result[
                     "face"
                 ]
             )
         )
 
-
-        # =============================================
-        # 9. CREATE FACE EMBEDDINGS
-        # =============================================
 
         source_features = (
             recognizer.feature(
@@ -1248,10 +1846,6 @@ async def verify_face(
             )
         )
 
-
-        # =============================================
-        # 10. COMPARE FACES
-        # =============================================
 
         cosine_score = (
             recognizer.match(
@@ -1269,6 +1863,7 @@ async def verify_face(
             exc
         )
 
+
         return {
             "success": False,
             "verified": False,
@@ -1280,7 +1875,7 @@ async def verify_face(
 
 
     # =================================================
-    # 11. FINAL VERIFICATION RESULT
+    # 9. FINAL FACE VERIFICATION RESULT
     # =================================================
 
     verified = bool(

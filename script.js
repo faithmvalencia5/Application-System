@@ -1845,7 +1845,11 @@ function setupFaceCamera() {
    */
   const FACE_VERIFICATION_API =
     "https://application-system-vcv6.onrender.com/verify-face";
+  const AGE_VERIFICATION_API =
+    "https://application-system-vcv6.onrender.com/verify-age";
 
+  const dobInput =
+    document.getElementById("dob");
 
   if (
     !openButton ||
@@ -1901,31 +1905,49 @@ function setupFaceCamera() {
   };
 
 
-  const clearVerification = function () {
-    /*
-     * A data attribute will let us know later
-     * whether facial verification was completed.
-     */
-    fallbackInput.dataset.faceVerified =
-      "false";
+  const clearFaceVerification =
+    function () {
 
-    fallbackInput.dataset.faceSimilarity =
-      "";
+      fallbackInput.dataset.faceVerified =
+        "false";
 
-    if (resultBox) {
-      resultBox.hidden = true;
-      resultBox.textContent = "";
+      fallbackInput.dataset.faceSimilarity =
+        "";
 
-      resultBox.classList.remove(
-        "verification-success",
-        "verification-error",
-        "verification-loading"
-      );
-    }
-    if (formVerificationStatus) {
-      formVerificationStatus.hidden = true;
-    }
-  };
+      if (resultBox) {
+        resultBox.hidden = true;
+        resultBox.textContent = "";
+
+        resultBox.classList.remove(
+          "verification-success",
+          "verification-error",
+          "verification-loading"
+        );
+      }
+
+      if (formVerificationStatus) {
+        formVerificationStatus.hidden = true;
+      }
+    };
+
+
+  const clearVerification =
+    function () {
+
+      clearFaceVerification();
+
+      fallbackInput.dataset.ageVerified =
+        "false";
+
+      fallbackInput.dataset.verifiedAge =
+        "";
+
+      fallbackInput.dataset.detectedBirthDate =
+        "";
+
+      fallbackInput.dataset.ageOcrConfidence =
+        "";
+    };
 
 
   const stopLiveStream = function () {
@@ -2571,7 +2593,7 @@ function setupFaceCamera() {
 
   const retakeFace = async function () {
 
-    clearVerification();
+    clearFaceVerification();
 
 
     /*
@@ -2628,9 +2650,102 @@ function setupFaceCamera() {
         setStatus(
           "Valid ID changed. Please scan your face again."
         );
+        stopCamera();
       }
     }
   );
+
+  if (dobInput) {
+    dobInput.addEventListener(
+      "change",
+      function () {
+
+        /*
+        * The previously verified DOB is no longer valid.
+        */
+        clearVerification();
+
+        /*
+        * Remove the previously captured face image too.
+        */
+        const emptyTransfer =
+          new DataTransfer();
+
+        fallbackInput.files =
+          emptyTransfer.files;
+
+        /*
+        * If the camera is open, close it.
+        */
+        if (!previewWrap.hidden) {
+          stopCamera();
+        }
+      }
+    );
+  }
+
+  const verifyApplicantAge =
+    async function (
+      validIdFile
+    ) {
+
+      const enteredBirthDate =
+        dobInput?.value?.trim();
+
+      if (!enteredBirthDate) {
+        throw new Error(
+          "Please enter your date of birth before continuing with verification."
+        );
+      }
+
+
+      const ageVerificationData =
+        new FormData();
+
+      ageVerificationData.append(
+        "document",
+        validIdFile
+      );
+
+      ageVerificationData.append(
+        "date_of_birth",
+        enteredBirthDate
+      );
+
+
+      const response =
+        await fetch(
+          AGE_VERIFICATION_API,
+          {
+            method: "POST",
+            body: ageVerificationData
+          }
+        );
+
+
+      let result;
+
+      try {
+        result =
+          await response.json();
+
+      } catch (error) {
+        throw new Error(
+          "The age verification service returned an invalid response."
+        );
+      }
+
+
+      if (!response.ok) {
+        throw new Error(
+          result.message ||
+          "Age verification service failed."
+        );
+      }
+
+
+      return result;
+    };
 
 
   // =====================================================
@@ -2641,19 +2756,88 @@ function setupFaceCamera() {
     "click",
     async function () {
 
-      const newValidIdFile =
+      let validIdFile =
         validIdInput.files?.[0] || null;
 
-      const existingValidIdUrl =
-        validIdInput.dataset.existingFileUrl || "";
 
-      if (
-        !newValidIdFile &&
-        !existingValidIdUrl
-      ) {
+      /*
+      * EDIT MODE:
+      * If the applicant did not replace the ID,
+      * load the existing stored ID.
+      */
+      if (!validIdFile) {
+
+        const existingValidIdUrl =
+          validIdInput.dataset.existingFileUrl || "";
+
+
+        if (existingValidIdUrl) {
+
+          try {
+
+            setVerificationResult(
+              "Loading your existing Valid ID...",
+              "loading"
+            );
+
+
+            const existingResponse =
+              await fetch(
+                existingValidIdUrl
+              );
+
+
+            if (!existingResponse.ok) {
+              throw new Error(
+                "Unable to load existing Valid ID."
+              );
+            }
+
+
+            const existingBlob =
+              await existingResponse.blob();
+
+
+            validIdFile =
+              new File(
+                [existingBlob],
+                "existing-valid-id.jpg",
+                {
+                  type:
+                    existingBlob.type ||
+                    "image/jpeg",
+
+                  lastModified:
+                    Date.now()
+                }
+              );
+
+
+          } catch (error) {
+
+            console.error(
+              "Unable to load existing Valid ID:",
+              error
+            );
+
+
+            showErrorNotification(
+              "Unable to load your existing Valid ID. Please upload the Valid ID again."
+            );
+
+            return;
+          }
+        }
+      }
+
+
+      /*
+      * No new ID and no existing ID.
+      */
+      if (!validIdFile) {
 
         showErrorNotification(
-          "Please upload the front of your valid government ID before scanning your face."
+          "Please upload the front of your valid government ID before verification."
         );
 
         validIdInput.scrollIntoView({
@@ -2664,23 +2848,193 @@ function setupFaceCamera() {
         return;
       }
 
+
+      /*
+      * OCR and face verification currently
+      * require an image.
+      */
       if (
-        newValidIdFile &&
-        (
-          !newValidIdFile.type ||
-          !newValidIdFile.type.startsWith("image/")
+        !validIdFile.type ||
+        !validIdFile.type.startsWith(
+          "image/"
         )
       ) {
 
         showErrorNotification(
-          "Please upload the front of your valid government ID as a JPG, JPEG, or PNG image before facial verification."
+          "Please upload the front of your valid government ID as a JPG, JPEG, or PNG image."
         );
 
         return;
       }
 
 
-      await startCamera();
+      /*
+      * Date of Birth must be present.
+      */
+      if (
+        !dobInput ||
+        !dobInput.value
+      ) {
+
+        showErrorNotification(
+          "Please enter your date of birth before verification."
+        );
+
+        dobInput?.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+
+        return;
+      }
+
+
+      /*
+      * AGE VERIFICATION FIRST
+      */
+      try {
+
+        openButton.disabled = true;
+
+        setVerificationResult(
+          "Verifying your age from the uploaded Valid ID...",
+          "loading"
+        );
+
+
+        const ageResult =
+          await verifyApplicantAge(
+            validIdFile
+          );
+
+
+        console.log(
+          "Age verification result:",
+          ageResult
+        );
+
+
+        /*
+        * DOB from form does not match ID.
+        */
+        if (
+          ageResult.birthDateMatches !==
+          true
+        ) {
+
+          showErrorNotification(
+            "The date of birth entered in the application does not match the date of birth on your Valid ID."
+          );
+
+          setVerificationResult(
+            "✕ Date of birth does not match the uploaded Valid ID.",
+            "error"
+          );
+
+          return;
+        }
+
+
+        /*
+        * DOB matches, but applicant is under 60.
+        */
+        if (
+          ageResult.ageEligible !==
+          true
+        ) {
+
+          showErrorNotification(
+            "The applicant is not yet eligible. Senior Citizen applicants must be at least 60 years old."
+          );
+
+          setVerificationResult(
+            "✕ Age verification failed. Applicant must be at least 60 years old.",
+            "error"
+          );
+
+          return;
+        }
+
+
+        /*
+        * Both checks passed.
+        */
+        if (
+          ageResult.verified !== true
+        ) {
+
+          showErrorNotification(
+            ageResult.message ||
+            "Age verification failed."
+          );
+
+          setVerificationResult(
+            "✕ " +
+            (
+              ageResult.message ||
+              "Age verification failed."
+            ),
+            "error"
+          );
+
+          return;
+        }
+
+        await startCamera();
+
+
+        fallbackInput.dataset.ageVerified =
+          "true";
+
+        fallbackInput.dataset.verifiedAge =
+          String(
+            ageResult.age ?? ""
+          );
+
+        fallbackInput.dataset.detectedBirthDate =
+          ageResult.detectedBirthDate || "";
+
+        fallbackInput.dataset.ageOcrConfidence =
+          String(
+            ageResult.ocrConfidence ?? ""
+          );
+
+
+        setVerificationResult(
+          "✓ Age verified. Please capture your face.",
+          "success"
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Age verification error:",
+          error
+        );
+
+
+        fallbackInput.dataset.ageVerified =
+          "false";
+
+
+        showErrorNotification(
+          error.message ||
+          "Unable to complete age verification."
+        );
+
+
+        setVerificationResult(
+          "Unable to complete age verification. Please try again.",
+          "error"
+        );
+
+
+      } finally {
+
+        openButton.disabled =
+          false;
+      }
     }
   );
 

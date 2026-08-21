@@ -558,16 +558,87 @@
         </div>
 
         <div id="face-camera-preview" class="camera-modal" hidden aria-hidden="true">
-          <div class="camera-dialog" role="dialog" aria-modal="true" aria-labelledby="face-camera-title">
+
+          <div
+            class="camera-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="face-camera-title"
+          >
+
             <div class="camera-dialog-head">
+
               <div>
-                <h3 id="face-camera-title">Verification Camera</h3>
-                <small id="face-camera-status" class="camera-status" aria-live="polite"></small>
+                <h3 id="face-camera-title">
+                  Face Verification
+                </h3>
+
+                <small
+                  id="face-camera-status"
+                  class="camera-status"
+                  aria-live="polite"
+                >
+                  Position your face clearly inside the camera.
+                </small>
               </div>
-              <button id="close-face-camera" type="button" class="camera-close" aria-label="Close camera">✕</button>
+
+              <button
+                id="close-face-camera"
+                type="button"
+                class="camera-close"
+                aria-label="Close camera"
+              >
+                ✕
+              </button>
+
             </div>
-            <video id="face-camera-video" autoplay playsinline muted></video>
+
+            <!-- Live camera -->
+            <video
+              id="face-camera-video"
+              autoplay
+              playsinline
+              muted
+            ></video>
+
+            <!-- Hidden canvas used to capture the camera frame -->
+            <canvas
+              id="face-camera-canvas"
+              hidden
+            ></canvas>
+
+            <!-- Face verification result -->
+            <div
+              id="face-verification-result"
+              class="face-verification-result"
+              hidden
+              aria-live="polite"
+            ></div>
+
+            <!-- Camera controls -->
+            <div class="face-camera-actions">
+
+              <button
+                id="capture-face-button"
+                type="button"
+                class="primary-btn"
+              >
+                Capture & Verify
+              </button>
+
+              <button
+                id="retake-face-button"
+                type="button"
+                class="secondary-btn"
+                hidden
+              >
+                Retake
+              </button>
+
+            </div>
+
           </div>
+
         </div>
 
         <br>

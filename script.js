@@ -1732,10 +1732,23 @@ function setupFaceCamera() {
   const closeButton = document.getElementById("close-face-camera");
   const previewWrap = document.getElementById("face-camera-preview");
   const videoElement = document.getElementById("face-camera-video");
+  const canvasElement = document.getElementById("face-camera-canvas");
+  const captureButton = document.getElementById("capture-face-button");
+  const retakeButton = document.getElementById("retake-face-button");
+  const resultBox = document.getElementById("face-verification-result");
   const statusLabel = document.getElementById("face-camera-status");
   const fallbackInput = document.getElementById("upload-verification");
 
-  if (!openButton || !closeButton || !previewWrap || !videoElement) {
+  if (
+    !openButton ||
+    !closeButton ||
+    !previewWrap ||
+    !videoElement ||
+    !canvasElement ||
+    !captureButton ||
+    !retakeButton ||
+    !fallbackInput
+  ) {
     return;
   }
 
@@ -1747,77 +1760,317 @@ function setupFaceCamera() {
     }
   };
 
+  const resetCaptureState = function () {
+    videoElement.hidden = false;
+    canvasElement.hidden = true;
+
+    captureButton.hidden = false;
+    captureButton.disabled = false;
+
+    retakeButton.hidden = true;
+
+    if (resultBox) {
+      resultBox.hidden = true;
+      resultBox.textContent = "";
+    }
+
+    setStatus(
+      "Position your face clearly inside the camera."
+    );
+  };
+
   const stopCamera = function () {
     if (faceStream) {
       faceStream.getTracks().forEach(function (track) {
         track.stop();
       });
+
       faceStream = null;
     }
 
     videoElement.srcObject = null;
+
     previewWrap.hidden = true;
-    previewWrap.setAttribute("aria-hidden", "true");
-    openButton.setAttribute("aria-expanded", "false");
-    document.body.classList.remove("camera-open");
+    previewWrap.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+    openButton.setAttribute(
+      "aria-expanded",
+      "false"
+    );
+
+    document.body.classList.remove(
+      "camera-open"
+    );
   };
 
-  openButton.addEventListener("click", async function () {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setStatus("Camera access is not supported in this browser. Opening file capture instead.");
-      if (fallbackInput) {
-        fallbackInput.click();
-      }
+  const startCamera = async function () {
+    resetCaptureState();
+
+    if (
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
+      setStatus(
+        "Camera access is not supported in this browser. Opening file capture instead."
+      );
+
+      fallbackInput.click();
       return;
     }
 
     if (faceStream) {
-      setStatus("Camera is already open.");
       return;
     }
 
     try {
-      faceStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "user"
-        },
-        audio: false
-      });
+      faceStream =
+        await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "user"
+          },
+          audio: false
+        });
 
-      videoElement.srcObject = faceStream;
-      videoElement.style.transform = "scaleX(-1)";
+      videoElement.srcObject =
+        faceStream;
+
+      videoElement.style.transform =
+        "scaleX(-1)";
+
       previewWrap.hidden = false;
-      previewWrap.setAttribute("aria-hidden", "false");
-      openButton.setAttribute("aria-expanded", "true");
-      document.body.classList.add("camera-open");
-      closeButton.focus();
+
+      previewWrap.setAttribute(
+        "aria-hidden",
+        "false"
+      );
+
+      openButton.setAttribute(
+        "aria-expanded",
+        "true"
+      );
+
+      document.body.classList.add(
+        "camera-open"
+      );
+
+      setStatus(
+        "Position your face clearly inside the camera."
+      );
+
     } catch (error) {
-      setStatus("Unable to access camera. Please allow permission, then try again.");
-      if (fallbackInput) {
-        fallbackInput.click();
+      console.error(
+        "Unable to open face camera:",
+        error
+      );
+
+      setStatus(
+        "Unable to access camera. Please allow permission, then try again."
+      );
+
+      fallbackInput.click();
+    }
+  };
+
+  const captureFace = function () {
+    if (
+      !videoElement.videoWidth ||
+      !videoElement.videoHeight
+    ) {
+      setStatus(
+        "Camera is not ready yet. Please wait a moment and try again."
+      );
+
+      return;
+    }
+
+    const context =
+      canvasElement.getContext("2d");
+
+    canvasElement.width =
+      videoElement.videoWidth;
+
+    canvasElement.height =
+      videoElement.videoHeight;
+
+    /*
+     * Mirror the captured image so it matches
+     * the preview shown to the applicant.
+     */
+    context.save();
+
+    context.translate(
+      canvasElement.width,
+      0
+    );
+
+    context.scale(
+      -1,
+      1
+    );
+
+    context.drawImage(
+      videoElement,
+      0,
+      0,
+      canvasElement.width,
+      canvasElement.height
+    );
+
+    context.restore();
+
+    canvasElement.toBlob(
+      function (blob) {
+        if (!blob) {
+          setStatus(
+            "Unable to capture the image. Please try again."
+          );
+
+          return;
+        }
+
+        const capturedFile =
+          new File(
+            [blob],
+            "face-verification.jpg",
+            {
+              type: "image/jpeg",
+              lastModified: Date.now()
+            }
+          );
+
+        /*
+         * Store the captured photo inside the
+         * existing upload-verification input.
+         */
+        const transfer =
+          new DataTransfer();
+
+        transfer.items.add(
+          capturedFile
+        );
+
+        fallbackInput.files =
+          transfer.files;
+
+        /*
+         * Show the captured still image.
+         */
+        videoElement.hidden = true;
+        canvasElement.hidden = false;
+
+        captureButton.hidden = true;
+        retakeButton.hidden = false;
+
+        setStatus(
+          "Face captured successfully."
+        );
+
+        if (resultBox) {
+          resultBox.hidden = false;
+          resultBox.textContent =
+            "Face captured. Ready for verification.";
+        }
+
+        /*
+         * Stop the live camera after capture.
+         */
+        if (faceStream) {
+          faceStream
+            .getTracks()
+            .forEach(function (track) {
+              track.stop();
+            });
+
+          faceStream = null;
+        }
+
+        videoElement.srcObject = null;
+      },
+      "image/jpeg",
+      0.92
+    );
+  };
+
+  const retakeFace = async function () {
+    /*
+     * Remove the previous captured file.
+     */
+    const emptyTransfer =
+      new DataTransfer();
+
+    fallbackInput.files =
+      emptyTransfer.files;
+
+    canvasElement
+      .getContext("2d")
+      .clearRect(
+        0,
+        0,
+        canvasElement.width,
+        canvasElement.height
+      );
+
+    await startCamera();
+  };
+
+  openButton.addEventListener(
+    "click",
+    async function () {
+      await startCamera();
+    }
+  );
+
+  captureButton.addEventListener(
+    "click",
+    function () {
+      captureFace();
+    }
+  );
+
+  retakeButton.addEventListener(
+    "click",
+    async function () {
+      await retakeFace();
+    }
+  );
+
+  closeButton.addEventListener(
+    "click",
+    function () {
+      stopCamera();
+    }
+  );
+
+  window.addEventListener(
+    "beforeunload",
+    function () {
+      stopCamera();
+    }
+  );
+
+  previewWrap.addEventListener(
+    "click",
+    function (event) {
+      if (event.target === previewWrap) {
+        stopCamera();
       }
     }
-  });
+  );
 
-  closeButton.addEventListener("click", function () {
-    stopCamera();
-  });
-
-  window.addEventListener("beforeunload", function () {
-    stopCamera();
-  });
-
-  previewWrap.addEventListener("click", function (event) {
-    if (event.target === previewWrap) {
-      stopCamera();
+  window.addEventListener(
+    "keydown",
+    function (event) {
+      if (
+        event.key === "Escape" &&
+        !previewWrap.hidden
+      ) {
+        stopCamera();
+      }
     }
-  });
-
-  window.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" && !previewWrap.hidden) {
-      stopCamera();
-    }
-  });
+  );
 }
 
 function setupApplicationDate() {

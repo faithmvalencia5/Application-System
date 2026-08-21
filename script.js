@@ -693,6 +693,46 @@ async function loadApplicationForEditing() {
   };
 
   if (mode === "duplicate-update") {
+    const mergeDraftIntoExisting =
+      function (existing, draft) {
+
+        const merged = {
+          ...(existing || {})
+        };
+
+        if (!draft) {
+          return merged;
+        }
+
+        Object.entries(draft).forEach(
+          function ([key, value]) {
+
+            if (
+              value === null ||
+              value === undefined ||
+              (
+                typeof value === "string" &&
+                value.trim() === ""
+              )
+            ) {
+              return;
+            }
+
+            if (
+              typeof value === "boolean" &&
+              value === false
+            ) {
+              return;
+            }
+
+
+            merged[key] = value;
+          }
+        );
+
+        return merged;
+      };
+
     try {
       const draftFiles =
         await getRequestEditFiles(
@@ -832,28 +872,44 @@ async function loadApplicationForEditing() {
             JSON.parse(savedDraftRaw);
 
           application =
-            savedDraft.applicationsData ||
-            application;
-
-          familyComposition =
-            savedDraft.familyRowsData ||
-            familyComposition;
+            mergeDraftIntoExisting(
+              application,
+              savedDraft.applicationsData
+            );
 
           membership =
-            savedDraft.membershipsData ||
-            membership;
+            mergeDraftIntoExisting(
+              membership,
+              savedDraft.membershipsData
+            );
 
           personalBackground =
-            savedDraft.personalBackgroundData ||
-            personalBackground;
+            mergeDraftIntoExisting(
+              personalBackground,
+              savedDraft.personalBackgroundData
+            );
 
           problemsNeeds =
-            savedDraft.problemsNeedsData ||
-            problemsNeeds;
+            mergeDraftIntoExisting(
+              problemsNeeds,
+              savedDraft.problemsNeedsData
+            );
 
           confirmations =
-            savedDraft.confirmationsData ||
-            confirmations;
+            mergeDraftIntoExisting(
+              confirmations,
+              savedDraft.confirmationsData
+            );
+
+          if (
+            Array.isArray(
+              savedDraft.familyRowsData
+            ) &&
+            savedDraft.familyRowsData.length > 0
+          ) {
+            familyComposition =
+              savedDraft.familyRowsData;
+          }
 
         } catch (error) {
           console.error(

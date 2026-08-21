@@ -1776,7 +1776,7 @@ function setupFaceCamera() {
    * the face-verification API online.
    */
   const FACE_VERIFICATION_API =
-    "https://application-system-vcv6.onrender.com";
+    "https://application-system-vcv6.onrender.com/verify-face";
 
 
   if (

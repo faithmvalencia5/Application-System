@@ -2015,7 +2015,7 @@ function setupFaceCamera() {
   // CAPTURE + VERIFY
   // =====================================================
 
-  const captureFace = function () {
+  const captureFace = async function () {
 
     // -------------------------------------------------
     // Check Valid ID first
@@ -2629,8 +2629,8 @@ function setupFaceCamera() {
 
   captureButton.addEventListener(
     "click",
-    function () {
-      captureFace();
+    async function () {
+      await captureFace();
     }
   );
 

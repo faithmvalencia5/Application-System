@@ -1,18 +1,18 @@
-from fastapi import (
+from fastapi import (  # type: ignore
     FastAPI,
     UploadFile,
     File,
     Form
 )
 
-from fastapi.middleware.cors import (
+from fastapi.middleware.cors import ( # type: ignore
     CORSMiddleware
 )
 
-import cv2
-import numpy as np
-import onnxruntime as ort
-import easyocr
+import cv2 # type: ignore
+import numpy as np # type: ignore
+import onnxruntime as ort # type: ignore
+import easyocr # type: ignore
 import re
 
 from datetime import datetime, date

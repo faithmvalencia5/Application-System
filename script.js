@@ -692,46 +692,47 @@ async function loadApplicationForEditing() {
     }
   };
 
-  if (mode === "duplicate-update") {
-    const mergeDraftIntoExisting =
-      function (existing, draft) {
+  const mergeDraftIntoExisting =
+    function (existing, draft) {
 
-        const merged = {
-          ...(existing || {})
-        };
-
-        if (!draft) {
-          return merged;
-        }
-
-        Object.entries(draft).forEach(
-          function ([key, value]) {
-
-            if (
-              value === null ||
-              value === undefined ||
-              (
-                typeof value === "string" &&
-                value.trim() === ""
-              )
-            ) {
-              return;
-            }
-
-            if (
-              typeof value === "boolean" &&
-              value === false
-            ) {
-              return;
-            }
-
-
-            merged[key] = value;
-          }
-        );
-
-        return merged;
+      const merged = {
+        ...(existing || {})
       };
+
+      if (!draft) {
+        return merged;
+      }
+
+      Object.entries(draft).forEach(
+        function ([key, value]) {
+
+          if (
+            value === null ||
+            value === undefined ||
+            (
+              typeof value === "string" &&
+              value.trim() === ""
+            )
+          ) {
+            return;
+          }
+
+          if (
+            typeof value === "boolean" &&
+            value === false
+          ) {
+            return;
+          }
+
+          merged[key] = value;
+        }
+      );
+
+      return merged;
+    };
+
+
+  if (mode === "duplicate-update") {
 
     try {
       const draftFiles =

@@ -3526,3 +3526,140 @@ body.camera-open .chatbot-button {
     bottom: 88px;
   }
 }
+
+/* =====================================================
+   DESKTOP FACE VERIFICATION FIX
+===================================================== */
+
+@media (min-width: 601px) {
+
+  .camera-dialog {
+    position: relative !important;
+
+    width: 460px !important;
+    height: min(700px, 82vh) !important;
+
+    display: block !important;
+
+    overflow: hidden !important;
+
+    background: #000 !important;
+
+    border-radius: 20px !important;
+
+    box-shadow:
+      0 25px 70px rgba(0, 0, 0, 0.45) !important;
+  }
+
+
+  #face-camera-video,
+  #face-camera-canvas {
+    position: absolute;
+
+    inset: 0;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    max-height: none !important;
+
+    aspect-ratio: auto !important;
+
+    object-fit: cover !important;
+
+    background: #000;
+  }
+
+
+  #face-camera-video[hidden],
+  #face-camera-canvas[hidden] {
+    display: none !important;
+  }
+
+
+  /* Floating information card */
+
+  .camera-dialog-head {
+    position: absolute !important;
+
+    top: 18px;
+    left: 18px;
+    right: 18px;
+
+    z-index: 20;
+
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 15px 17px;
+
+    background: rgba(255, 255, 255, 0.94);
+
+    border-radius: 14px;
+
+    border: none;
+
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.18);
+
+    backdrop-filter: blur(8px);
+  }
+
+
+  .camera-dialog-head h3 {
+    margin: 0 0 4px;
+
+    font-size: 19px;
+
+    color: #102a3a;
+  }
+
+
+  .camera-status {
+    font-size: 13px;
+
+    color: #64748b;
+  }
+
+
+  /* Bottom controls */
+
+  .face-camera-actions {
+    position: absolute !important;
+
+    left: 18px;
+    right: 18px;
+    bottom: 18px;
+
+    z-index: 20;
+
+    display: flex !important;
+
+    padding: 0 !important;
+
+    background: transparent !important;
+  }
+
+
+  .face-camera-actions button {
+    min-height: 52px;
+
+    border-radius: 12px;
+  }
+
+
+  /* Verification result floats above button */
+
+  .face-verification-result {
+    position: absolute !important;
+
+    left: 18px;
+    right: 18px;
+    bottom: 84px;
+
+    z-index: 20;
+
+    margin: 0;
+  }
+}

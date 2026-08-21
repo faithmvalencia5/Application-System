@@ -1761,6 +1761,11 @@ function setupFaceCamera() {
   const validIdInput =
     document.getElementById("upload-valid-id-front");
 
+  const formVerificationStatus =
+    document.getElementById(
+      "face-verification-form-status"
+    );
+
 
   /*
    * IMPORTANT:
@@ -1848,6 +1853,9 @@ function setupFaceCamera() {
         "verification-error",
         "verification-loading"
       );
+    }
+    if (formVerificationStatus) {
+      formVerificationStatus.hidden = true;
     }
   };
 
@@ -2265,6 +2273,10 @@ function setupFaceCamera() {
 
             fallbackInput.dataset.faceVerified =
               "true";
+
+            if (formVerificationStatus) {
+              formVerificationStatus.hidden = false;
+            }
 
 
             fallbackInput.dataset.faceSimilarity =

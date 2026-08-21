@@ -3360,3 +3360,81 @@ body.camera-open #osca-chatbot {
   }
 
 }
+
+/* =====================================================
+   MOBILE FACE CAMERA - KEEP CONTROLS VISIBLE
+===================================================== */
+
+@media (max-width: 600px) {
+
+  body.camera-open {
+    overflow: hidden;
+  }
+
+  body.camera-open .face-camera-actions {
+    position: fixed;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    z-index: 10002;
+
+    display: flex;
+
+    gap: 10px;
+
+    padding:
+      12px
+      16px
+      calc(12px + env(safe-area-inset-bottom));
+
+    background: rgba(255, 255, 255, 0.96);
+
+    box-sizing: border-box;
+  }
+
+  body.camera-open .face-camera-actions button {
+    display: block;
+
+    width: 100%;
+    min-height: 52px;
+
+    font-size: 16px;
+    font-weight: 700;
+
+    border-radius: 10px;
+  }
+
+  body.camera-open #capture-face-button:not([hidden]) {
+    display: block !important;
+  }
+
+  body.camera-open #retake-face-button[hidden] {
+    display: none !important;
+  }
+
+  body.camera-open #retake-face-button:not([hidden]) {
+    display: block !important;
+  }
+
+  /*
+   * Leave room at the bottom so the camera image
+   * does not sit underneath the action buttons.
+   */
+  body.camera-open #face-camera-video,
+  body.camera-open #face-camera-canvas {
+    max-height: calc(100dvh - 220px);
+  }
+
+  /*
+   * Chatbot must never appear above the camera.
+   */
+  body.camera-open #osca-chatbot,
+  body.camera-open .chatbot,
+  body.camera-open .chatbot-container,
+  body.camera-open .chatbot-toggle,
+  body.camera-open .chatbot-button {
+    display: none !important;
+  }
+}

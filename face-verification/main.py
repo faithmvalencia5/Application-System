@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import cv2
 import numpy as np
+import onnxruntime as ort
 
 from pathlib import Path
 
@@ -25,14 +26,33 @@ SFACE_MODEL_PATH = (
     / "face_recognition_sface_2021dec.onnx"
 )
 
+MINIFASNET_MODEL_PATH = (
+    BASE_DIR
+    / "models"
+    / "MiniFASNetV2.onnx"
+)
+
 
 # =====================================================
-# APP
+# CONFIGURATION
+# =====================================================
+
+YUNET_SCORE_THRESHOLD = 0.50
+
+YUNET_NMS_THRESHOLD = 0.30
+
+SFACE_COSINE_THRESHOLD = 0.363
+
+ANTI_SPOOF_CROP_SCALE = 2.7
+
+
+# =====================================================
+# FASTAPI APP
 # =====================================================
 
 app = FastAPI(
     title="OSCA Face Verification API",
-    version="1.0.0"
+    version="2.0.0"
 )
 
 
@@ -43,6 +63,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# =====================================================
+# GLOBAL MODEL SESSION
+# =====================================================
+
+anti_spoof_session = None
 
 
 # =====================================================
@@ -62,7 +89,17 @@ def root():
 def health_check():
     return {
         "success": True,
-        "status": "healthy"
+        "status": "healthy",
+        "models": {
+            "yunet":
+                YUNET_MODEL_PATH.exists(),
+
+            "sface":
+                SFACE_MODEL_PATH.exists(),
+
+            "minifasnet":
+                MINIFASNET_MODEL_PATH.exists()
+        }
     }
 
 
@@ -74,6 +111,7 @@ def health_check():
 async def test_image(
     image: UploadFile = File(...)
 ):
+
     image_bytes = await image.read()
 
     return {
@@ -85,7 +123,7 @@ async def test_image(
 
 
 # =====================================================
-# HELPER: DECODE IMAGE
+# IMAGE HELPERS
 # =====================================================
 
 def decode_uploaded_image(
@@ -104,10 +142,6 @@ def decode_uploaded_image(
     return image
 
 
-# =====================================================
-# HELPER: PREPARE IMAGE
-# =====================================================
-
 def prepare_image_for_detection(
     image
 ):
@@ -116,12 +150,10 @@ def prepare_image_for_detection(
 
     height, width = image.shape[:2]
 
-    
-    #Enlarge small images because ID photos,
-    #scanned documents, and compressed photos
-    #may otherwise contain faces that are too
-    #small for reliable detection.
-    
+    # Enlarge small images because ID photos,
+    # scanned documents and compressed photos
+    # may contain faces that are too small
+    # for reliable detection.
 
     min_dimension = min(
         width,
@@ -155,13 +187,14 @@ def prepare_image_for_detection(
 
 
 # =====================================================
-# HELPER: CREATE YUNET DETECTOR
+# YUNET FACE DETECTION
 # =====================================================
 
 def create_face_detector(
     width,
     height
 ):
+
     if not YUNET_MODEL_PATH.exists():
         raise FileNotFoundError(
             "YuNet face detection model is missing."
@@ -174,14 +207,8 @@ def create_face_detector(
             width,
             height
         ),
-
-        # Detection threshold
-        0.50,
-
-        # Non-maximum suppression threshold
-        0.30,
-
-        # Maximum detections
+        YUNET_SCORE_THRESHOLD,
+        YUNET_NMS_THRESHOLD,
         5000
     )
 
@@ -195,49 +222,58 @@ def create_face_detector(
     return detector
 
 
-# =====================================================
-# HELPER: DETECT EXACTLY ONE FACE
-# =====================================================
+def detect_single_face(
+    image
+):
 
-def detect_single_face(image):
     if image is None:
         return None, "invalid_image"
 
-    prepared_image = prepare_image_for_detection(image)
+    prepared_image = (
+        prepare_image_for_detection(
+            image
+        )
+    )
 
-    height, width = prepared_image.shape[:2]
+    height, width = (
+        prepared_image.shape[:2]
+    )
 
     detector = create_face_detector(
         width,
         height
     )
 
-    _, faces = detector.detect(prepared_image)
+    _, faces = detector.detect(
+        prepared_image
+    )
 
-    # ---------------------------------------------
+
+    # -------------------------------------------------
     # No face
-    # ---------------------------------------------
+    # -------------------------------------------------
 
     if faces is None or len(faces) == 0:
         return None, "no_face"
 
-    # ---------------------------------------------
-    # Sort detections by face area
-    # ---------------------------------------------
+
+    # -------------------------------------------------
+    # Sort by face area
+    # -------------------------------------------------
 
     faces = sorted(
         faces,
-        key=lambda face: face[2] * face[3],
+        key=lambda face:
+            face[2] * face[3],
         reverse=True
     )
 
     largest_face = faces[0]
 
-    # ---------------------------------------------
-    # If multiple detections exist, determine
-    # whether there is actually another significant
-    # face in the image.
-    # ---------------------------------------------
+
+    # -------------------------------------------------
+    # Check for another significant face
+    # -------------------------------------------------
 
     if len(faces) > 1:
 
@@ -251,56 +287,394 @@ def detect_single_face(image):
             * faces[1][3]
         )
 
-        # If the second detected face is reasonably
-        # large compared with the main face, assume
-        # that there really are multiple people.
-        if second_area >= largest_area * 0.40:
+        # Ignore tiny secondary detections.
+        # Reject when another face is large enough
+        # to plausibly represent a second person.
 
+        if (
+            second_area
+            >= largest_area * 0.40
+        ):
             return None, "multiple_faces"
 
-        # Otherwise the smaller detection is treated
-        # as a likely false detection.
 
     return (
         {
-            "image": prepared_image,
-            "face": largest_face,
-            "confidence": float(
-                largest_face[14]
-            ),
-            "detections": len(faces)
+            "image":
+                prepared_image,
+
+            "face":
+                largest_face,
+
+            "confidence":
+                float(
+                    largest_face[14]
+                ),
+
+            "detections":
+                len(faces)
         },
         None
     )
 
 
 # =====================================================
-# HELPER: CREATE SFACE RECOGNIZER
+# SFACE FACE RECOGNITION
 # =====================================================
 
 def create_face_recognizer():
 
     if not SFACE_MODEL_PATH.exists():
-
         raise FileNotFoundError(
             "SFace recognition model is missing."
         )
 
-
-    recognizer = (
-        cv2.FaceRecognizerSF.create(
-            str(
-                SFACE_MODEL_PATH
-            ),
-            ""
-        )
+    return cv2.FaceRecognizerSF.create(
+        str(SFACE_MODEL_PATH),
+        ""
     )
-
-    return recognizer
 
 
 # =====================================================
-# DETECT FACE
+# MINIFASNET ANTI-SPOOFING
+# =====================================================
+
+def create_anti_spoof_session():
+
+    global anti_spoof_session
+
+    if anti_spoof_session is not None:
+        return anti_spoof_session
+
+    if not MINIFASNET_MODEL_PATH.exists():
+        raise FileNotFoundError(
+            "MiniFASNetV2 anti-spoofing model is missing."
+        )
+
+    anti_spoof_session = (
+        ort.InferenceSession(
+            str(
+                MINIFASNET_MODEL_PATH
+            ),
+            providers=[
+                "CPUExecutionProvider"
+            ]
+        )
+    )
+
+    return anti_spoof_session
+
+
+def softmax(
+    values
+):
+
+    exp_values = np.exp(
+        values
+        -
+        np.max(
+            values,
+            axis=1,
+            keepdims=True
+        )
+    )
+
+    return (
+        exp_values
+        /
+        exp_values.sum(
+            axis=1,
+            keepdims=True
+        )
+    )
+
+
+def crop_face_for_antispoof(
+    image,
+    face,
+    scale=ANTI_SPOOF_CROP_SCALE
+):
+
+    image_height, image_width = (
+        image.shape[:2]
+    )
+
+    x = int(
+        face[0]
+    )
+
+    y = int(
+        face[1]
+    )
+
+    face_width = int(
+        face[2]
+    )
+
+    face_height = int(
+        face[3]
+    )
+
+    if (
+        face_width <= 0
+        or
+        face_height <= 0
+    ):
+        return None
+
+
+    # -------------------------------------------------
+    # Expanded crop around detected face
+    # -------------------------------------------------
+
+    effective_scale = min(
+        (image_height - 1)
+        / face_height,
+
+        (image_width - 1)
+        / face_width,
+
+        scale
+    )
+
+
+    new_width = (
+        face_width
+        * effective_scale
+    )
+
+    new_height = (
+        face_height
+        * effective_scale
+    )
+
+
+    center_x = (
+        x
+        +
+        face_width / 2
+    )
+
+    center_y = (
+        y
+        +
+        face_height / 2
+    )
+
+
+    x1 = max(
+        0,
+        int(
+            center_x
+            -
+            new_width / 2
+        )
+    )
+
+    y1 = max(
+        0,
+        int(
+            center_y
+            -
+            new_height / 2
+        )
+    )
+
+    x2 = min(
+        image_width - 1,
+        int(
+            center_x
+            +
+            new_width / 2
+        )
+    )
+
+    y2 = min(
+        image_height - 1,
+        int(
+            center_y
+            +
+            new_height / 2
+        )
+    )
+
+
+    cropped = image[
+        y1:y2 + 1,
+        x1:x2 + 1
+    ]
+
+
+    if cropped.size == 0:
+        return None
+
+
+    return cv2.resize(
+        cropped,
+        (
+            80,
+            80
+        )
+    )
+
+
+def check_face_liveness(
+    image,
+    face
+):
+
+    cropped_face = (
+        crop_face_for_antispoof(
+            image,
+            face,
+            scale=
+                ANTI_SPOOF_CROP_SCALE
+        )
+    )
+
+
+    if cropped_face is None:
+
+        return {
+            "isReal": False,
+            "label": "Invalid",
+            "score": 0.0,
+            "classIndex": -1,
+            "probabilities": []
+        }
+
+
+    # -------------------------------------------------
+    # MiniFASNet input
+    #
+    # Shape:
+    # [batch, channels, height, width]
+    #
+    # Expected:
+    # [1, 3, 80, 80]
+    # -------------------------------------------------
+
+    input_tensor = (
+        cropped_face
+        .astype(
+            np.float32
+        )
+    )
+
+
+    input_tensor = (
+        np.transpose(
+            input_tensor,
+            (
+                2,
+                0,
+                1
+            )
+        )
+    )
+
+
+    input_tensor = (
+        np.expand_dims(
+            input_tensor,
+            axis=0
+        )
+    )
+
+
+    session = (
+        create_anti_spoof_session()
+    )
+
+
+    input_name = (
+        session
+        .get_inputs()[0]
+        .name
+    )
+
+
+    output_name = (
+        session
+        .get_outputs()[0]
+        .name
+    )
+
+
+    logits = session.run(
+        [
+            output_name
+        ],
+        {
+            input_name:
+                input_tensor
+        }
+    )[0]
+
+
+    probabilities = softmax(
+        logits
+    )
+
+
+    predicted_class = int(
+        np.argmax(
+            probabilities,
+            axis=1
+        )[0]
+    )
+
+
+    predicted_score = float(
+        probabilities[
+            0,
+            predicted_class
+        ]
+    )
+
+
+    # MiniFASNetV2:
+    # class 1 = real
+    # other classes = spoof/fake
+
+    is_real = (
+        predicted_class == 1
+    )
+
+
+    return {
+        "isReal":
+            is_real,
+
+        "label":
+            (
+                "Real"
+                if is_real
+                else "Fake"
+            ),
+
+        "score":
+            round(
+                predicted_score,
+                4
+            ),
+
+        "classIndex":
+            predicted_class,
+
+        "probabilities": [
+            round(
+                float(value),
+                4
+            )
+            for value
+            in probabilities[0]
+        ]
+    }
+
+
+# =====================================================
+# DETECT FACE ENDPOINT
 # =====================================================
 
 @app.post("/detect-face")
@@ -308,8 +682,9 @@ async def detect_face(
     image: UploadFile = File(...)
 ):
 
-    image_bytes = await image.read()
-
+    image_bytes = (
+        await image.read()
+    )
 
     img = decode_uploaded_image(
         image_bytes
@@ -336,14 +711,20 @@ async def detect_face(
             )
         )
 
+    except Exception as exc:
 
-    except FileNotFoundError as exc:
+        print(
+            "Face detection error:",
+            exc
+        )
 
         return {
             "success": False,
             "faceDetected": False,
             "faceCount": 0,
-            "message": str(exc)
+
+            "message":
+                "Unable to perform face detection."
         }
 
 
@@ -378,7 +759,9 @@ async def detect_face(
 
         "confidence":
             round(
-                result["confidence"],
+                result[
+                    "confidence"
+                ],
                 4
             ),
 
@@ -388,7 +771,160 @@ async def detect_face(
 
 
 # =====================================================
-# VERIFY TWO FACES
+# CHECK LIVENESS ENDPOINT
+# =====================================================
+
+@app.post("/check-liveness")
+async def check_liveness(
+    image: UploadFile = File(...)
+):
+
+    image_bytes = (
+        await image.read()
+    )
+
+
+    img = decode_uploaded_image(
+        image_bytes
+    )
+
+
+    if img is None:
+
+        return {
+            "success": False,
+            "isReal": False,
+
+            "message":
+                "The uploaded file is not a valid image."
+        }
+
+
+    # -------------------------------------------------
+    # Detect face
+    # -------------------------------------------------
+
+    try:
+
+        face_result, face_error = (
+            detect_single_face(
+                img
+            )
+        )
+
+    except Exception as exc:
+
+        print(
+            "Liveness face detection error:",
+            exc
+        )
+
+        return {
+            "success": False,
+            "isReal": False,
+
+            "message":
+                "Unable to detect a face for liveness verification."
+        }
+
+
+    if face_error == "no_face":
+
+        return {
+            "success": True,
+            "isReal": False,
+
+            "message":
+                "No face was detected."
+        }
+
+
+    if face_error == "multiple_faces":
+
+        return {
+            "success": True,
+            "isReal": False,
+
+            "message":
+                "Multiple faces were detected."
+        }
+
+
+    # -------------------------------------------------
+    # Anti-spoofing
+    # -------------------------------------------------
+
+    try:
+
+        liveness = (
+            check_face_liveness(
+                face_result[
+                    "image"
+                ],
+                face_result[
+                    "face"
+                ]
+            )
+        )
+
+    except Exception as exc:
+
+        print(
+            "Anti-spoofing error:",
+            exc
+        )
+
+        return {
+            "success": False,
+            "isReal": False,
+
+            "message":
+                "Unable to perform liveness detection."
+        }
+
+
+    return {
+        "success": True,
+
+        "isReal":
+            liveness[
+                "isReal"
+            ],
+
+        "label":
+            liveness[
+                "label"
+            ],
+
+        "score":
+            liveness[
+                "score"
+            ],
+
+        "classIndex":
+            liveness[
+                "classIndex"
+            ],
+
+        "probabilities":
+            liveness[
+                "probabilities"
+            ],
+
+        "message":
+            (
+                "A live face was detected."
+                if liveness[
+                    "isReal"
+                ]
+                else
+                "Possible photo or screen spoof detected."
+            )
+    }
+
+
+# =====================================================
+# FULL FACE VERIFICATION ENDPOINT
 # =====================================================
 
 @app.post("/verify-face")
@@ -401,9 +937,9 @@ async def verify_face(
         UploadFile = File(...)
 ):
 
-    # -------------------------------------------------
-    # Read both uploads
-    # -------------------------------------------------
+    # =================================================
+    # 1. READ FILES
+    # =================================================
 
     source_bytes = (
         await source_image.read()
@@ -414,9 +950,9 @@ async def verify_face(
     )
 
 
-    # -------------------------------------------------
-    # Decode images
-    # -------------------------------------------------
+    # =================================================
+    # 2. DECODE FILES
+    # =================================================
 
     source = decode_uploaded_image(
         source_bytes
@@ -432,9 +968,10 @@ async def verify_face(
         return {
             "success": False,
             "verified": False,
+            "livenessPassed": False,
 
             "message":
-                "The source image is not a valid image."
+                "The uploaded valid ID image is invalid."
         }
 
 
@@ -443,15 +980,16 @@ async def verify_face(
         return {
             "success": False,
             "verified": False,
+            "livenessPassed": False,
 
             "message":
-                "The target image is not a valid image."
+                "The captured camera image is invalid."
         }
 
 
-    # -------------------------------------------------
-    # Detect source face
-    # -------------------------------------------------
+    # =================================================
+    # 3. DETECT FACE ON VALID ID
+    # =================================================
 
     try:
 
@@ -461,12 +999,20 @@ async def verify_face(
             )
         )
 
-    except FileNotFoundError as exc:
+    except Exception as exc:
+
+        print(
+            "Source face detection error:",
+            exc
+        )
 
         return {
             "success": False,
             "verified": False,
-            "message": str(exc)
+            "livenessPassed": False,
+
+            "message":
+                "Unable to detect the face on the uploaded ID."
         }
 
 
@@ -475,9 +1021,10 @@ async def verify_face(
         return {
             "success": True,
             "verified": False,
+            "livenessPassed": False,
 
             "message":
-                "No face was detected in the source image."
+                "No face was detected on the uploaded valid ID."
         }
 
 
@@ -486,15 +1033,16 @@ async def verify_face(
         return {
             "success": True,
             "verified": False,
+            "livenessPassed": False,
 
             "message":
-                "Multiple faces were detected in the source image."
+                "Multiple faces were detected on the uploaded valid ID."
         }
 
 
-    # -------------------------------------------------
-    # Detect target face
-    # -------------------------------------------------
+    # =================================================
+    # 4. DETECT FACE ON LIVE CAMERA CAPTURE
+    # =================================================
 
     try:
 
@@ -504,12 +1052,20 @@ async def verify_face(
             )
         )
 
-    except FileNotFoundError as exc:
+    except Exception as exc:
+
+        print(
+            "Target face detection error:",
+            exc
+        )
 
         return {
             "success": False,
             "verified": False,
-            "message": str(exc)
+            "livenessPassed": False,
+
+            "message":
+                "Unable to detect the face from the camera."
         }
 
 
@@ -518,9 +1074,10 @@ async def verify_face(
         return {
             "success": True,
             "verified": False,
+            "livenessPassed": False,
 
             "message":
-                "No face was detected in the target image."
+                "No face was detected from the camera."
         }
 
 
@@ -529,15 +1086,97 @@ async def verify_face(
         return {
             "success": True,
             "verified": False,
+            "livenessPassed": False,
 
             "message":
-                "Multiple faces were detected in the target image."
+                "Multiple faces were detected from the camera. Only one person should be visible."
         }
 
 
-    # -------------------------------------------------
-    # Load SFace
-    # -------------------------------------------------
+    # =================================================
+    # 5. LIVENESS / ANTI-SPOOF CHECK
+    #
+    # IMPORTANT:
+    # Only the live camera image is checked.
+    #
+    # source = ID photograph
+    # target = camera capture
+    # =================================================
+
+    try:
+
+        liveness = (
+            check_face_liveness(
+                target_result[
+                    "image"
+                ],
+                target_result[
+                    "face"
+                ]
+            )
+        )
+
+    except Exception as exc:
+
+        print(
+            "Anti-spoofing verification error:",
+            exc
+        )
+
+        return {
+            "success": False,
+            "verified": False,
+            "livenessPassed": False,
+
+            "message":
+                "Unable to perform liveness verification."
+        }
+
+
+    # =================================================
+    # 6. REJECT PHOTO / SCREEN SPOOF
+    # =================================================
+
+    if not liveness[
+        "isReal"
+    ]:
+
+        return {
+            "success": True,
+
+            "verified": False,
+
+            "livenessPassed":
+                False,
+
+            "livenessLabel":
+                liveness[
+                    "label"
+                ],
+
+            "livenessScore":
+                liveness[
+                    "score"
+                ],
+
+            "livenessClass":
+                liveness[
+                    "classIndex"
+                ],
+
+            "livenessProbabilities":
+                liveness[
+                    "probabilities"
+                ],
+
+            "message":
+                "Face verification failed. A possible photo or screen spoof was detected."
+        }
+
+
+    # =================================================
+    # 7. LOAD SFACE
+    # =================================================
 
     try:
 
@@ -545,40 +1184,56 @@ async def verify_face(
             create_face_recognizer()
         )
 
-    except FileNotFoundError as exc:
+    except Exception as exc:
+
+        print(
+            "SFace loading error:",
+            exc
+        )
 
         return {
             "success": False,
             "verified": False,
-            "message": str(exc)
+            "livenessPassed": True,
+
+            "message":
+                "Unable to load the face recognition model."
         }
 
 
-    # -------------------------------------------------
-    # Align and crop faces
-    # -------------------------------------------------
+    # =================================================
+    # 8. ALIGN FACES
+    # =================================================
 
     try:
 
         source_aligned = (
             recognizer.alignCrop(
-                source_result["image"],
-                source_result["face"]
+                source_result[
+                    "image"
+                ],
+                source_result[
+                    "face"
+                ]
             )
         )
 
 
         target_aligned = (
             recognizer.alignCrop(
-                target_result["image"],
-                target_result["face"]
+                target_result[
+                    "image"
+                ],
+                target_result[
+                    "face"
+                ]
             )
         )
 
 
-        # ---------------------------------------------
-        # Generate facial embeddings
-        # ---------------------------------------------
+        # =============================================
+        # 9. CREATE FACE EMBEDDINGS
+        # =============================================
 
         source_features = (
             recognizer.feature(
@@ -594,15 +1249,14 @@ async def verify_face(
         )
 
 
-        # ---------------------------------------------
-        # Compare using cosine similarity
-        # ---------------------------------------------
+        # =============================================
+        # 10. COMPARE FACES
+        # =============================================
 
         cosine_score = (
             recognizer.match(
                 source_features,
                 target_features,
-
                 cv2.FaceRecognizerSF_FR_COSINE
             )
         )
@@ -611,13 +1265,14 @@ async def verify_face(
     except cv2.error as exc:
 
         print(
-            "OpenCV face verification error:",
+            "OpenCV face comparison error:",
             exc
         )
 
         return {
             "success": False,
             "verified": False,
+            "livenessPassed": True,
 
             "message":
                 "Unable to compare the detected faces."
@@ -625,15 +1280,13 @@ async def verify_face(
 
 
     # =================================================
-    # SFACE DEFAULT COSINE THRESHOLD
+    # 11. FINAL VERIFICATION RESULT
     # =================================================
-
-    COSINE_THRESHOLD = 0.363
-
 
     verified = bool(
         cosine_score
-        >= COSINE_THRESHOLD
+        >=
+        SFACE_COSINE_THRESHOLD
     )
 
 
@@ -642,6 +1295,29 @@ async def verify_face(
 
         "verified":
             verified,
+
+        "livenessPassed":
+            True,
+
+        "livenessLabel":
+            liveness[
+                "label"
+            ],
+
+        "livenessScore":
+            liveness[
+                "score"
+            ],
+
+        "livenessClass":
+            liveness[
+                "classIndex"
+            ],
+
+        "livenessProbabilities":
+            liveness[
+                "probabilities"
+            ],
 
         "similarity":
             round(
@@ -652,7 +1328,7 @@ async def verify_face(
             ),
 
         "threshold":
-            COSINE_THRESHOLD,
+            SFACE_COSINE_THRESHOLD,
 
         "sourceFaceConfidence":
             round(
@@ -672,9 +1348,9 @@ async def verify_face(
 
         "message":
             (
-                "The faces match."
+                "The live face matches the uploaded valid ID."
                 if verified
                 else
-                "The faces do not match."
+                "The live face does not match the uploaded valid ID."
             )
     }

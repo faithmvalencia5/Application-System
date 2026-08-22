@@ -1846,7 +1846,7 @@ function setupFaceCamera() {
   const FACE_VERIFICATION_API =
     "https://application-system-vcv6.onrender.com/verify-face";
   const AGE_VERIFICATION_API =
-    "https://application-system-vcv6.onrender.com/verify-age";
+    "https://osca-age-verification.onrender.com/verify-age";
 
   const dobInput =
     document.getElementById("dob");

@@ -54,7 +54,9 @@ def get_ocr_reader():
 
         ocr_reader = easyocr.Reader(
             ["en"],
-            gpu=False
+            gpu=False,
+            download_enabled=False,
+            verbose=False
         )
 
         print("EasyOCR loaded successfully.")

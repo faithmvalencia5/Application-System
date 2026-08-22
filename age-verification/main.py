@@ -7,6 +7,7 @@ import numpy as np # type: ignore
 import re
 
 from datetime import datetime, date
+from pathlib import Path
 
 
 app = FastAPI(
@@ -20,6 +21,18 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"]
+)
+
+BASE_DIR = Path(__file__).resolve().parent
+
+OCR_MODEL_DIR = (
+    BASE_DIR
+    / "easyocr-models"
+)
+
+OCR_MODEL_DIR.mkdir(
+    parents=True,
+    exist_ok=True
 )
 
 
@@ -52,14 +65,24 @@ def get_ocr_reader():
 
         print("Loading EasyOCR...")
 
+        print(
+            "EasyOCR model directory:",
+            OCR_MODEL_DIR
+        )
+
         ocr_reader = easyocr.Reader(
             ["en"],
             gpu=False,
+            model_storage_directory=str(
+                OCR_MODEL_DIR
+            ),
             download_enabled=False,
             verbose=False
         )
 
-        print("EasyOCR loaded successfully.")
+        print(
+            "EasyOCR loaded successfully."
+        )
 
     return ocr_reader
 

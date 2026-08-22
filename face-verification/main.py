@@ -11,10 +11,7 @@ from fastapi.middleware.cors import ( # type: ignore
 import cv2 # type: ignore
 import numpy as np # type: ignore
 import onnxruntime as ort # type: ignore
-import easyocr # type: ignore
-import re
 
-from datetime import datetime, date
 from pathlib import Path
 
 

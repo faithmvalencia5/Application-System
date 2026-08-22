@@ -1,9 +1,9 @@
-from fastapi import FastAPI, UploadFile, File, Form
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, UploadFile, File, Form # type: ignore
+from fastapi.middleware.cors import CORSMiddleware # type: ignore
 
-import cv2
-import easyocr
-import numpy as np
+import cv2 # type: ignore
+import easyocr # type: ignore
+import numpy as np # type: ignore
 import re
 
 from datetime import datetime, date
@@ -16,7 +16,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://application-system-kappa.vercel.app"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"]

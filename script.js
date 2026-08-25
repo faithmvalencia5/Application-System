@@ -1847,6 +1847,8 @@ function setupFaceCamera() {
     "https://application-system-vcv6.onrender.com/verify-face";
   const AGE_VERIFICATION_API =
     "https://osca-age-verification.onrender.com/verify-age";
+  const DOCUMENT_VERIFICATION_API =
+    "https://osca-document-verification.onrender.com/screen-document";
 
   const dobInput =
     document.getElementById("dob");

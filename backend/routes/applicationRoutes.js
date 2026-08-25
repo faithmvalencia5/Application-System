@@ -9,7 +9,8 @@ import {
     verifyDuplicateApplicant,
     getVerifiedDuplicateRecord,
     updateVerifiedDuplicateRecord,
-    recoverApplicationId
+    recoverApplicationId,
+    updateDocumentAuthentication
 } from "../controllers/applicationController.js";
 
 import { getApplicationStatus } from "../controllers/statusController.js";
@@ -62,6 +63,10 @@ router.post("/:applicationId/id-request",
 router.get(
     "/duplicate/recover/:sessionId",
     recoverApplicationId
+);
+router.patch(
+    "/:applicationId/document-authentication",
+    updateDocumentAuthentication
 );
 router.get("/:applicationId", getApplicationById);
 

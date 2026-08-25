@@ -1,15 +1,15 @@
-from fastapi import (
+from fastapi import ( # type: ignore
     FastAPI,
     UploadFile,
     File,
     Form
 )
 
-from fastapi.middleware.cors import (
+from fastapi.middleware.cors import ( # type: ignore
     CORSMiddleware
 )
 
-import httpx
+import httpx # type: ignore
 import os
 import re
 

@@ -8,7 +8,8 @@ import {
     verifyDuplicateIdentity as verifyDuplicateIdentityService,
     getVerifiedDuplicateApplication as getVerifiedDuplicateApplicationService,
     updateVerifiedDuplicateApplication as updateVerifiedDuplicateApplicationService,
-    recoverVerifiedApplicationId as recoverVerifiedApplicationIdService
+    recoverVerifiedApplicationId as recoverVerifiedApplicationIdService,
+    updateDocumentAuthentication as updateDocumentAuthenticationService
 } from "../services/applicationService.js";
 
 
@@ -380,6 +381,129 @@ export async function recoverApplicationId(
             message:
                 error.message ||
                 "Unable to recover the Application ID."
+        });
+    }
+}
+
+// =====================================================
+// UPDATE DOCUMENT AUTHENTICATION
+// =====================================================
+
+export async function updateDocumentAuthentication(
+    req,
+    res
+) {
+
+    try {
+
+        const applicationId =
+            req.params.applicationId;
+
+
+        const {
+            documentType,
+            authenticationStatus,
+            authenticationMethod,
+            authenticationRemarks
+        } = req.body;
+
+
+        if (!applicationId) {
+
+            return res.status(
+                400
+            ).json({
+                success: false,
+                message:
+                    "Application ID is required."
+            });
+        }
+
+        if (!documentType) {
+
+            return res.status(
+                400
+            ).json({
+                success: false,
+                message:
+                    "Document type is required."
+            });
+        }
+
+        if (!authenticationStatus) {
+
+            return res.status(
+                400
+            ).json({
+                success: false,
+                message:
+                    "Authentication status is required."
+            });
+        }
+
+
+        /*
+         * We'll connect this to the logged-in
+         * staff account later.
+         *
+         * For now, keep it null rather than
+         * accepting an arbitrary user ID
+         * from the browser.
+         */
+        const authenticatedBy =
+            req.user?.id || null;
+
+
+        const result =
+            await updateDocumentAuthenticationService({
+
+                applicationId,
+
+                documentType,
+
+                authenticationStatus,
+
+                authenticationMethod:
+                    authenticationMethod || null,
+
+                authenticatedBy,
+
+                authenticationRemarks:
+                    authenticationRemarks || null
+            });
+
+
+        return res.status(
+            200
+        ).json({
+
+            success: true,
+
+            data:
+                result,
+
+            message:
+                "Document authentication updated successfully."
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Update document authentication error:",
+            error
+        );
+
+
+        return res.status(
+            500
+        ).json({
+
+            success: false,
+
+            message:
+                error.message ||
+                "Unable to update document authentication."
         });
     }
 }

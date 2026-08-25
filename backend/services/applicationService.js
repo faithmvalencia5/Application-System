@@ -208,6 +208,212 @@ async function deleteStorageFile(filePath) {
         );
     }
 }
+
+// =====================================================
+// DOCUMENT AUTHENTICATION
+// =====================================================
+
+export async function updateDocumentAuthentication({
+    applicationId,
+    documentType,
+    authenticationStatus,
+    authenticationMethod,
+    authenticatedBy,
+    authenticationRemarks
+}) {
+
+    const allowedStatuses = [
+        "pending",
+        "authenticated",
+        "failed",
+        "needs_review"
+    ];
+
+    const allowedDocumentTypes = [
+        "valid_id",
+        "birth_certificate",
+        "community_tax_certificate"
+    ];
+
+
+    // -------------------------------------------------
+    // Validate application ID
+    // -------------------------------------------------
+
+    if (!applicationId) {
+        throw new Error(
+            "Application ID is required."
+        );
+    }
+
+
+    // -------------------------------------------------
+    // Validate document type
+    // -------------------------------------------------
+
+    if (
+        !allowedDocumentTypes.includes(
+            documentType
+        )
+    ) {
+        throw new Error(
+            "Invalid document type."
+        );
+    }
+
+
+    // -------------------------------------------------
+    // Validate authentication status
+    // -------------------------------------------------
+
+    if (
+        !allowedStatuses.includes(
+            authenticationStatus
+        )
+    ) {
+        throw new Error(
+            "Invalid document authentication status."
+        );
+    }
+
+
+    // -------------------------------------------------
+    // Prepare authentication record
+    // -------------------------------------------------
+
+    const authenticationData = {
+
+        application_id:
+            applicationId,
+
+        document_type:
+            documentType,
+
+        authentication_status:
+            authenticationStatus,
+
+        authentication_method:
+            authenticationMethod || null,
+
+        authenticated_by:
+            authenticatedBy || null,
+
+        authenticated_at:
+            (
+                authenticationStatus ===
+                "authenticated"
+                    ? new Date().toISOString()
+                    : null
+            ),
+
+        authentication_remarks:
+            authenticationRemarks || null,
+
+        updated_at:
+            new Date().toISOString()
+    };
+
+
+    // -------------------------------------------------
+    // Insert OR update the document authentication
+    //
+    // UNIQUE(application_id, document_type)
+    // allows us to safely use upsert.
+    // -------------------------------------------------
+
+    const {
+        data,
+        error
+    } = await supabase
+        .from(
+            "document_authentications"
+        )
+        .upsert(
+            authenticationData,
+            {
+                onConflict:
+                    "application_id,document_type"
+            }
+        )
+        .select()
+        .single();
+
+
+    if (error) {
+
+        console.error(
+            "Document authentication update error:",
+            error
+        );
+
+        throw new Error(
+            "Unable to update document authentication."
+        );
+    }
+
+    return data;
+}
+
+// =====================================================
+// RESET DOCUMENT AUTHENTICATION
+// =====================================================
+
+async function resetDocumentAuthentication(
+    applicationId,
+    documentType
+) {
+
+    const {
+        error
+    } = await supabase
+        .from(
+            "document_authentications"
+        )
+        .upsert(
+            {
+                application_id:
+                    applicationId,
+
+                document_type:
+                    documentType,
+
+                authentication_status:
+                    "pending",
+
+                authentication_method:
+                    null,
+
+                authenticated_by:
+                    null,
+
+                authenticated_at:
+                    null,
+
+                authentication_remarks:
+                    "Document was replaced and requires re-authentication.",
+
+                updated_at:
+                    new Date().toISOString()
+            },
+            {
+                onConflict:
+                    "application_id,document_type"
+            }
+        );
+
+
+    if (error) {
+
+        console.error(
+            "Unable to reset document authentication:",
+            documentType,
+            error
+        );
+
+        throw error;
+    }
+}
+
 async function findDuplicateApplicant(applicationsData) {
 
     const { data, error } = await supabase
@@ -534,6 +740,71 @@ export async function registerApplication(payload, files) {
             }
         }
 
+        // =================================================
+        // TABLE 6B: DOCUMENT AUTHENTICATIONS
+        //
+        // Every newly submitted required document starts
+        // as "pending". OSCA staff will perform the final
+        // authenticity verification.
+        // =================================================
+
+        const documentAuthenticationRows = [
+            {
+                application_id:
+                    applicationId,
+
+                document_type:
+                    "valid_id",
+
+                authentication_status:
+                    "pending"
+            },
+
+            {
+                application_id:
+                    applicationId,
+
+                document_type:
+                    "birth_certificate",
+
+                authentication_status:
+                    "pending"
+            },
+
+            {
+                application_id:
+                    applicationId,
+
+                document_type:
+                    "community_tax_certificate",
+
+                authentication_status:
+                    "pending"
+            }
+        ];
+
+
+        const {
+            error: documentAuthenticationError
+        } = await supabase
+            .from(
+                "document_authentications"
+            )
+            .insert(
+                documentAuthenticationRows
+            );
+
+
+        if (documentAuthenticationError) {
+
+            console.error(
+                "Unable to create document authentication records:",
+                documentAuthenticationError
+            );
+
+            throw documentAuthenticationError;
+        }
+
         // TABLE 7: CONFIRMATIONS
         if (confirmationsData) {
 
@@ -588,7 +859,8 @@ export async function getApplicationById(applicationId) {
         personalBackgroundResult,
         problemsNeedsResult,
         applicationFilesResult,
-        confirmationsResult
+        confirmationsResult,
+        documentAuthenticationsResult
     ] = await Promise.all([
         supabase
             .from("applications")
@@ -630,7 +902,13 @@ export async function getApplicationById(applicationId) {
             .from("confirmations")
             .select("*")
             .eq("application_id", applicationId)
-            .maybeSingle()
+            .maybeSingle(),
+
+        supabase
+            .from("document_authentications")
+            .select("*")
+            .eq("application_id", applicationId)
+            .order("id", {ascending: true})
     ]);
 
     const errors = [
@@ -640,7 +918,8 @@ export async function getApplicationById(applicationId) {
         personalBackgroundResult.error,
         problemsNeedsResult.error,
         applicationFilesResult.error,
-        confirmationsResult.error
+        confirmationsResult.error,
+        documentAuthenticationsResult.error
     ].filter(Boolean);
 
     if (errors.length > 0) {
@@ -724,7 +1003,9 @@ export async function getApplicationById(applicationId) {
         applicationFiles:
             filesWithSignedUrls,
         confirmations:
-            confirmationsResult.data || null
+            confirmationsResult.data || null,
+        documentAuthentications:
+            documentAuthenticationsResult.data || []
     };
 }
 
@@ -869,6 +1150,62 @@ export async function updateApplication(
             "signature"
         )
     ]);
+
+    // =====================================================
+    // RESET AUTHENTICATION FOR REPLACED DOCUMENTS
+    // =====================================================
+
+    const authenticationResets = [];
+
+
+    if (
+        files?.valid_id_front?.[0] ||
+        files?.valid_id_back?.[0]
+    ) {
+
+        authenticationResets.push(
+            resetDocumentAuthentication(
+                applicationId,
+                "valid_id"
+            )
+        );
+    }
+
+
+    if (
+        files?.birth_certificate?.[0]
+    ) {
+
+        authenticationResets.push(
+            resetDocumentAuthentication(
+                applicationId,
+                "birth_certificate"
+            )
+        );
+    }
+
+
+    if (
+        files?.community_tax_certificate?.[0]
+    ) {
+
+        authenticationResets.push(
+            resetDocumentAuthentication(
+                applicationId,
+                "community_tax_certificate"
+            )
+        );
+    }
+
+
+    if (
+        authenticationResets.length > 0
+    ) {
+
+        await Promise.all(
+            authenticationResets
+        );
+    }
 
     /*
      * TABLE 1: APPLICATIONS
@@ -1710,6 +2047,62 @@ export async function updateVerifiedDuplicateApplication(
         }
 
         idRequest = createdRequest;
+    }
+
+    // =====================================================
+    // RESET AUTHENTICATION FOR REPLACED DOCUMENTS
+    // =====================================================
+
+    const authenticationResets = [];
+
+
+    if (
+        files?.valid_id_front?.[0] ||
+        files?.valid_id_back?.[0]
+    ) {
+
+        authenticationResets.push(
+            resetDocumentAuthentication(
+                applicationId,
+                "valid_id"
+            )
+        );
+    }
+
+
+    if (
+        files?.birth_certificate?.[0]
+    ) {
+
+        authenticationResets.push(
+            resetDocumentAuthentication(
+                applicationId,
+                "birth_certificate"
+            )
+        );
+    }
+
+
+    if (
+        files?.community_tax_certificate?.[0]
+    ) {
+
+        authenticationResets.push(
+            resetDocumentAuthentication(
+                applicationId,
+                "community_tax_certificate"
+            )
+        );
+    }
+
+
+    if (
+        authenticationResets.length > 0
+    ) {
+
+        await Promise.all(
+            authenticationResets
+        );
     }
 
     /*

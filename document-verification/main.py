@@ -2175,9 +2175,8 @@ async def screen_document(
 
             "message":
                 (
-                    "The document could not be "
-                    "reliably read. OSCA staff "
-                    "must review the document."
+                "The document could not be reliably read. "
+                "Please upload a clearer copy and try again."
                 ),
 
             "ocrMessage":

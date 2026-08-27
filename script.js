@@ -3792,16 +3792,15 @@ async function verifyRequiredDocuments() {
 
     if (
       result?.passed === false ||
-      result?.screeningStatus ===
-        "rejected" ||
-      result?.screeningStatus ===
-        "failed"
+      result?.screeningStatus === "rejected" ||
+      result?.screeningStatus === "failed"
     ) {
       throw new Error(
-        result?.message ||
+        label +
+        ": " +
         (
-          label +
-          " did not pass document verification."
+          result?.message ||
+          "The document did not pass verification."
         )
       );
     }

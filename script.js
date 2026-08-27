@@ -1,3 +1,6 @@
+const DOCUMENT_VERIFICATION_API =
+  "https://osca-document-verification.onrender.com/screen-document";
+
 function blockNonNumericInput() {
   const ageField = document.getElementById("age");
   const contactField = document.getElementById("contact-number");

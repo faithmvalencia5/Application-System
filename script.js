@@ -3513,6 +3513,81 @@ async function clearDuplicateUpdateDraft(sessionId) {
   }
 }
 
+function validateMinimumImageResolution(file, label) {
+  return new Promise(function (resolve, reject) {
+    if (!file) {
+      reject(
+        new Error(label + " is required.")
+      );
+      return;
+    }
+
+    if (
+      !file.type ||
+      !file.type.startsWith("image/")
+    ) {
+      reject(
+        new Error(
+          label +
+          " must be an image file."
+        )
+      );
+      return;
+    }
+
+    const image = new Image();
+    const objectUrl =
+      URL.createObjectURL(file);
+
+    image.onload = function () {
+      const width =
+        image.naturalWidth;
+
+      const height =
+        image.naturalHeight;
+
+      URL.revokeObjectURL(objectUrl);
+
+      if (
+        width < 300 ||
+        height < 300
+      ) {
+        reject(
+          new Error(
+            label +
+            " must be at least 300 × 300 pixels. " +
+            "Uploaded image is " +
+            width +
+            " × " +
+            height +
+            " pixels."
+          )
+        );
+        return;
+      }
+
+      resolve({
+        valid: true,
+        width: width,
+        height: height
+      });
+    };
+
+    image.onerror = function () {
+      URL.revokeObjectURL(objectUrl);
+
+      reject(
+        new Error(
+          label +
+          " could not be read. Please upload a valid image."
+        )
+      );
+    };
+
+    image.src = objectUrl;
+  });
+}
+
 function setupFormSubmitConfirmation() {
   const submitButton = document.querySelector('.btn.submit');
   if (!submitButton) {
@@ -4401,6 +4476,45 @@ function setupFormSubmitConfirmation() {
 
           const attemptedApplicationDraft =
             collectAllPayloads();
+
+          submitButton.textContent =
+            "Checking image quality...";
+
+          const latestPhotoInput =
+            document.getElementById(
+              "upload-latest-photo"
+            );
+
+          const signatureInput =
+            document.getElementById(
+              "upload-signature"
+            );
+
+          const latestPhoto =
+            latestPhotoInput?.files?.[0];
+
+          const signature =
+            signatureInput?.files?.[0];
+
+          if (latestPhoto) {
+            await validateMinimumImageResolution(
+              latestPhoto,
+              "Latest Photo"
+            );
+          }
+
+          if (signature) {
+            await validateMinimumImageResolution(
+              signature,
+              "Signature"
+            );
+          }
+
+          submitButton.textContent =
+            isPendingEdit || isDuplicateUpdate
+              ? "Saving..."
+              : "Submitting...";
+
 
           const result =
             await saveApplication();

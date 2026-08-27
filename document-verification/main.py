@@ -744,6 +744,175 @@ def check_address(
 
 
 # ============================================================
+# CROSS-DOCUMENT IDENTITY CONSISTENCY
+# ============================================================
+
+def evaluate_identity_consistency(
+    document_type,
+    ocr_text,
+    first_name,
+    middle_name,
+    surname,
+    date_of_birth,
+    place_of_birth,
+    address
+):
+
+    name_checks = check_full_name(
+        first_name,
+        middle_name,
+        surname,
+        ocr_text
+    )
+
+    dob_matched = check_dob(
+        date_of_birth,
+        ocr_text
+    )
+
+    place_of_birth_matched = (
+        check_place_of_birth(
+            place_of_birth,
+            ocr_text
+        )
+    )
+
+    address_matched = (
+        check_address(
+            address,
+            ocr_text
+        )
+    )
+
+
+    # --------------------------------------------------------
+    # Determine required identity fields per document
+    # --------------------------------------------------------
+
+    required_checks = {
+        "firstNameMatched":
+            name_checks["firstNameMatched"],
+
+        "surnameMatched":
+            name_checks["surnameMatched"]
+    }
+
+
+    if middle_name:
+        required_checks[
+            "middleNameMatched"
+        ] = name_checks[
+            "middleNameMatched"
+        ]
+
+
+    if document_type in {
+        "valid_id",
+        "birth_certificate"
+    }:
+        required_checks[
+            "dateOfBirthMatched"
+        ] = dob_matched
+
+
+    if document_type == "birth_certificate":
+        required_checks[
+            "placeOfBirthMatched"
+        ] = place_of_birth_matched
+
+
+    if document_type in {
+        "valid_id",
+        "cedula"
+    }:
+        required_checks[
+            "addressMatched"
+        ] = address_matched
+
+
+    # --------------------------------------------------------
+    # Separate definite mismatches from unreadable/uncertain
+    # --------------------------------------------------------
+
+    definite_mismatches = [
+        field
+        for field, result
+        in required_checks.items()
+        if result is False
+    ]
+
+    unavailable_checks = [
+        field
+        for field, result
+        in required_checks.items()
+        if result is None
+    ]
+
+
+    # --------------------------------------------------------
+    # Final consistency status
+    # --------------------------------------------------------
+
+    if definite_mismatches:
+
+        consistency_status = "failed"
+
+        message = (
+            "The information on this document does not "
+            "match the applicant information. Please "
+            "upload the correct document."
+        )
+
+    elif unavailable_checks:
+
+        consistency_status = "needs_review"
+
+        message = (
+            "Some applicant information could not be "
+            "confirmed from the uploaded document."
+        )
+
+    else:
+
+        consistency_status = "matched"
+
+        message = (
+            "The document information matches the "
+            "applicant information."
+        )
+
+
+    return {
+        "status":
+            consistency_status,
+
+        "documentType":
+            document_type,
+
+        "checks": {
+            **name_checks,
+
+            "dateOfBirthMatched":
+                dob_matched,
+
+            "placeOfBirthMatched":
+                place_of_birth_matched,
+
+            "addressMatched":
+                address_matched
+        },
+
+        "mismatches":
+            definite_mismatches,
+
+        "unavailableChecks":
+            unavailable_checks,
+
+        "message":
+            message
+    }
+
+# ============================================================
 # FILE VALIDATION
 # ============================================================
 
@@ -2024,6 +2193,29 @@ async def screen_document(
         ]
     )
 
+    identity_consistency = (
+        evaluate_identity_consistency(
+            document_type,
+            ocr_text,
+            first_name,
+            middle_name,
+            surname,
+            date_of_birth,
+            place_of_birth,
+            address
+        )
+    )
+
+    if identity_consistency["status"] == "failed":
+        return {
+            "success": True,
+            "passed": False,
+            "screeningStatus": "rejected",
+            "identityConsistency": identity_consistency,
+            "staffVerificationRequired": True,
+            "message": identity_consistency["message"]
+        }
+
 
     # ========================================================
     # 4. DOCUMENT TYPE SCREENING
@@ -2187,50 +2379,35 @@ async def screen_document(
     # ========================================================
 
     return {
-        "success":
-            True,
+        "success": True,
 
-        "passed":
-            passed,
+        "passed": passed,
 
-        "readable":
-            True,
+        "readable": True,
 
-        "documentTypeMatched":
-            True,
+        "documentTypeMatched": True,
 
-        "matchedIndicators":
-            type_result[
-                "matchedIndicators"
-            ],
+        "matchedIndicators": type_result["matchedIndicators"],
 
-        "informationChecks":
-            information_checks,
+        "informationChecks": information_checks,
 
-        "mismatches":
-            mismatches,
+        "mismatches": mismatches,
 
-        "validIdType":
-            (valid_id_detection["idType"] if valid_id_detection else None),
+        "identityConsistency": identity_consistency,
 
-        "validIdLabel":
-            (valid_id_detection["idLabel"] if valid_id_detection else None),
+        "validIdType": (valid_id_detection["idType"] if valid_id_detection else None),
 
-        "validIdTypeMatched":
-            (valid_id_detection["detected"] if valid_id_detection else None),
+        "validIdLabel": (valid_id_detection["idLabel"] if valid_id_detection else None),
 
-        "authenticityCheck":
-            authenticity_check,
+        "validIdTypeMatched": (valid_id_detection["detected"] if valid_id_detection else None),
 
-        "nationalIdQr":
-            national_id_qr,
+        "authenticityCheck": authenticity_check,
 
-        "screeningStatus":
-            screening_status,
+        "nationalIdQr": national_id_qr,
 
-        "staffVerificationRequired":
-            True,
+        "screeningStatus": screening_status,
 
-        "message":
-            message
+        "staffVerificationRequired": True,
+
+        "message": message
     }

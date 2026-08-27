@@ -3588,6 +3588,248 @@ function validateMinimumImageResolution(file, label) {
   });
 }
 
+async function verifyRequiredDocuments() {
+  const validIdFront =
+    document.getElementById(
+      "upload-valid-id-front"
+    )?.files?.[0];
+
+  const birthCertificate =
+    document.getElementById(
+      "upload-birth-certificate"
+    )?.files?.[0];
+
+  const cedula =
+    document.getElementById(
+      "upload-cedula"
+    )?.files?.[0];
+
+
+  const firstName =
+    getInputValue("firstname");
+
+  const middleName =
+    getInputValue("middlename");
+
+  const surname =
+    getInputValue("surname");
+
+  const dateOfBirth =
+    getInputValue("dob");
+
+  const placeOfBirth =
+    getInputValue("place-of-birth");
+
+  const houseStreet =
+    getInputValue("address");
+
+  const barangay =
+    getInputValue("barangay");
+
+
+  const completeAddress = [
+    houseStreet,
+    barangay,
+    "Bauan",
+    "Batangas"
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+
+  async function verifyOneDocument(
+    file,
+    documentType,
+    label
+  ) {
+    if (!file) {
+      throw new Error(
+        label + " is required."
+      );
+    }
+
+    const formData =
+      new FormData();
+
+    formData.append(
+      "document",
+      file
+    );
+
+    formData.append(
+      "document_type",
+      documentType
+    );
+
+    formData.append(
+      "first_name",
+      firstName
+    );
+
+    formData.append(
+      "middle_name",
+      middleName
+    );
+
+    formData.append(
+      "surname",
+      surname
+    );
+
+    formData.append(
+      "date_of_birth",
+      dateOfBirth
+    );
+
+    formData.append(
+      "place_of_birth",
+      placeOfBirth
+    );
+
+    formData.append(
+      "address",
+      completeAddress
+    );
+
+
+    const response =
+      await fetch(
+        DOCUMENT_VERIFICATION_API,
+        {
+          method: "POST",
+          body: formData
+        }
+      );
+
+
+    let result;
+
+    try {
+      result =
+        await response.json();
+    } catch {
+      throw new Error(
+        "Unable to verify " +
+        label +
+        ". Please try again."
+      );
+    }
+
+
+    if (!response.ok) {
+      throw new Error(
+        result?.message ||
+        (
+          "Unable to verify " +
+          label +
+          "."
+        )
+      );
+    }
+
+
+    // =============================================
+    // BLOCK DEFINITE IDENTITY MISMATCH
+    // =============================================
+
+    if (
+      result?.identityConsistency?.status ===
+      "failed"
+    ) {
+      const mismatches =
+        result.identityConsistency
+          ?.mismatches || [];
+
+      let mismatchText = "";
+
+      if (mismatches.length > 0) {
+        mismatchText =
+          " Mismatched information: " +
+          mismatches
+            .map(function (field) {
+              return field
+                .replace("Matched", "")
+                .replace(
+                  /([A-Z])/g,
+                  " $1"
+                )
+                .trim();
+            })
+            .join(", ") +
+          ".";
+      }
+
+      throw new Error(
+        "The information on your " +
+        label +
+        " does not match the application." +
+        mismatchText +
+        " Please upload the correct document."
+      );
+    }
+
+
+    // =============================================
+    // BLOCK DOCUMENT SCREENING FAILURE
+    // =============================================
+
+    if (
+      result?.passed === false ||
+      result?.screeningStatus ===
+        "rejected" ||
+      result?.screeningStatus ===
+        "failed"
+    ) {
+      throw new Error(
+        result?.message ||
+        (
+          label +
+          " did not pass document verification."
+        )
+      );
+    }
+
+
+    return result;
+  }
+
+
+  const validIdResult =
+    await verifyOneDocument(
+      validIdFront,
+      "valid_id",
+      "Valid Government ID"
+    );
+
+
+  const birthCertificateResult =
+    await verifyOneDocument(
+      birthCertificate,
+      "birth_certificate",
+      "Birth Certificate"
+    );
+
+
+  const cedulaResult =
+    await verifyOneDocument(
+      cedula,
+      "cedula",
+      "Community Tax Certificate (Cedula)"
+    );
+
+
+  return {
+    validId:
+      validIdResult,
+
+    birthCertificate:
+      birthCertificateResult,
+
+    cedula:
+      cedulaResult
+  };
+}
+
 function setupFormSubmitConfirmation() {
   const submitButton = document.querySelector('.btn.submit');
   if (!submitButton) {
@@ -4307,6 +4549,72 @@ function setupFormSubmitConfirmation() {
       return false;
     }
 
+    const requiredUploads = [
+      {
+        id: "upload-valid-id-front",
+        label: "Front of Valid Government ID"
+      },
+      {
+        id: "upload-valid-id-back",
+        label: "Back of Valid Government ID"
+      },
+      {
+        id: "upload-latest-photo",
+        label: "Latest Photo"
+      },
+      {
+        id: "upload-birth-certificate",
+        label: "Birth Certificate"
+      },
+      {
+        id: "upload-cedula",
+        label: "Community Tax Certificate (Cedula)"
+      },
+      {
+        id: "upload-signature",
+        label: "Signature"
+      }
+    ];
+
+    const missingUpload =
+      requiredUploads.find(function (item) {
+        const input =
+          document.getElementById(item.id);
+
+        return (
+          !input ||
+          !input.files ||
+          input.files.length === 0
+        );
+      });
+
+    if (missingUpload) {
+      showInlineError(
+        "Please upload the required file: " +
+        missingUpload.label +
+        "."
+      );
+
+      const missingInput =
+        document.getElementById(
+          missingUpload.id
+        );
+
+      const uploadItem =
+        missingInput?.closest(
+          ".upload-item"
+        );
+
+      if (uploadItem) {
+        uploadItem.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+      }
+
+      return false;
+    }
+
     const verificationInput =
       document.getElementById(
         "upload-verification"
@@ -4509,6 +4817,17 @@ function setupFormSubmitConfirmation() {
               "Signature"
             );
           }
+
+          submitButton.textContent =
+            "Verifying documents...";
+
+          const documentVerificationResults =
+            await verifyRequiredDocuments();
+
+          console.log(
+            "Document verification results:",
+            documentVerificationResults
+          );
 
           submitButton.textContent =
             isPendingEdit || isDuplicateUpdate

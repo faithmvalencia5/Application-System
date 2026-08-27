@@ -3606,25 +3606,39 @@ async function verifyRequiredDocuments() {
 
 
   const firstName =
-    getInputValue("firstname");
+    document.getElementById(
+      "firstname"
+    )?.value?.trim() || "";
 
   const middleName =
-    getInputValue("middlename");
+    document.getElementById(
+      "middlename"
+    )?.value?.trim() || "";
 
   const surname =
-    getInputValue("surname");
+    document.getElementById(
+      "surname"
+    )?.value?.trim() || "";
 
   const dateOfBirth =
-    getInputValue("dob");
+    document.getElementById(
+      "dob"
+    )?.value?.trim() || "";
 
   const placeOfBirth =
-    getInputValue("place-of-birth");
+    document.getElementById(
+      "place-of-birth"
+    )?.value?.trim() || "";
 
   const houseStreet =
-    getInputValue("address");
+    document.getElementById(
+      "address"
+    )?.value?.trim() || "";
 
   const barangay =
-    getInputValue("barangay");
+    document.getElementById(
+      "barangay"
+    )?.value?.trim() || "";
 
 
   const completeAddress = [

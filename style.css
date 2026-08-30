@@ -55,13 +55,13 @@ body {
 
 .form-header {
   margin: 0 auto clamp(18px, 3vw, 28px);
-  border-radius: var(--radius-lg);
-  overflow: visible;
-  border: 1px solid rgba(127, 159, 178, 0.32);
-  background: transparent;
   width: 100%;
   max-width: 100%;
   padding: 0;
+  border: none;
+  border-radius: var(--radius-lg);
+  overflow: visible;
+  background: transparent;
 }
 
 .page-header-top {
@@ -93,14 +93,6 @@ body {
   border: 1px solid rgba(127, 159, 178, 0.38);
   border-radius: clamp(0px, 2vw, 24px);
   box-shadow: var(--shadow);
-}
-
-.form-header {
-  border-radius: var(--radius-lg);
-  overflow: visible;
-  border: none;
-  background: transparent;
-  padding: 0;
 }
 
 .application-info {
@@ -653,17 +645,9 @@ td select {
   font-family: inherit;
 }
 
-.camera-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  display: grid;
-  place-items: stretch;
-  padding: 0;
-  background: rgba(5, 20, 28, 0.95);
-  backdrop-filter: blur(5px);
-  overflow: hidden;
-}
+/* =====================================================
+   FACE VERIFICATION CAMERA
+   ===================================================== */
 
 html.camera-open,
 body.camera-open {
@@ -671,90 +655,246 @@ body.camera-open {
   height: 100%;
 }
 
+/* Hide the chatbot while face verification is open. */
+body.camera-open #osca-chatbot,
+body.camera-open .chatbot,
+body.camera-open .chatbot-container,
+body.camera-open .chatbot-toggle,
+body.camera-open .chatbot-button {
+  display: none !important;
+}
+
+.camera-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow: hidden;
+  background: rgba(8, 24, 34, 0.88);
+  backdrop-filter: blur(6px);
+}
+
 .camera-modal[hidden] {
-  display: none;
+  display: none !important;
 }
 
 .camera-dialog {
   position: relative;
+  width: min(460px, 92vw);
+  height: min(700px, 82vh);
+  max-height: 90dvh;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #000000;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+#face-camera-video,
+#face-camera-canvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
+  max-height: none;
   display: block;
-  padding: 0;
-  border-radius: 0;
-  border: none;
-  background: transparent;
+  object-fit: cover;
+  background: #000000;
+}
+
+#face-camera-video[hidden],
+#face-camera-canvas[hidden] {
+  display: none !important;
 }
 
 .camera-dialog-head {
   position: absolute;
   top: 18px;
-  right: 18px;
   left: 18px;
+  right: 18px;
+  z-index: 20;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  z-index: 2;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 15px 17px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(8px);
 }
 
 .camera-dialog-head h3 {
-  margin: 0;
-  color: #ffffff;
-  font-size: clamp(1.1rem, 1.9vw, 1.38rem);
+  margin: 0 0 4px;
+  color: #102a3a;
+  font-size: 19px;
+  font-weight: 700;
 }
 
-.camera-dialog video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  background: #000;
+.camera-status {
   display: block;
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .camera-close {
-  width: 50px;
-  height: 50px;
-  min-width: 50px;
-  min-height: 50px;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: none;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.55);
-  color: #ffffff;
-  font-size: 1.4rem;
-  font-weight: 900;
-  line-height: 1;
-  cursor: pointer;
   display: grid;
   place-items: center;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
-  transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  background: #eef2f3;
+  color: #334155;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.18s ease, transform 0.18s ease;
 }
 
-.camera-close:hover,
-.camera-close:focus-visible {
-  background: rgba(255, 255, 255, 0.18);
+.camera-close:hover {
+  background: #dde5e7;
   transform: translateY(-1px);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.32);
 }
 
-.camera-status {
-  display: none;
+.face-camera-actions {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  z-index: 20;
+  display: flex;
+  gap: 10px;
+  padding: 0;
+  background: transparent;
 }
 
-.camera-btn {
-  min-height: 44px;
-  white-space: nowrap;
+.face-camera-actions button {
+  flex: 1;
+  min-height: 52px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.22);
 }
 
-.camera-status {
-  display: block;
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: clamp(0.9rem, 1.1vw, 1rem);
+#capture-face-button,
+#retake-face-button {
+  border: 1px solid #0b8f87;
+  background: #0b8f87;
+  color: #ffffff;
 }
+
+#capture-face-button:hover,
+#retake-face-button:hover {
+  background: #087970;
+}
+
+#capture-face-button[hidden],
+#retake-face-button[hidden] {
+  display: none !important;
+}
+
+.face-verification-result {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 84px;
+  z-index: 20;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #087970;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+
+.face-verification-result[hidden] {
+  display: none !important;
+}
+
+.face-verification-result.verification-success {
+  border: 1px solid #a7f3d0;
+  background: rgba(236, 253, 245, 0.96);
+  color: #047857;
+}
+
+.face-verification-result.verification-error {
+  border: 1px solid #fecaca;
+  background: rgba(254, 242, 242, 0.96);
+  color: #b91c1c;
+}
+
+.face-verification-result.verification-loading {
+  border: 1px solid #bfdbfe;
+  background: rgba(239, 246, 255, 0.96);
+  color: #1d4ed8;
+}
+
+@media (max-width: 600px) {
+  .camera-modal {
+    padding: 0;
+    background: #000000;
+  }
+
+  .camera-dialog {
+    width: 100%;
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .camera-dialog-head {
+    top: max(16px, env(safe-area-inset-top));
+    left: 14px;
+    right: 14px;
+    padding: 14px 16px;
+  }
+
+  .camera-dialog-head h3 {
+    font-size: 18px;
+  }
+
+  .camera-status {
+    font-size: 12px;
+  }
+
+  .camera-close {
+    flex-basis: 38px;
+    width: 38px;
+    height: 38px;
+    font-size: 22px;
+  }
+
+  .face-camera-actions {
+    left: 14px;
+    right: 14px;
+    bottom: max(18px, env(safe-area-inset-bottom));
+  }
+
+  .face-camera-actions button {
+    min-height: 54px;
+    border-radius: 13px;
+  }
+
+  .face-verification-result {
+    left: 14px;
+    right: 14px;
+    bottom: 88px;
+  }
+}
+
 
 /* File preview modal */
 .file-preview-modal {
@@ -846,51 +986,6 @@ body.camera-open {
   color: #2f4d5f;
   line-height: 1.45;
   font-size: clamp(0.94rem, 1.2vw, 1.02rem);
-}
-
-.face-verification-form-status {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  margin-top: 12px;
-  padding: 12px 14px;
-
-  border: 1px solid #a7f3d0;
-  border-radius: 10px;
-
-  background: #ecfdf5;
-  color: #065f46;
-}
-
-.face-verification-form-status[hidden] {
-  display: none !important;
-}
-
-.face-verification-form-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-
-  border-radius: 50%;
-
-  background: #10b981;
-  color: white;
-
-  font-weight: 800;
-}
-
-.face-verification-form-status strong,
-.face-verification-form-status small {
-  display: block;
-}
-
-.face-verification-form-status small {
-  margin-top: 2px;
 }
 
 .checkbox-row {
@@ -1612,6 +1707,7 @@ body.verify-page .verify-status-item {
   border-radius: 18px;
   border: 1px solid rgba(0, 31, 120, 0.08);
   background: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 body.verify-page .verify-status-dot {
@@ -2054,9 +2150,7 @@ body.verify-page .verify-field-wrapper input:focus-visible {
   animation: fadeIn 0.3s ease;
 }
 
-.notification-overlay[hidden] {
-  display: none;
-}
+
 
 .success-notification {
   position: fixed;
@@ -2155,10 +2249,6 @@ body.verify-page .verify-field-wrapper input:focus-visible {
 body.verify-page #verify-status-list {
   grid-template-columns: 1fr;
   margin-top: 16px;
-}
-
-body.verify-page .verify-status-item {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 body.verify-page .verify-status-item.active {
@@ -2521,7 +2611,7 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
 }
 
 /* =====================================================
-   OSCA GEMINI VIRTUAL ASSISTANT
+   OSCA VIRTUAL ASSISTANT
    ===================================================== */
 
 .osca-chatbot {
@@ -2529,62 +2619,34 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
   right: 24px;
   bottom: 24px;
   z-index: 10000;
-  font-family:
-    "Atkinson Hyperlegible Next",
-    "Segoe UI",
-    sans-serif;
+  font-family: "Atkinson Hyperlegible Next", "Segoe UI", sans-serif;
 }
-
-
-/* Floating button */
 
 .chatbot-toggle {
   position: relative;
-  margin-left: auto;
-
   width: 64px;
   height: 64px;
-
+  margin-left: auto;
   border: none;
   border-radius: 50%;
-
   display: grid;
   place-items: center;
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--brand),
-      var(--brand-dark)
-    );
-
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
   color: #ffffff;
-
   cursor: pointer;
-
-  box-shadow:
-    0 12px 30px rgba(9, 79, 79, 0.32);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  box-shadow: 0 12px 30px rgba(9, 79, 79, 0.32);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .chatbot-toggle:hover {
   transform: translateY(-3px);
-
-  box-shadow:
-    0 16px 36px rgba(9, 79, 79, 0.38);
+  box-shadow: 0 16px 36px rgba(9, 79, 79, 0.38);
 }
 
-.chatbot-toggle
-.material-symbols-outlined {
+.chatbot-toggle .material-symbols-outlined {
   position: absolute;
   font-size: 30px;
-
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .chatbot-toggle-close {
@@ -2592,71 +2654,40 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
   transform: rotate(-90deg);
 }
 
-.osca-chatbot.chat-open
-.chatbot-toggle-chat {
+.osca-chatbot.chat-open .chatbot-toggle-chat {
   opacity: 0;
   transform: rotate(90deg);
 }
 
-.osca-chatbot.chat-open
-.chatbot-toggle-close {
+.osca-chatbot.chat-open .chatbot-toggle-close {
   opacity: 1;
   transform: rotate(0);
 }
 
-
-/* Chat window */
-
 .chatbot-window {
   width: min(390px, calc(100vw - 32px));
   height: min(620px, calc(100vh - 120px));
-
   margin-bottom: 14px;
-
   overflow: hidden;
-
-  border:
-    1px solid rgba(13, 110, 110, 0.18);
-
+  border: 1px solid rgba(13, 110, 110, 0.18);
   border-radius: 22px;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 24px 70px rgba(7, 35, 56, 0.24);
-
   display: grid;
-
-  grid-template-rows:
-    auto
-    minmax(0, 1fr)
-    auto
-    auto
-    auto;
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(7, 35, 56, 0.24);
 }
 
 .chatbot-window[hidden] {
   display: none;
 }
 
-
-/* Header */
-
 .chatbot-header {
   padding: 16px 18px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-
-  background:
-    linear-gradient(
-      120deg,
-      var(--brand-dark),
-      var(--brand)
-    );
-
+  background: linear-gradient(120deg, var(--brand-dark), var(--brand));
   color: #ffffff;
 }
 
@@ -2669,131 +2700,86 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
 .chatbot-avatar {
   width: 44px;
   height: 44px;
-
   flex: 0 0 44px;
-
+  border-radius: 50%;
   display: grid;
   place-items: center;
-
-  border-radius: 50%;
-
-  background:
-    rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.16);
 }
 
-.chatbot-avatar
-.material-symbols-outlined {
+.chatbot-avatar .material-symbols-outlined {
   font-size: 25px;
 }
 
 .chatbot-header h2 {
   margin: 0;
-
   color: #ffffff;
-
   font-size: 1rem;
   font-weight: 800;
 }
 
 .chatbot-header p {
   margin: 3px 0 0;
-
   display: flex;
   align-items: center;
   gap: 6px;
-
-  color:
-    rgba(255, 255, 255, 0.88);
-
+  color: rgba(255, 255, 255, 0.88);
   font-size: 0.78rem;
 }
 
 .chatbot-status-dot {
   width: 8px;
   height: 8px;
-
   border-radius: 50%;
-
   background: #7df0a5;
-
-  box-shadow:
-    0 0 0 3px rgba(125, 240, 165, 0.14);
+  box-shadow: 0 0 0 3px rgba(125, 240, 165, 0.14);
 }
 
 .chatbot-icon-button {
   width: 40px;
   height: 40px;
-
   min-width: 40px;
-
   padding: 0;
-
   border: none;
   border-radius: 50%;
-
   display: grid;
   place-items: center;
-
-  background:
-    rgba(255, 255, 255, 0.1);
-
+  background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
-
   cursor: pointer;
 }
 
 .chatbot-icon-button:hover {
-  background:
-    rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.18);
 }
-
-
-/* Messages */
 
 .chatbot-messages {
   min-height: 0;
-
   padding: 18px 14px;
-
   overflow-y: auto;
-
-  background:
-    linear-gradient(
-      180deg,
-      #f7fbfc,
-      #ffffff
-    );
-
+  background: linear-gradient(180deg, #f7fbfc, #ffffff);
   scroll-behavior: smooth;
 }
 
 .chat-message {
   display: flex;
-
   align-items: flex-end;
-
   gap: 8px;
-
   margin-bottom: 14px;
 }
 
 .chat-message-avatar {
   width: 30px;
   height: 30px;
-
   flex: 0 0 30px;
-
+  border-radius: 50%;
   display: grid;
   place-items: center;
-
-  border-radius: 50%;
-
   background: var(--brand-soft);
   color: var(--brand-dark);
 }
 
-.chat-message-avatar
-.material-symbols-outlined {
+.chat-message-avatar .material-symbols-outlined {
   font-size: 18px;
 }
 
@@ -2807,6 +2793,8 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
 }
 
 .bot-message .chat-message-content {
+  width: fit-content;
+  max-width: 82%;
   text-align: left;
 }
 
@@ -2816,70 +2804,41 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
 
 .chat-bubble {
   padding: 11px 13px;
-
-  border-radius:
-    16px 16px 16px 5px;
-
+  border: 1px solid #d8e4e9;
+  border-radius: 16px 16px 16px 5px;
   background: #ffffff;
-
-  border:
-    1px solid #d8e4e9;
-
   color: var(--text);
-
   font-size: 0.94rem;
   line-height: 1.5;
-
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-
-
-/* Applicant messages */
 
 .user-message {
   justify-content: flex-end;
 }
 
-.user-message
-.chat-message-avatar {
+.user-message .chat-message-avatar {
   display: none;
 }
 
-.user-message
-.chat-message-content {
+.user-message .chat-message-content {
   max-width: 82%;
 }
 
-.user-message
-.chat-bubble {
+.user-message .chat-bubble {
   border: none;
-
-  border-radius:
-    16px 16px 5px 16px;
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--brand),
-      var(--brand-dark)
-    );
-
+  border-radius: 16px 16px 5px 16px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
   color: #ffffff;
 }
 
-
-/* Typing */
-
 .chatbot-typing {
   padding: 8px 16px 4px;
-
   display: flex;
   align-items: center;
   gap: 5px;
-
   color: var(--muted);
-
   background: #ffffff;
 }
 
@@ -2890,13 +2849,9 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
 .chatbot-typing span {
   width: 7px;
   height: 7px;
-
   border-radius: 50%;
-
   background: var(--brand);
-
-  animation:
-    chatbotTyping 1.2s infinite ease-in-out;
+  animation: chatbotTyping 1.2s infinite ease-in-out;
 }
 
 .chatbot-typing span:nth-child(2) {
@@ -2909,9 +2864,7 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
 
 .chatbot-typing small {
   margin-left: 5px;
-
   color: var(--muted);
-
   font-size: 0.75rem;
 }
 
@@ -2929,75 +2882,45 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
   }
 }
 
-
-/* Input */
-
 .chatbot-input-area {
   padding: 12px;
-
   display: flex;
   align-items: flex-end;
   gap: 8px;
-
-  border-top:
-    1px solid #e1e9ed;
-
+  border-top: 1px solid #e1e9ed;
   background: #ffffff;
 }
 
 #chatbot-input {
   min-height: 46px;
   max-height: 120px;
-
   padding: 11px 13px;
-
   resize: none;
-
-  border:
-    1.5px solid #bfd0d9;
-
+  border: 1.5px solid #bfd0d9;
   border-radius: 14px;
-
   background: #f9fbfc;
-
   color: var(--text);
-
   font-size: 0.95rem;
   line-height: 1.35;
 }
 
 #chatbot-input:focus {
   outline: none;
-
   border-color: var(--brand);
-
-  box-shadow:
-    0 0 0 3px rgba(13, 110, 110, 0.12);
+  box-shadow: 0 0 0 3px rgba(13, 110, 110, 0.12);
 }
 
 .chatbot-send-button {
   width: 46px;
   height: 46px;
-
   min-width: 46px;
-
   padding: 0;
-
   border: none;
   border-radius: 13px;
-
   display: grid;
   place-items: center;
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--brand),
-      var(--brand-dark)
-    );
-
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
   color: #ffffff;
-
   cursor: pointer;
 }
 
@@ -3010,26 +2933,95 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
   cursor: not-allowed;
 }
 
-
-/* Disclaimer */
-
 .chatbot-disclaimer {
   padding: 0 12px 10px;
-
   background: #ffffff;
-
   color: #71828c;
-
   text-align: center;
-
   font-size: 0.7rem;
 }
 
+.chat-message-actions {
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
 
-/* Mobile */
+.chat-speak-button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.chat-speak-button:hover {
+  background: var(--brand-soft);
+  color: var(--brand-dark);
+}
+
+.chat-speak-button .material-symbols-outlined {
+  font-size: 19px;
+}
+
+.chatbot-suggestions {
+  margin: 4px 0 18px 38px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.chatbot-suggestions-label {
+  margin: 0 0 2px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.chatbot-suggestion {
+  max-width: 100%;
+  padding: 8px 11px;
+  border: 1px solid rgba(13, 110, 110, 0.25);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #ffffff;
+  color: var(--brand-dark);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.chatbot-suggestion:hover {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  transform: translateX(2px);
+}
+
+.chatbot-suggestion .material-symbols-outlined {
+  flex: 0 0 auto;
+  color: var(--brand);
+  font-size: 18px;
+}
+
+.chatbot-suggestion:focus-visible {
+  outline: 3px solid rgba(13, 110, 110, 0.18);
+  outline-offset: 2px;
+}
 
 @media (max-width: 600px) {
-
   .osca-chatbot {
     right: 14px;
     bottom: 14px;
@@ -3037,18 +3029,12 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
 
   .chatbot-window {
     position: fixed;
-
     left: 10px;
     right: 10px;
     bottom: 88px;
-
     width: auto;
-
-    height:
-      min(620px, calc(100dvh - 110px));
-
+    height: min(620px, calc(100dvh - 110px));
     margin: 0;
-
     border-radius: 18px;
   }
 
@@ -3056,685 +3042,9 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
     width: 58px;
     height: 58px;
   }
-}
-
-/* Chatbot text-to-speech */
-
-.chat-message-actions {
-  margin-top: 5px;
-
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-
-.chat-speak-button {
-  width: 30px;
-  height: 30px;
-
-  padding: 0;
-
-  border: none;
-  border-radius: 50%;
-
-  display: grid;
-  place-items: center;
-
-  background: transparent;
-
-  color: var(--muted);
-
-  cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
-}
-
-
-.chat-speak-button:hover {
-  background: var(--brand-soft);
-  color: var(--brand-dark);
-}
-
-
-.chat-speak-button
-.material-symbols-outlined {
-  font-size: 19px;
-}
-
-/* =====================================================
-   CHATBOT SUGGESTED QUESTIONS
-   ===================================================== */
-
-.chatbot-suggestions {
-  margin:
-    4px 0 18px 38px;
-
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 7px;
-}
-
-
-.chatbot-suggestions-label {
-  margin:
-    0 0 2px;
-
-  color: var(--muted);
-
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-
-.chatbot-suggestion {
-  max-width: 100%;
-
-  padding:
-    8px 11px;
-
-  border:
-    1px solid
-    rgba(13, 110, 110, 0.25);
-
-  border-radius: 12px;
-
-  display: flex;
-  align-items: center;
-  gap: 7px;
-
-  background: #ffffff;
-
-  color: var(--brand-dark);
-
-  font-family: inherit;
-  font-size: 0.82rem;
-  font-weight: 700;
-
-  text-align: left;
-
-  cursor: pointer;
-
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    transform 0.18s ease;
-}
-
-
-.chatbot-suggestion:hover {
-  background: var(--brand-soft);
-
-  border-color: var(--brand);
-
-  transform:
-    translateX(2px);
-}
-
-
-.chatbot-suggestion
-.material-symbols-outlined {
-  flex: 0 0 auto;
-
-  font-size: 18px;
-
-  color: var(--brand);
-}
-
-
-.chatbot-suggestion:focus-visible {
-  outline:
-    3px solid
-    rgba(13, 110, 110, 0.18);
-
-  outline-offset: 2px;
-}
-
-
-@media (max-width: 600px) {
 
   .chatbot-suggestions {
     margin-left: 38px;
     margin-right: 4px;
   }
-
-}
-
-/* =====================================================
-   FACE VERIFICATION - CLEAN CAMERA DESIGN
-===================================================== */
-
-body.camera-open {
-  overflow: hidden;
-}
-
-/* Hide chatbot while camera is open */
-body.camera-open #osca-chatbot,
-body.camera-open .chatbot,
-body.camera-open .chatbot-container,
-body.camera-open .chatbot-toggle,
-body.camera-open .chatbot-button {
-  display: none !important;
-}
-
-
-/* =====================================================
-   MODAL BACKDROP
-===================================================== */
-
-.camera-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 20px;
-
-  background: rgba(8, 24, 34, 0.88);
-  backdrop-filter: blur(6px);
-}
-
-.camera-modal[hidden] {
-  display: none !important;
-}
-
-
-/* =====================================================
-   CAMERA CONTAINER
-===================================================== */
-
-.camera-dialog {
-  position: relative;
-
-  width: min(460px, 92vw);
-
-  /* IMPORTANT: no forced tall white container */
-  height: auto;
-  max-height: 90dvh;
-
-  overflow: hidden;
-
-  background: #000;
-
-  border-radius: 20px;
-
-  box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.45);
-}
-
-
-/* =====================================================
-   CAMERA PREVIEW
-===================================================== */
-
-#face-camera-video,
-#face-camera-canvas {
-  width: 100%;
-  height: auto;
-
-  display: block;
-
-  aspect-ratio: 3 / 4;
-
-  object-fit: cover;
-
-  background: #000;
-}
-
-#face-camera-video[hidden],
-#face-camera-canvas[hidden] {
-  display: none !important;
-}
-
-
-/* =====================================================
-   FLOATING HEADER
-===================================================== */
-
-.camera-dialog-head {
-  position: absolute;
-
-  top: 16px;
-  left: 16px;
-  right: 16px;
-
-  z-index: 10;
-
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-
-  gap: 15px;
-
-  padding: 16px 18px;
-
-  background: rgba(255, 255, 255, 0.94);
-
-  border-radius: 14px;
-
-  box-shadow:
-    0 8px 25px rgba(0, 0, 0, 0.18);
-
-  backdrop-filter: blur(10px);
-}
-
-
-.camera-dialog-head h3 {
-  margin: 0 0 5px;
-
-  font-size: 19px;
-  font-weight: 700;
-
-  color: #102a3a;
-}
-
-
-.camera-status {
-  display: block;
-
-  margin: 0;
-
-  font-size: 13px;
-  line-height: 1.4;
-
-  color: #64748b;
-}
-
-
-/* =====================================================
-   CLOSE BUTTON
-===================================================== */
-
-.camera-close {
-  flex: 0 0 40px;
-
-  width: 40px;
-  height: 40px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0;
-
-  border: none;
-  border-radius: 50%;
-
-  background: #eef2f3;
-
-  color: #334155;
-
-  font-size: 24px;
-  line-height: 1;
-
-  cursor: pointer;
-}
-
-.camera-close:hover {
-  background: #dde5e7;
-}
-
-
-/* =====================================================
-   CAMERA ACTIONS
-===================================================== */
-
-.face-camera-actions {
-  position: absolute;
-
-  left: 16px;
-  right: 16px;
-  bottom: 16px;
-
-  z-index: 10;
-
-  display: flex;
-
-  gap: 10px;
-
-  padding: 0;
-
-  background: transparent;
-}
-
-
-.face-camera-actions button {
-  flex: 1;
-
-  min-height: 52px;
-
-  padding: 12px 18px;
-
-  border-radius: 12px;
-
-  font-size: 16px;
-  font-weight: 700;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 8px 25px rgba(0, 0, 0, 0.22);
-}
-
-
-/* Capture button */
-
-#capture-face-button {
-  border: 1px solid #0b8f87;
-
-  background: #0b8f87;
-
-  color: white;
-}
-
-#capture-face-button:hover {
-  background: #087970;
-}
-
-
-/* Retake button */
-
-#retake-face-button {
-  border: 1px solid #0b8f87;
-
-  background: #0b8f87;
-  color: white;
-}
-
-
-#capture-face-button[hidden],
-#retake-face-button[hidden] {
-  display: none !important;
-}
-
-
-/* =====================================================
-   RESULT MESSAGE
-===================================================== */
-
-.face-verification-result {
-  position: absolute;
-
-  left: 16px;
-  right: 16px;
-  bottom: 82px;
-
-  z-index: 10;
-
-  margin: 0;
-
-  padding: 10px 14px;
-
-  border-radius: 10px;
-
-  background: rgba(255, 255, 255, 0.94);
-
-  color: #087970;
-
-  font-size: 14px;
-  font-weight: 600;
-
-  text-align: center;
-
-  box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.18);
-}
-
-
-.face-verification-result[hidden] {
-  display: none !important;
-}
-
-
-/* =====================================================
-   MOBILE
-===================================================== */
-
-@media (max-width: 600px) {
-
-  .camera-modal {
-    padding: 0;
-
-    background: #000;
-  }
-
-
-  .camera-dialog {
-    width: 100%;
-    height: 100dvh;
-    max-height: none;
-
-    border-radius: 0;
-
-    background: #000;
-  }
-
-
-  #face-camera-video,
-  #face-camera-canvas {
-    width: 100%;
-    height: 100%;
-
-    aspect-ratio: auto;
-
-    object-fit: cover;
-  }
-
-
-  .camera-dialog-head {
-    top: max(16px, env(safe-area-inset-top));
-
-    left: 14px;
-    right: 14px;
-
-    padding: 14px 16px;
-
-    border-radius: 14px;
-  }
-
-
-  .camera-dialog-head h3 {
-    font-size: 18px;
-  }
-
-
-  .camera-status {
-    font-size: 12px;
-  }
-
-
-  .camera-close {
-    flex-basis: 38px;
-
-    width: 38px;
-    height: 38px;
-
-    font-size: 22px;
-  }
-
-
-  .face-camera-actions {
-    left: 14px;
-    right: 14px;
-
-    bottom: max(18px, env(safe-area-inset-bottom));
-  }
-
-
-  .face-camera-actions button {
-    min-height: 54px;
-
-    font-size: 16px;
-
-    border-radius: 13px;
-  }
-
-
-  .face-verification-result {
-    left: 14px;
-    right: 14px;
-
-    bottom: 88px;
-  }
-}
-
-/* =====================================================
-   DESKTOP FACE VERIFICATION FIX
-===================================================== */
-
-@media (min-width: 601px) {
-
-  .camera-dialog {
-    position: relative !important;
-
-    width: 460px !important;
-    height: min(700px, 82vh) !important;
-
-    display: block !important;
-
-    overflow: hidden !important;
-
-    background: #000 !important;
-
-    border-radius: 20px !important;
-
-    box-shadow:
-      0 25px 70px rgba(0, 0, 0, 0.45) !important;
-  }
-
-
-  #face-camera-video,
-  #face-camera-canvas {
-    position: absolute;
-
-    inset: 0;
-
-    width: 100% !important;
-    height: 100% !important;
-
-    max-height: none !important;
-
-    aspect-ratio: auto !important;
-
-    object-fit: cover !important;
-
-    background: #000;
-  }
-
-
-  #face-camera-video[hidden],
-  #face-camera-canvas[hidden] {
-    display: none !important;
-  }
-
-
-  /* Floating information card */
-
-  .camera-dialog-head {
-    position: absolute !important;
-
-    top: 18px;
-    left: 18px;
-    right: 18px;
-
-    z-index: 20;
-
-    display: flex !important;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 15px 17px;
-
-    background: rgba(255, 255, 255, 0.94);
-
-    border-radius: 14px;
-
-    border: none;
-
-    box-shadow:
-      0 8px 24px rgba(0, 0, 0, 0.18);
-
-    backdrop-filter: blur(8px);
-  }
-
-
-  .camera-dialog-head h3 {
-    margin: 0 0 4px;
-
-    font-size: 19px;
-
-    color: #102a3a;
-  }
-
-
-  .camera-status {
-    font-size: 13px;
-
-    color: #64748b;
-  }
-
-
-  /* Bottom controls */
-
-  .face-camera-actions {
-    position: absolute !important;
-
-    left: 18px;
-    right: 18px;
-    bottom: 18px;
-
-    z-index: 20;
-
-    display: flex !important;
-
-    padding: 0 !important;
-
-    background: transparent !important;
-  }
-
-
-  .face-camera-actions button {
-    min-height: 52px;
-
-    border-radius: 12px;
-  }
-
-
-  /* Verification result floats above button */
-
-  .face-verification-result {
-    position: absolute !important;
-
-    left: 18px;
-    right: 18px;
-    bottom: 84px;
-
-    z-index: 20;
-
-    margin: 0;
-  }
-}
-
-.face-verification-result.verification-success {
-  background: rgba(236, 253, 245, 0.96);
-  color: #047857;
-  border: 1px solid #a7f3d0;
-}
-
-.face-verification-result.verification-error {
-  background: rgba(254, 242, 242, 0.96);
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
-
-.face-verification-result.verification-loading {
-  background: rgba(239, 246, 255, 0.96);
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
 }

@@ -2785,21 +2785,26 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
 
 .chat-message-content {
   max-width: 80%;
-  text-align: left;
 }
 
-.bot-message {
+.osca-chatbot .bot-message {
   justify-content: flex-start;
+  text-align: left;
 }
 
-.bot-message .chat-message-content {
-  width: fit-content;
+.osca-chatbot .bot-message .chat-message-content {
   max-width: 82%;
-  text-align: left;
+  width: fit-content;
+  margin-right: auto;
+  text-align: left !important;
 }
 
-.bot-message .chat-bubble {
-  text-align: left;
+.osca-chatbot .bot-message .chat-bubble {
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  text-align: left !important;
+}
 }
 
 .chat-bubble {

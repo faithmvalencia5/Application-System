@@ -1941,11 +1941,6 @@ export async function updateVerifiedDuplicateApplication(
         );
     }
 
-    /*
-     * A verified duplicate update is allowed regardless
-     * of the application's current status because the
-     * applicant is updating an existing duplicate record.
-     */
     const {
         data: latestStatusRows,
         error: latestStatusError
@@ -2049,10 +2044,6 @@ export async function updateVerifiedDuplicateApplication(
         idRequest = createdRequest;
     }
 
-    // =====================================================
-    // RESET AUTHENTICATION FOR REPLACED DOCUMENTS
-    // =====================================================
-
     const authenticationResets = [];
 
 
@@ -2063,7 +2054,7 @@ export async function updateVerifiedDuplicateApplication(
 
         authenticationResets.push(
             resetDocumentAuthentication(
-                applicationId,
+                session.application_id,
                 "valid_id"
             )
         );

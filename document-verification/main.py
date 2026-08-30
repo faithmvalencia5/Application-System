@@ -143,6 +143,23 @@ DOCUMENT_RULES = {
         ]
     },
 
+    "barangay_residency_certificate": {
+
+        "minimum_indicators": 2,
+
+        "indicators": [
+            "CERTIFICATE OF RESIDENCY",
+            "CERTIFICATION OF RESIDENCY",
+            "BARANGAY",
+            "RESIDENT OF",
+            "RESIDENCY",
+            "BAUAN",
+            "BATANGAS",
+            "PUNONG BARANGAY",
+            "BARANGAY CAPTAIN",
+            "OFFICE OF THE PUNONG BARANGAY"
+        ]
+    },
 
     "cedula": {
 
@@ -808,7 +825,8 @@ def evaluate_identity_consistency(
 
     if document_type in {
         "valid_id",
-        "birth_certificate"
+        "birth_certificate",
+        "barangay_residency_certificate"
     }:
         required_checks[
             "dateOfBirthMatched"
@@ -1640,6 +1658,26 @@ def perform_information_checks(
             "addressMatched"
         ] = None
 
+    elif (
+        document_type
+        ==
+        "barangay_residency_certificate"
+    ):
+
+        information_checks[
+            "addressMatched"
+        ] = check_address(
+            address,
+            ocr_text
+        )
+
+        information_checks[
+            "dateOfBirthMatched"
+        ] = None
+
+        information_checks[
+            "placeOfBirthMatched"
+        ] = None
 
     # --------------------------------------------------------
     # CEDULA
@@ -1885,6 +1923,130 @@ def inspect_birth_certificate_authenticity(
             message
     }
 
+def inspect_barangay_residency_certificate(
+    file_bytes,
+    ocr_text
+):
+    text = normalize_value(
+        ocr_text
+    )
+
+    indicators = {
+        "certificateOfResidency": (
+            "CERTIFICATE OF RESIDENCY"
+            in text
+            or
+            "CERTIFICATION OF RESIDENCY"
+            in text
+        ),
+
+        "barangay": (
+            "BARANGAY" in text
+        ),
+
+        "residentOf": (
+            "RESIDENT OF" in text
+            or
+            "RESIDENCY" in text
+        ),
+
+        "bauan": (
+            "BAUAN" in text
+        ),
+
+        "batangas": (
+            "BATANGAS" in text
+        ),
+
+        "barangayOfficial": (
+            "PUNONG BARANGAY" in text
+            or
+            "BARANGAY CAPTAIN" in text
+            or
+            "OFFICE OF THE PUNONG BARANGAY"
+            in text
+        )
+    }
+
+    matched_count = sum(
+        1
+        for value in indicators.values()
+        if value
+    )
+
+    structure_score = round(
+        matched_count /
+        len(indicators),
+        2
+    )
+
+    if matched_count >= 4:
+        screening = "passed"
+        message = (
+            "The uploaded document contains "
+            "expected Certificate of Barangay "
+            "Residency characteristics."
+        )
+
+    elif matched_count >= 2:
+        screening = "needs_review"
+        message = (
+            "Some expected Certificate of "
+            "Barangay Residency indicators "
+            "were detected, but the document "
+            "could not be reliably verified."
+        )
+
+    else:
+        screening = "failed"
+        message = (
+            "The uploaded file does not appear "
+            "to be a Certificate of Barangay "
+            "Residency."
+        )
+
+    return {
+        "checked": True,
+
+        "document":
+            "barangay_residency_certificate",
+
+        "documentStructureScreening":
+            screening,
+
+        "structureScore":
+            structure_score,
+
+        "matchedStructureIndicators": [
+            key
+            for key, value
+            in indicators.items()
+            if value
+        ],
+
+        "missingStructureIndicators": [
+            key
+            for key, value
+            in indicators.items()
+            if not value
+        ],
+
+        "authenticityStatus":
+            "official_verification_required",
+
+        "authenticationMethod":
+            "barangay_residency_document_screening",
+
+        "issuerVerification":
+            "not_performed",
+
+        "staffVerificationRequired":
+            True,
+
+        "message":
+            message
+    }
+
 def inspect_cedula_authenticity(
     file_bytes,
     ocr_text
@@ -2104,8 +2266,9 @@ async def screen_document(
             "message":
                 (
                     "Invalid document type. "
-                    "Use valid_id, "
-                    "birth_certificate, or cedula."
+                    "Use valid_id, birth_certificate, "
+                    "barangay_residency_certificate, "
+                    "or cedula."
                 )
         }
 
@@ -2325,6 +2488,14 @@ async def screen_document(
             authenticity_check = inspect_birth_certificate_authenticity(
                 file_result["file_bytes"],
                 ocr_text
+            )
+
+        if (document_type == "barangay_residency_certificate"):
+            authenticity_check = (
+                inspect_barangay_residency_certificate(
+                    file_result["file_bytes"],
+                    ocr_text
+                )
             )
 
         if document_type == "cedula":

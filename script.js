@@ -627,9 +627,6 @@ async function loadApplicationForEditing() {
       return;
     }
 
-    // =============================================
-    // NEWLY SELECTED / RESTORED FILE HAS PRIORITY
-    // =============================================
     if (
       input.files &&
       input.files.length > 0
@@ -898,6 +895,21 @@ async function loadApplicationForEditing() {
 
     const applicationFiles =
       data.applicationFiles || {};
+
+    const supportingDocumentTypeField =
+      document.getElementById(
+        "supporting-document-type"
+      );
+
+    if (supportingDocumentTypeField) {
+      supportingDocumentTypeField.value =
+        applicationFiles.supporting_document_type ||
+        "birth_certificate";
+
+      supportingDocumentTypeField.dispatchEvent(
+        new Event("change")
+      );
+    }
 
     let confirmations =
       data.confirmations || {};
@@ -1885,14 +1897,6 @@ function setupFaceCamera() {
     );
 
 
-  /*
-   * IMPORTANT:
-   * This works on your LAPTOP while the Python
-   * FastAPI service is running locally.
-   *
-   * We will replace this URL later when we deploy
-   * the face-verification API online.
-   */
   const FACE_VERIFICATION_API =
     "https://application-system-vcv6.onrender.com/verify-face";
   const AGE_VERIFICATION_API =
@@ -1917,20 +1921,13 @@ function setupFaceCamera() {
     return;
   }
 
-
   let faceStream = null;
-
-
-  // =====================================================
-  // HELPERS
-  // =====================================================
 
   const setStatus = function (message) {
     if (statusLabel) {
       statusLabel.textContent = message;
     }
   };
-
 
   const setVerificationResult = function (
     message,
@@ -3150,6 +3147,63 @@ function setupFaceCamera() {
   );
 }
 
+function setupSupportingDocumentType() {
+  const select =
+    document.getElementById(
+      "supporting-document-type"
+    );
+
+  const title =
+    document.getElementById(
+      "supporting-document-title"
+    );
+
+  const description =
+    document.getElementById(
+      "supporting-document-description"
+    );
+
+  if (!select) {
+    return;
+  }
+
+  const updateText = function () {
+    if (
+      select.value ===
+      "barangay_residency_certificate"
+    ) {
+      if (title) {
+        title.textContent =
+          "Certificate of Barangay Residency";
+      }
+
+      if (description) {
+        description.textContent =
+          "Please upload your Certificate of Barangay Residency.";
+      }
+
+    } else {
+
+      if (title) {
+        title.textContent =
+          "Birth Certificate";
+      }
+
+      if (description) {
+        description.textContent =
+          "Please upload your Birth Certificate. If you do not have one, you may select Certificate of Barangay Residency instead.";
+      }
+    }
+  };
+
+  select.addEventListener(
+    "change",
+    updateText
+  );
+
+  updateText();
+}
+
 function setupApplicationDate() {
   const dateField = document.getElementById("date-application");
 
@@ -3649,6 +3703,12 @@ async function verifyRequiredDocuments() {
       "upload-birth-certificate"
     )?.files?.[0];
 
+  const supportingDocumentType =
+    document.getElementById(
+      "supporting-document-type"
+    )?.value ||
+    "birth_certificate";
+
   const cedula =
     document.getElementById(
       "upload-cedula"
@@ -3854,11 +3914,18 @@ async function verifyRequiredDocuments() {
     );
 
 
+  const supportingDocumentLabel =
+    supportingDocumentType ===
+    "barangay_residency_certificate"
+      ? "Certificate of Barangay Residency"
+      : "Birth Certificate";
+
+
   const birthCertificateResult =
     await verifyOneDocument(
       birthCertificate,
-      "birth_certificate",
-      "Birth Certificate"
+      supportingDocumentType,
+      supportingDocumentLabel
     );
 
 
@@ -4186,7 +4253,8 @@ function setupFormSubmitConfirmation() {
       birth_certificate_url: toNull(document.getElementById('upload-birth-certificate')?.files?.[0]?.name || ''),
       community_tax_certificate_url: toNull(document.getElementById('upload-cedula')?.files?.[0]?.name || ''),
       signature_url: toNull(document.getElementById('upload-signature')?.files?.[0]?.name || ''),
-      application_date: toNull(getInputValue('date-application'))
+      application_date: toNull(getInputValue('date-application')),
+      supporting_document_type: document.getElementById( "supporting-document-type" )?.value || "birth_certificate"
     };
 
     const confirmationsData = {
@@ -4616,7 +4684,7 @@ function setupFormSubmitConfirmation() {
       },
       {
         id: "upload-birth-certificate",
-        label: "Birth Certificate"
+         label: "Birth Certificate or Certificate of Barangay Residency"
       },
       {
         id: "upload-cedula",
@@ -6346,6 +6414,7 @@ document.addEventListener("DOMContentLoaded", function () {
   loadApplicationForEditing();
   setupUploadButtons();
   setupFaceCamera();
+  setupSupportingDocumentType();
   setupApplicationDate();
   setupApplicantAge();
   setupFormCancelButton();

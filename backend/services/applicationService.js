@@ -1419,7 +1419,12 @@ export async function updateApplication(
             application_date:
                 applicationFilesData?.application_date ||
                 existingApplicationFiles?.application_date ||
-                null
+                null,
+            
+            supporting_document_type:
+                applicationFilesData?.supporting_document_type ||
+                existingApplicationFiles?.supporting_document_type ||
+                "birth_certificate"
         };
 
         const { error: applicationFilesError } = await supabase

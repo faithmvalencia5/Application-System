@@ -483,26 +483,33 @@
               </div>
             </div>
             <div>
-              <h3>Latest Photo</h3>
-              <p>Take a formal picture using a camera or your mobile phone.</p>
+              <h3>Latest/Formal Photo</h3>
+              <p>Upload/Take a formal picture using a camera or your mobile phone.</p>
             </div>
           </article>
 
           <article class="upload-item">
             <div class="upload-control">
+              <select id="supporting-document-type" class="supporting-document-select">
+                <option value="birth_certificate"> Birth Certificate </option>
+                <option value="barangay_residency_certificate"> Certificate of Barangay Residency </option>
+              </select>
               <input id="upload-birth-certificate" class="upload-input" type="file" accept="image/*,.pdf" />
-              <label for="upload-birth-certificate" class="upload-box" role="button" tabindex="0">
-                <span class="upload-label">Upload File</span>
-                <small class="upload-file-name">No file selected</small>
+              <label for="upload-birth-certificate" class="upload-box" role="button" tabindex="0" >
+                <span class="upload-label"> Upload File </span>
+                <small class="upload-file-name"> No file selected </small>
               </label>
               <div class="upload-actions">
-                <button type="button" class="view-btn" hidden>View</button>
-                <button type="button" class="change-btn" hidden>Change</button>
+                <button type="button" class="view-btn" hidden > View </button>
+                <button type="button" class="change-btn" hidden > Change </button>
               </div>
             </div>
+
             <div>
-              <h3>Birth Certificate</h3>
-              <p>Please take an image or picture of your Birth Certificate.</p>
+              <h3 id="supporting-document-title"> Birth Certificate </h3>
+              <p id="supporting-document-description">
+                Please upload your Birth Certificate. If you do not have one, you may select Certificate of Barangay Residency instead.
+              </p>
             </div>
           </article>
 
@@ -554,7 +561,6 @@
                 Please take a scan of your face for verification.
               </p>
 
-              <!-- Face verification success status -->
               <div
                 id="face-verification-form-status"
                 class="face-verification-form-status"
@@ -630,7 +636,6 @@
 
             </div>
 
-            <!-- Live camera -->
             <video
               id="face-camera-video"
               autoplay
@@ -638,13 +643,11 @@
               muted
             ></video>
 
-            <!-- Hidden canvas used to capture the camera frame -->
             <canvas
               id="face-camera-canvas"
               hidden
             ></canvas>
 
-            <!-- Face verification result -->
             <div
               id="face-verification-result"
               class="face-verification-result"
@@ -652,7 +655,6 @@
               aria-live="polite"
             ></div>
 
-            <!-- Camera controls -->
             <div class="face-camera-actions">
 
               <button

@@ -2799,6 +2799,19 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
 
 .chat-message-content {
   max-width: 80%;
+  text-align: left;
+}
+
+.bot-message {
+  justify-content: flex-start;
+}
+
+.bot-message .chat-message-content {
+  text-align: left;
+}
+
+.bot-message .chat-bubble {
+  text-align: left;
 }
 
 .chat-bubble {

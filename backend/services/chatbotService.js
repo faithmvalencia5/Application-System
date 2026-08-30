@@ -4,16 +4,46 @@ const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY
 });
 
-/*
- * =====================================================
- * APPROVED LOCAL FAQS
- * =====================================================
- *
- * These questions are answered directly by our backend.
- * Gemini is NOT called when one of these matches.
- */
-
 const LOCAL_FAQS = [
+
+  {
+    id: "required_documents",
+
+    filipinoAnswer:
+      "Para mag-apply ng Senior Citizen ID, kailangan mong isumite ang mga sumusunod: (1) harap at likod ng valid government ID, (2) pinakabagong formal na litrato, (3) Birth Certificate o Certificate of Barangay Residency kung walang Birth Certificate, (4) Community Tax Certificate o Cedula, at (5) malinaw na larawan ng iyong pirma. Siguraduhing malinaw at nababasa ang mga dokumento at tugma ang impormasyon sa iyong application form.",
+
+    englishAnswer:
+      "To apply for a Senior Citizen ID, you need to submit the following: (1) front and back images of a valid government ID, (2) a recent formal photo, (3) a Birth Certificate or a Certificate of Barangay Residency if you do not have a Birth Certificate, (4) a Community Tax Certificate or Cedula, and (5) a clear image of your signature. Make sure the documents are clear and readable and that the information matches your application form.",
+
+    patterns: [
+      "required documents",
+      "required files",
+      "documents required",
+      "documents needed",
+      "files required",
+      "files needed",
+      "what documents do i need",
+      "what files do i need",
+      "what documents are required",
+      "what files are required",
+      "requirements for senior citizen id",
+      "senior citizen id requirements",
+      "documents for senior citizen id",
+      "files for senior citizen id",
+
+      "mga kailangang dokumento",
+      "mga kailangan na dokumento",
+      "mga kailangang files",
+      "anong dokumento ang kailangan",
+      "ano ang mga dokumentong kailangan",
+      "ano anong dokumento ang kailangan",
+      "ano anong files ang kailangan",
+      "requirements sa senior citizen id",
+      "requirements para sa senior citizen id",
+      "kailangan para mag apply ng senior citizen id",
+      "kailangan sa pag apply ng senior citizen id"
+    ]
+  },
 
   {
     id: "social_pension",
@@ -244,15 +274,6 @@ function findLocalFaq(message) {
   return null;
 }
 
-/*
- * =====================================================
- * GEMINI KNOWLEDGE
- * =====================================================
- *
- * Gemini still receives the approved information for
- * questions that are too conversational to match locally.
- */
-
 const OSCA_KNOWLEDGE = `
 APPROVED OSCA BAUAN INFORMATION
 
@@ -311,13 +332,43 @@ Approved Answer:
 Libre ang unang beses na pagkuha ng Senior Citizen ID.
 Para naman sa pangalawang beses o mga susunod pang pagkuha,
 may bayad na ₱50.00.
-`;
 
-/*
- * =====================================================
- * GEMINI INSTRUCTIONS
- * =====================================================
- */
+FAQ 5
+
+Question:
+Ano-anong dokumento o files ang kailangan para mag-apply ng
+Senior Citizen ID?
+
+English Question:
+What documents or files are required when applying for a
+Senior Citizen ID?
+
+Approved Answer:
+Para mag-apply ng Senior Citizen ID, kailangan ang mga sumusunod:
+
+1. Harap at likod ng valid government ID
+2. Pinakabagong formal na litrato
+3. Birth Certificate o Certificate of Barangay Residency kung
+   walang Birth Certificate
+4. Community Tax Certificate o Cedula
+5. Malinaw na larawan ng pirma
+
+Dapat malinaw at nababasa ang mga dokumento at tugma ang
+impormasyon sa application form.
+
+English:
+To apply for a Senior Citizen ID, the applicant must submit:
+
+1. Front and back images of a valid government ID
+2. A recent formal photo
+3. A Birth Certificate or Certificate of Barangay Residency
+   if a Birth Certificate is unavailable
+4. Community Tax Certificate or Cedula
+5. A clear image of the applicant's signature
+
+The documents must be clear and readable, and the information
+should match the application form.
+`;
 
 const SYSTEM_INSTRUCTIONS = `
 You are the OSCA Bauan Virtual Assistant.
@@ -385,12 +436,6 @@ OSCA and Senior Citizen ID concerns.
 ${OSCA_KNOWLEDGE}
 `;
 
-/*
- * =====================================================
- * ASK CHATBOT
- * =====================================================
- */
-
 export async function askGemini(
   message,
   previousInteractionId = null
@@ -402,10 +447,6 @@ export async function askGemini(
     );
   }
 
-  /*
-   * STEP 1:
-   * Try our FREE local FAQ first.
-   */
   const localFaq =
     findLocalFaq(message);
 
@@ -427,9 +468,6 @@ export async function askGemini(
     return {
       reply: reply,
 
-      /*
-       * No new Gemini interaction was created.
-       */
       interactionId:
         previousInteractionId || null,
 
@@ -440,12 +478,6 @@ export async function askGemini(
         localFaq.id
     };
   }
-
-  /*
-   * STEP 2:
-   * No confident local match.
-   * Ask Gemini.
-   */
 
   console.log(
     "Chatbot response source: GEMINI"

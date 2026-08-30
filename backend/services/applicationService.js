@@ -2067,7 +2067,7 @@ export async function updateVerifiedDuplicateApplication(
 
         authenticationResets.push(
             resetDocumentAuthentication(
-                applicationId,
+                session.application_id,
                 "birth_certificate"
             )
         );
@@ -2080,7 +2080,7 @@ export async function updateVerifiedDuplicateApplication(
 
         authenticationResets.push(
             resetDocumentAuthentication(
-                applicationId,
+                session.application_id,
                 "community_tax_certificate"
             )
         );
@@ -2096,10 +2096,6 @@ export async function updateVerifiedDuplicateApplication(
         );
     }
 
-    /*
-     * Make the session one-time-use after a
-     * successful update.
-     */
     const { error: deleteSessionError } =
         await supabase
             .from(

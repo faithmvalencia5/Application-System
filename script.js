@@ -620,9 +620,24 @@ async function loadApplicationForEditing() {
     filePath,
     signedUrl
   ) {
-    const input = document.getElementById(inputId);
+    const input =
+      document.getElementById(inputId);
 
-    if (!input || !filePath) {
+    if (!input) {
+      return;
+    }
+
+    // =============================================
+    // NEWLY SELECTED / RESTORED FILE HAS PRIORITY
+    // =============================================
+    if (
+      input.files &&
+      input.files.length > 0
+    ) {
+      return;
+    }
+
+    if (!filePath) {
       return;
     }
 
@@ -734,14 +749,24 @@ async function loadApplicationForEditing() {
       return merged;
     };
 
-
-  if (mode === "duplicate-update") {
+  if (
+    mode === "duplicate-update" ||
+    mode === "request-edit"
+  ) {
 
     try {
+
+      const draftFileKey =
+        mode === "duplicate-update"
+          ? sessionId
+          : applicationId;
+
+
       const draftFiles =
         await getRequestEditFiles(
-          sessionId
+          draftFileKey
         );
+
 
       const inputMap = {
         valid_id_front:
@@ -763,38 +788,60 @@ async function loadApplicationForEditing() {
           "upload-signature"
       };
 
+
       Object.entries(
         draftFiles
-      ).forEach(function ([fileType, file]) {
+      ).forEach(
+        function ([fileType, file]) {
 
-        const inputId =
-          inputMap[fileType];
+          const inputId =
+            inputMap[fileType];
 
-        const input =
-          document.getElementById(
-            inputId
+          const input =
+            document.getElementById(
+              inputId
+            );
+
+
+          if (!input || !file) {
+            return;
+          }
+
+
+          const transfer =
+            new DataTransfer();
+
+          transfer.items.add(file);
+
+          input.files =
+            transfer.files;
+
+
+          // Remove references to the OLD DB file
+          input.dataset.existingFilePath =
+            "";
+
+          input.dataset.existingFileUrl =
+            "";
+
+
+          // Update filename / buttons
+          input.dispatchEvent(
+            new Event(
+              "change",
+              {
+                bubbles: true
+              }
+            )
           );
-
-        if (!input || !file) {
-          return;
         }
+      );
 
-        const transfer =
-          new DataTransfer();
-
-        transfer.items.add(file);
-
-        input.files =
-          transfer.files;
-
-        input.dispatchEvent(
-          new Event("change")
-        );
-      });
 
     } catch (error) {
+
       console.error(
-        "Unable to restore duplicate update files:",
+        "Unable to restore replacement files:",
         error
       );
     }

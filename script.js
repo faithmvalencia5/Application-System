@@ -3680,25 +3680,14 @@ async function verifyRequiredDocuments() {
       "place-of-birth"
     )?.value?.trim() || "";
 
-  const houseStreet =
-    document.getElementById(
-      "address"
-    )?.value?.trim() || "";
-
   const barangay =
     document.getElementById(
       "barangay"
     )?.value?.trim() || "";
 
 
-  const completeAddress = [
-    houseStreet,
-    barangay,
-    "Bauan",
-    "Batangas"
-  ]
-    .filter(Boolean)
-    .join(", ");
+  const addressForVerification =
+    barangay;
 
 
   async function verifyOneDocument(
@@ -3752,7 +3741,7 @@ async function verifyRequiredDocuments() {
 
     formData.append(
       "address",
-      completeAddress
+      addressForVerification
     );
 
 

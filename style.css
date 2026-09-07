@@ -2789,20 +2789,27 @@ body.homepage-page .bg-gradient-to-r.from-primary\/85.via-primary\/40.to-transpa
 
 .osca-chatbot .bot-message {
   justify-content: flex-start;
+  align-items: flex-start;
   text-align: left;
 }
 
 .osca-chatbot .bot-message .chat-message-content {
   max-width: 82%;
-  width: fit-content;
+  width: 82%;
+  align-self: flex-start;
+  margin-left: 0;
   margin-right: auto;
   text-align: left !important;
 }
 
 .osca-chatbot .bot-message .chat-bubble {
-  display: inline-block;
-  width: auto;
+  display: block;
+  width: 100%;
   max-width: 100%;
+  text-align: left !important;
+}
+
+.osca-chatbot .bot-message .chat-message-content .chat-bubble {
   text-align: left !important;
 }
 

@@ -2605,25 +2605,26 @@ function setupFaceCamera() {
             error
           );
 
+          alert(
+            "Face verification could not connect to the server.\n\n" +
+            "Error: " +
+            (error?.message || error)
+          );
 
           fallbackInput.dataset.faceVerified =
             "false";
 
-
           setStatus(
             "Unable to complete face verification."
           );
-
 
           setVerificationResult(
             "Unable to connect to the face verification service. Please try again.",
             "error"
           );
 
-
           captureButton.hidden =
             true;
-
 
           retakeButton.hidden =
             false;

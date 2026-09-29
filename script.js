@@ -4697,16 +4697,21 @@ function setupFormSubmitConfirmation() {
       }
     ];
 
-    /*
-     * New applications require all documents to be uploaded.
-     * Existing applications do not require documents to be
-     * re-uploaded when they are being edited. The backend
-     * keeps the existing stored documents unless a new file
-     * is selected as a replacement.
-     */
+    const params =
+      new URLSearchParams(window.location.search);
+
+    const mode =
+      params.get("mode");
+
+    const existingApplicationId =
+      params.get("id");
+
     const isEditingExistingApplication =
-      mode === "edit" ||
-      mode === "request-edit";
+      Boolean(existingApplicationId) &&
+      (
+        mode === "edit" ||
+        mode === "request-edit"
+      );
 
     if (!isEditingExistingApplication) {
       const missingUpload =

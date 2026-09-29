@@ -4697,43 +4697,56 @@ function setupFormSubmitConfirmation() {
       }
     ];
 
-    const missingUpload =
-      requiredUploads.find(function (item) {
-        const input =
-          document.getElementById(item.id);
+    /*
+     * New applications require all documents to be uploaded.
+     * Existing applications do not require documents to be
+     * re-uploaded when they are being edited. The backend
+     * keeps the existing stored documents unless a new file
+     * is selected as a replacement.
+     */
+    const isEditingExistingApplication =
+      mode === "edit" ||
+      mode === "request-edit";
 
-        return (
-          !input ||
-          !input.files ||
-          input.files.length === 0
-        );
-      });
+    if (!isEditingExistingApplication) {
+      const missingUpload =
+        requiredUploads.find(function (item) {
+          const input =
+            document.getElementById(item.id);
 
-    if (missingUpload) {
-      showInlineError(
-        "Please upload the required file: " +
-        missingUpload.label +
-        "."
-      );
-
-      const missingInput =
-        document.getElementById(
-          missingUpload.id
-        );
-
-      const uploadItem =
-        missingInput?.closest(
-          ".upload-item"
-        );
-
-      if (uploadItem) {
-        uploadItem.scrollIntoView({
-          behavior: "smooth",
-          block: "center"
+          return (
+            !input ||
+            !input.files ||
+            input.files.length === 0
+          );
         });
-      }
 
-      return false;
+      if (missingUpload) {
+        showInlineError(
+          "Please upload the required file: " +
+          missingUpload.label +
+          "."
+        );
+
+        const missingInput =
+          document.getElementById(
+            missingUpload.id
+          );
+
+        const uploadItem =
+          missingInput?.closest(
+            ".upload-item"
+          );
+
+        if (uploadItem) {
+          uploadItem.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+        }
+
+        return false;
+      }
     }
 
     const verificationInput =

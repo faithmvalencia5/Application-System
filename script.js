@@ -5366,9 +5366,11 @@ function setupVerificationPage() {
     if (normalized === 'released') {
       return 'ready for release';
     }
-    if (normalized === 'rejected') {
-      return 'pending';
-    }
+    const toTimelineStatus = function (statusValue) {
+        return String(statusValue || '')
+            .trim()
+            .toLowerCase();
+    };
 
     return normalized;
   };
@@ -5390,6 +5392,9 @@ function setupVerificationPage() {
     }
     if (normalized === 'completed') {
       return 'Your application process has been completed successfully.';
+    }
+    if (normalized === 'rejected') {
+        return 'Your application has been rejected. Please contact the OSCA office for more information.';
     }
 
     return 'Your application status has been updated.';

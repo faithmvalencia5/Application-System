@@ -4952,16 +4952,26 @@ function setupFormSubmitConfirmation() {
             );
           }
 
-          submitButton.textContent =
-            "Verifying documents...";
+          /*
+           * Existing applications only require face verification when
+           * saving an edit. Do not require the stored documents to be
+           * re-uploaded or re-verified.
+           *
+           * New applications and duplicate updates keep the normal
+           * document verification flow.
+           */
+          if (!isPendingEdit && !isDuplicateUpdate) {
+            submitButton.textContent =
+              "Verifying documents...";
 
-          const documentVerificationResults =
-            await verifyRequiredDocuments();
+            const documentVerificationResults =
+              await verifyRequiredDocuments();
 
-          console.log(
-            "Document verification results:",
-            documentVerificationResults
-          );
+            console.log(
+              "Document verification results:",
+              documentVerificationResults
+            );
+          }
 
           submitButton.textContent =
             isPendingEdit || isDuplicateUpdate

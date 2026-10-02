@@ -224,19 +224,15 @@ export async function updateDocumentAuthentication({
 
     const allowedStatuses = [
         "pending",
-        "approved",
-        "verified",
-        "reupload",
-        "rejected"
+        "authenticated",
+        "failed",
+        "needs_review"
     ];
 
     const allowedDocumentTypes = [
         "valid_id",
-        "valid_id_back",
-        "latest_photo",
         "birth_certificate",
-        "community_tax_certificate",
-        "signature"
+        "community_tax_certificate"
     ];
 
 
@@ -304,8 +300,8 @@ export async function updateDocumentAuthentication({
 
         authenticated_at:
             (
-                authenticationStatus === "approved" ||
-                authenticationStatus === "verified"
+                authenticationStatus ===
+                "authenticated"
                     ? new Date().toISOString()
                     : null
             ),
@@ -754,34 +750,36 @@ export async function registerApplication(payload, files) {
 
         const documentAuthenticationRows = [
             {
-                application_id: applicationId,
-                document_type: "valid_id",
-                authentication_status: "pending"
+                application_id:
+                    applicationId,
+
+                document_type:
+                    "valid_id",
+
+                authentication_status:
+                    "pending"
             },
+
             {
-                application_id: applicationId,
-                document_type: "valid_id_back",
-                authentication_status: "pending"
+                application_id:
+                    applicationId,
+
+                document_type:
+                    "birth_certificate",
+
+                authentication_status:
+                    "pending"
             },
+
             {
-                application_id: applicationId,
-                document_type: "latest_photo",
-                authentication_status: "pending"
-            },
-            {
-                application_id: applicationId,
-                document_type: "birth_certificate",
-                authentication_status: "pending"
-            },
-            {
-                application_id: applicationId,
-                document_type: "community_tax_certificate",
-                authentication_status: "pending"
-            },
-            {
-                application_id: applicationId,
-                document_type: "signature",
-                authentication_status: "pending"
+                application_id:
+                    applicationId,
+
+                document_type:
+                    "community_tax_certificate",
+
+                authentication_status:
+                    "pending"
             }
         ];
 

@@ -174,7 +174,7 @@
     const remarks = row.querySelector(".remarks").value.trim();
     button.disabled = true;
     try {
-      await request(API + "/staff/" + encodeURIComponent(state.selectedId) + "/document-authentication", {
+      await request(API + "/" + encodeURIComponent(state.selectedId) + "/document-authentication", {
         method: "PATCH", headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({ documentType: row.dataset.authType, authenticationStatus: status, authenticationMethod: method || null, authenticationRemarks: remarks || null })
       });

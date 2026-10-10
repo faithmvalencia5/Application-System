@@ -190,7 +190,7 @@
     const status = $("newStatus").value, remarks = $("statusRemarks").value.trim(), button = $("saveStatus");
     button.disabled = true; button.textContent = "Saving…";
     try {
-      await request(API + "/" + encodeURIComponent(state.selectedId) + "/status", {
+      await request(API + "/staff/" + encodeURIComponent(state.selectedId) + "/status", {
         method: "PATCH", headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({ status, remarks })
       });

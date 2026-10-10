@@ -4,6 +4,7 @@
   const API_BASE = (window.OSCA_API_BASE || "https://osca-backend.onrender.com/api").replace(/\/$/, "");
   const API = API_BASE + "/applications";
   const statuses = ["Pending", "Under Review", "In Process", "Ready for Release", "Completed", "Rejected"];
+  const STAFF_MODE = true;
   const authTypes = [
     { key: "valid_id", label: "Valid government ID" },
     { key: "birth_certificate", label: "Birth certificate" },

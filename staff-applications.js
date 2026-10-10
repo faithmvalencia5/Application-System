@@ -188,7 +188,7 @@
   async function saveStatus(event) {
     event.preventDefault();
     if (!state.selectedId) return;
-    const status = $("newStatus").value, remarks = $("statusRemarks").value.trim(), button = $("saveStatus");
+    const status = $("newStatus").value, button = $("saveStatus");
     button.disabled = true; button.textContent = "Saving…";
     try {
       await request(API + "/staff/" + encodeURIComponent(state.selectedId) + "/status", {

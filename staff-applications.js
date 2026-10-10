@@ -192,7 +192,7 @@
     try {
       await request(API + "/staff/" + encodeURIComponent(state.selectedId) + "/status", {
         method: "PATCH", headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({ status, remarks })
+        body: JSON.stringify({ status })
       });
       notify("Application status updated.");
       $("statusRemarks").value = "";

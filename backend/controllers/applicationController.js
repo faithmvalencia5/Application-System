@@ -573,11 +573,12 @@ export async function updateStaffApplicationStatus(req, res) {
         const { data: application, error: applicationError } = await supabase.from("applications").select("application_id").eq("application_id", applicationId).maybeSingle();
         if (applicationError) throw applicationError;
         if (!application) return res.status(404).json({ success: false, message: "Application not found." });
+        // Match the verified schema: only columns known to exist are written.
         const { data: inserted, error: historyError } = await supabase.from("application_status_history")
             .insert([{ application_id: applicationId, status, updated_at: new Date().toISOString() }])
             .select().single();
         if (historyError) throw historyError;
-        return res.status(200).json({ success: true, data: inserted, message: "Application status updated successfully." });
+        return res.status(200).json({ success: true, data: inserted, message: remarks ? "Application status updated. Remarks were not saved because the current history schema has no confirmed remarks column." : "Application status updated successfully." });
     } catch (error) {
         console.error("Update staff application status error:", error);
         return res.status(500).json({ success: false, message: "Unable to update application status. Check the status-history schema." });

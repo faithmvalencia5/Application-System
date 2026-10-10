@@ -10,7 +10,10 @@ import {
     getVerifiedDuplicateRecord,
     updateVerifiedDuplicateRecord,
     recoverApplicationId,
-    updateDocumentAuthentication
+    updateDocumentAuthentication,
+    listStaffApplications,
+    getStaffApplicationDetail,
+    updateStaffApplicationStatus
 } from "../controllers/applicationController.js";
 
 import { getApplicationStatus } from "../controllers/statusController.js";
@@ -18,6 +21,9 @@ import { getApplicationStatus } from "../controllers/statusController.js";
 const router = express.Router();
 
 router.get("/test", testDatabase);
+router.get("/staff", listStaffApplications);
+router.get("/staff/:applicationId", getStaffApplicationDetail);
+router.patch("/staff/:applicationId/status", updateStaffApplicationStatus);
 router.post(
     "/register",
     upload.fields([

@@ -24,7 +24,6 @@ router.get("/test", testDatabase);
 router.get("/staff", listStaffApplications);
 router.get("/staff/:applicationId", getStaffApplicationDetail);
 router.patch("/staff/:applicationId/status", updateStaffApplicationStatus);
-router.patch("/staff/:applicationId/document-authentication", updateDocumentAuthentication);
 router.post(
     "/register",
     upload.fields([

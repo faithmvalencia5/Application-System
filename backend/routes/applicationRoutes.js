@@ -10,7 +10,10 @@ import {
     getVerifiedDuplicateRecord,
     updateVerifiedDuplicateRecord,
     recoverApplicationId,
-    updateDocumentAuthentication
+    updateDocumentAuthentication,
+    listStaffApplications,
+    getStaffApplicationDetail,
+    updateStaffApplicationStatus
 } from "../controllers/applicationController.js";
 
 import { getApplicationStatus } from "../controllers/statusController.js";
@@ -18,6 +21,10 @@ import { getApplicationStatus } from "../controllers/statusController.js";
 const router = express.Router();
 
 router.get("/test", testDatabase);
+router.get("/staff", listStaffApplications);
+router.get("/staff/:applicationId", getStaffApplicationDetail);
+router.patch("/staff/:applicationId/status", updateStaffApplicationStatus);
+router.patch("/:applicationId/document-authentication", updateDocumentAuthentication);
 router.post(
     "/register",
     upload.fields([
@@ -31,25 +38,9 @@ router.post(
     ]),
     registerApplication
 );
-router.get(
-    "/duplicate/verified/:sessionId",
-    getVerifiedDuplicateRecord
-);
+router.get("/duplicate/verified/:sessionId", getVerifiedDuplicateRecord);
 router.put(
     "/duplicate/verified/:sessionId",
-    upload.fields([
-        { name: "valid_id_front", maxCount: 1 },
-        { name: "valid_id_back", maxCount: 1 },
-        { name: "latest_photo", maxCount: 1 },
-        { name: "birth_certificate", maxCount: 1 },
-        {name: "community_tax_certificate", maxCount: 1 },
-        { name: "verification_photo", maxCount: 1 },
-        { name: "signature", maxCount: 1 }
-    ]),
-    updateVerifiedDuplicateRecord
-);
-router.get("/status/:applicationId", getApplicationStatus);
-router.post("/:applicationId/id-request",
     upload.fields([
         { name: "valid_id_front", maxCount: 1 },
         { name: "valid_id_back", maxCount: 1 },
@@ -59,17 +50,24 @@ router.post("/:applicationId/id-request",
         { name: "verification_photo", maxCount: 1 },
         { name: "signature", maxCount: 1 }
     ]),
-    submitIdRequest);
-router.get(
-    "/duplicate/recover/:sessionId",
-    recoverApplicationId
+    updateVerifiedDuplicateRecord
 );
-router.patch(
-    "/:applicationId/document-authentication",
-    updateDocumentAuthentication
+router.get("/status/:applicationId", getApplicationStatus);
+router.post(
+    "/:applicationId/id-request",
+    upload.fields([
+        { name: "valid_id_front", maxCount: 1 },
+        { name: "valid_id_back", maxCount: 1 },
+        { name: "latest_photo", maxCount: 1 },
+        { name: "birth_certificate", maxCount: 1 },
+        { name: "community_tax_certificate", maxCount: 1 },
+        { name: "verification_photo", maxCount: 1 },
+        { name: "signature", maxCount: 1 }
+    ]),
+    submitIdRequest
 );
+router.get("/duplicate/recover/:sessionId", recoverApplicationId);
 router.get("/:applicationId", getApplicationById);
-
 router.put(
     "/:applicationId",
     upload.fields([
@@ -83,8 +81,6 @@ router.put(
     ]),
     updateApplication
 );
-router.post(
-  "/duplicate/verify",
-  verifyDuplicateApplicant
-);
+router.post("/duplicate/verify", verifyDuplicateApplicant);
+
 export default router;

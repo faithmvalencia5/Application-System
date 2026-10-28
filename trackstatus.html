@@ -24,17 +24,6 @@
 
 <body class="verify-page">
 
-  <header class="verify-header">
-    <a class="verify-brand" href="index.html">
-      <img
-        class="verify-brand-logo"
-        src="OSCA Bauan Logo.jpg"
-        alt="OSCA Bauan Logo"
-      >
-      <span>OSCA Bauan</span>
-    </a>
-  </header>
-
   <main class="verify-flow" aria-live="polite">
 
     <!-- STEP 1: ENTER APPLICATION ID -->
@@ -48,8 +37,12 @@
         class="verify-close-button verify-close-inline"
         aria-label="Close tracking page"
       >
-        ×
+        <svg class="verify-close-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M7 7l10 10M17 7 7 17"></path>
+        </svg>
       </button>
+
+      <span class="verify-entry-icon material-symbols-outlined" aria-hidden="true">calendar_month</span>
 
       <p class="verify-eyebrow">Step 1</p>
 
@@ -119,27 +112,42 @@
         class="verify-close-button verify-close-inline"
         aria-label="Close tracking page"
       >
-        ×
+        <svg class="verify-close-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M7 7l10 10M17 7 7 17"></path>
+        </svg>
       </button>
 
-      <p class="verify-eyebrow">Step 2</p>
-
-      <h2 class="verify-step-title">
-        Application Status
-      </h2>
-
-      <div class="verify-result-grid">
-
-        <div>
-          <span>Application ID</span>
-          <strong id="verified-application-id"></strong>
+      <div class="tracking-summary">
+        <div class="tracking-summary-copy">
+          <p class="verify-eyebrow">APPLICATION ID</p>
+          <div class="tracking-id-line">
+            <strong id="verified-application-id"></strong>
+            <span class="material-symbols-outlined" aria-hidden="true">badge</span>
+          </div>
+          <p class="tracking-applicant"><span>Applicant</span><strong id="verified-applicant-name"></strong></p>
         </div>
+        <span class="tracking-current-badge" id="tracking-current-badge">IN REVIEW</span>
+      </div>
 
-        <div>
-          <span>Applicant</span>
-          <strong id="verified-applicant-name"></strong>
+      <h2 class="tracking-timeline-heading">Application progress</h2>
+
+      <div class="tracking-progress-summary" id="tracking-progress-summary">
+        <div class="tracking-progress-label">
+          <span>Progress</span>
+          <strong id="tracking-progress-step">Step 1 of 5</strong>
         </div>
-
+        <div
+          class="tracking-progress-track"
+          id="tracking-progress-bar"
+          role="progressbar"
+          aria-label="Application progress"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          aria-valuetext="Step 1 of 5"
+        >
+          <span id="tracking-progress-fill"></span>
+        </div>
       </div>
 
       <div
@@ -148,71 +156,17 @@
         aria-label="Application status timeline"
       >
 
-        <div
-          class="verify-status-item"
-          data-status="pending"
-        >
-          <span
-            class="verify-status-dot"
-            data-status="pending"
-          ></span>
-          <span>Pending</span>
-        </div>
+        <div class="verify-status-item" data-status="pending"><span class="tracking-step-icon material-symbols-outlined" aria-hidden="true">description</span><span class="tracking-step-copy"><strong>Received</strong><small>We got your online details</small><span class="tracking-next-label" hidden>Next step</span><em>Done</em></span><span class="tracking-step-check material-symbols-outlined" aria-hidden="true">check</span></div>
 
-        <div
-          class="verify-status-item"
-          data-status="under review"
-        >
-          <span
-            class="verify-status-dot"
-            data-status="under review"
-          ></span>
-          <span>Under Review</span>
-        </div>
+        <div class="verify-status-item" data-status="under review"><span class="tracking-step-icon material-symbols-outlined" aria-hidden="true">verified_user</span><span class="tracking-step-copy"><strong>Under Review</strong><small>Staff checks your documents</small><span class="tracking-next-label" hidden>Next step</span><em>Done</em></span><span class="tracking-step-check material-symbols-outlined" aria-hidden="true">check</span></div>
 
-        <div
-          class="verify-status-item"
-          data-status="in process"
-        >
-          <span
-            class="verify-status-dot"
-            data-status="in process"
-          ></span>
-          <span>In Process</span>
-        </div>
+        <div class="verify-status-item" data-status="in process"><span class="tracking-step-icon material-symbols-outlined" aria-hidden="true">layers</span><span class="tracking-step-copy"><strong>In Process</strong><small>Your ID is being prepared</small><span class="tracking-next-label" hidden>Next step</span><em>Done</em></span><span class="tracking-step-check material-symbols-outlined" aria-hidden="true">check</span></div>
 
-        <div
-          class="verify-status-item"
-          data-status="ready for release"
-        >
-          <span
-            class="verify-status-dot"
-            data-status="ready for release"
-          ></span>
-          <span>Ready for Release</span>
-        </div>
+        <div class="verify-status-item" data-status="ready for release"><span class="tracking-step-icon material-symbols-outlined" aria-hidden="true">location_on</span><span class="tracking-step-copy"><strong>Ready for Release</strong><small>Ready for pickup at OSCA</small><span class="tracking-next-label" hidden>Next step</span><em>Done</em></span><span class="tracking-step-check material-symbols-outlined" aria-hidden="true">check</span></div>
 
-        <div
-          class="verify-status-item"
-          data-status="completed"
-        >
-          <span
-            class="verify-status-dot"
-            data-status="completed"
-          ></span>
-          <span>Completed</span>
-        </div>
+        <div class="verify-status-item" data-status="completed"><span class="tracking-step-icon material-symbols-outlined" aria-hidden="true">check</span><span class="tracking-step-copy"><strong>Completed</strong><small>Your ID has been released</small><span class="tracking-next-label" hidden>Next step</span><em>Current status</em></span><span class="tracking-step-check material-symbols-outlined" aria-hidden="true">check</span></div>
 
-        <div
-          class="verify-status-item"
-          data-status="rejected"
-        >
-          <span
-            class="verify-status-dot"
-            data-status="rejected"
-          ></span>
-          <span>Rejected</span>
-        </div>
+        <div class="verify-status-item" data-status="rejected"><span class="tracking-step-icon material-symbols-outlined" aria-hidden="true">cancel</span><span class="tracking-step-copy"><strong>Rejected</strong><small>Please contact OSCA for next steps</small><em>Current status</em></span><span class="tracking-step-check material-symbols-outlined" aria-hidden="true">priority_high</span></div>
 
       </div>
 
@@ -220,6 +174,19 @@
         id="verification-note"
         class="verify-result-note"
       ></p>
+
+      <aside class="tracking-help" id="tracking-help" aria-live="polite" hidden>
+        <span class="material-symbols-outlined tracking-help-icon" aria-hidden="true">support_agent</span>
+        <div class="tracking-help-copy">
+          <strong id="tracking-help-heading"></strong>
+          <p id="tracking-help-message"></p>
+          <div class="tracking-help-links" aria-label="Contact OSCA Bauan">
+            <a href="tel:+63432332723">432-332-723</a>
+            <a href="tel:+639295517826">+63 929 551 7826</a>
+            <a href="mailto:oscabauan@gmail.com">oscabauan@gmail.com</a>
+          </div>
+        </div>
+      </aside>
 
       <div class="verify-actions">
 
@@ -267,7 +234,9 @@
         class="verify-close-button verify-close-inline"
         aria-label="Close request form"
       >
-        ×
+        <svg class="verify-close-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M7 7l10 10M17 7 7 17"></path>
+        </svg>
       </button>
 
       <p class="verify-eyebrow">Step 3</p>

@@ -89,6 +89,7 @@ export async function getApplicationStatus(req, res) {
             application_id: applicationRow.application_id,
             applicant: applicantName || "Applicant",
             status: statusText,
+            status_updated_at: latestStatus?.updated_at || null,
 
             has_active_id_request: Boolean(activeIdRequest),
 

@@ -26,7 +26,9 @@ function blockNonNumericInput() {
 
   const applyNumericAttributes = function (field) {
     field.setAttribute("inputmode", "numeric");
-    field.setAttribute("pattern", "[0-9]*");
+    if (!field.hasAttribute("pattern")) {
+      field.setAttribute("pattern", "[0-9]*");
+    }
   };
 
   numericFields.forEach(function (field) {
@@ -3965,7 +3967,11 @@ function setupFormSubmitConfirmation() {
     if (!field) {
       return "";
     }
-    return (field.value || "").trim();
+    const value = (field.value || "").trim();
+    if (["id-philhealth", "id-gsis", "id-tin", "contact-number"].includes(id)) {
+      return value.replace(/\D/g, "");
+    }
+    return value;
   };
 
   const toNull = function (value) {
@@ -4594,6 +4600,7 @@ function setupFormSubmitConfirmation() {
       return;
     }
     field.classList.add(invalidClassName);
+    field.setAttribute("aria-invalid", "true");
   };
 
   const clearFieldInvalid = function (fieldId) {
@@ -4602,11 +4609,13 @@ function setupFormSubmitConfirmation() {
       return;
     }
     field.classList.remove(invalidClassName);
+    field.removeAttribute("aria-invalid");
   };
 
   const clearAllInvalidFields = function () {
     document.querySelectorAll('.' + invalidClassName).forEach(function (field) {
       field.classList.remove(invalidClassName);
+      field.removeAttribute("aria-invalid");
     });
   };
 
@@ -4651,9 +4660,9 @@ function setupFormSubmitConfirmation() {
     }
 
     const contactValue = getInputValue('contact-number');
-    if (contactValue !== '' && !/^\d{7,15}$/.test(contactValue)) {
+    if (contactValue !== '' && !/^09\d{9}$/.test(contactValue)) {
       markFieldInvalid('contact-number');
-      showInlineError('Please enter a valid contact number (7 to 15 digits).');
+      showInlineError('Please enter a Philippine mobile number (09XX XXX XXXX).');
       const contactField = document.getElementById('contact-number');
       if (contactField) {
         contactField.focus();
@@ -5218,6 +5227,30 @@ function setupHomepageNavigation() {
   const mobileMenu = document.getElementById("mobileMenu");
   const closeMenuBtn = document.getElementById("closeMenuBtn");
   const menuOverlay = document.getElementById("menuOverlay");
+  const textSizeButtons = document.querySelectorAll(".mobile-menu-text-size-button");
+  const textSizeValue = document.getElementById("mobileMenuTextSizeValue");
+  const textSizeStorageKey = "osca-bauan-text-size";
+  const minimumTextSize = 14;
+  const maximumTextSize = 22;
+  const storedTextSize = Number(window.localStorage.getItem(textSizeStorageKey));
+  let textSize = Number.isFinite(storedTextSize) && storedTextSize >= minimumTextSize && storedTextSize <= maximumTextSize
+    ? storedTextSize
+    : 16;
+
+  function applyTextSize() {
+    document.documentElement.style.fontSize = textSize + "px";
+    if (textSizeValue) {
+      textSizeValue.textContent = Math.round((textSize / 16) * 100) + "%";
+    }
+
+    textSizeButtons.forEach(function (button) {
+      const direction = button.getAttribute("data-text-size");
+      button.disabled = (direction === "decrease" && textSize <= minimumTextSize)
+        || (direction === "increase" && textSize >= maximumTextSize);
+    });
+  }
+
+  applyTextSize();
 
   if (!hamburgerBtn || !mobileMenu || !closeMenuBtn || !menuOverlay) {
     return;
@@ -5227,17 +5260,64 @@ function setupHomepageNavigation() {
     mobileMenu.classList.add("open");
     document.body.classList.add("menu-open");
     menuOverlay.classList.add("active");
+    menuOverlay.setAttribute("aria-hidden", "false");
+    hamburgerBtn.setAttribute("aria-expanded", "true");
+    mobileMenu.setAttribute("aria-hidden", "false");
+    mobileMenu.removeAttribute("inert");
+    closeMenuBtn.focus();
   }
 
-  function closeMenu() {
+  function closeMenu(restoreFocus) {
     mobileMenu.classList.remove("open");
     document.body.classList.remove("menu-open");
     menuOverlay.classList.remove("active");
+    menuOverlay.setAttribute("aria-hidden", "true");
+    hamburgerBtn.setAttribute("aria-expanded", "false");
+    mobileMenu.setAttribute("aria-hidden", "true");
+    mobileMenu.setAttribute("inert", "");
+    if (restoreFocus) {
+      hamburgerBtn.focus();
+    }
   }
 
   hamburgerBtn.addEventListener("click", openMenu);
-  closeMenuBtn.addEventListener("click", closeMenu);
-  menuOverlay.addEventListener("click", closeMenu);
+  closeMenuBtn.addEventListener("click", function () {
+    closeMenu(true);
+  });
+  menuOverlay.addEventListener("click", function () {
+    closeMenu(true);
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (!mobileMenu.classList.contains("open")) {
+      return;
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeMenu(true);
+      return;
+    }
+
+    if (event.key === "Tab") {
+      const focusableElements = mobileMenu.querySelectorAll(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (!firstElement || !lastElement) {
+        event.preventDefault();
+        closeMenu(true);
+      } else if (event.shiftKey && (document.activeElement === firstElement || !mobileMenu.contains(document.activeElement))) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && (document.activeElement === lastElement || !mobileMenu.contains(document.activeElement))) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    }
+  });
 
   document.querySelectorAll(".mobile-nav-link").forEach(function (link) {
     link.addEventListener("click", function (event) {
@@ -5247,7 +5327,11 @@ function setupHomepageNavigation() {
       }
 
       event.preventDefault();
-      closeMenu();
+      document.querySelectorAll(".mobile-nav-link").forEach(function (navLink) {
+        navLink.removeAttribute("aria-current");
+      });
+      link.setAttribute("aria-current", "page");
+      closeMenu(false);
 
       setTimeout(function () {
         const targetElement = document.querySelector(targetId);
@@ -5255,6 +5339,28 @@ function setupHomepageNavigation() {
           targetElement.scrollIntoView({ behavior: "smooth" });
         }
       }, 200);
+    });
+  });
+
+  document.querySelectorAll(".mobile-menu-action").forEach(function (link) {
+    link.addEventListener("click", function () {
+      closeMenu(false);
+    });
+  });
+
+  textSizeButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      const direction = button.getAttribute("data-text-size");
+      if (direction === "decrease" && textSize > minimumTextSize) {
+        textSize -= 2;
+      } else if (direction === "increase" && textSize < maximumTextSize) {
+        textSize += 2;
+      } else {
+        return;
+      }
+
+      window.localStorage.setItem(textSizeStorageKey, String(textSize));
+      applyTextSize();
     });
   });
 
@@ -5322,14 +5428,132 @@ function setupHomepageNavigation() {
     }
   });
 
+  const mobileSectionObserver = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) {
+          return;
+        }
+
+        const id = entry.target.getAttribute("id");
+        document.querySelectorAll(".mobile-nav-link").forEach(function (link) {
+          if (link.getAttribute("href") === `#${id}`) {
+            link.setAttribute("aria-current", "page");
+          } else {
+            link.removeAttribute("aria-current");
+          }
+        });
+      });
+    },
+    { threshold: 0.3 }
+  );
+
+  ["home", "about", "stories", "contact"].forEach(function (sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      mobileSectionObserver.observe(section);
+    }
+  });
+
   const homeLink = document.querySelector('.nav-link[href="#home"]');
   if (homeLink) {
     homeLink.classList.add("nav-link-active");
   }
 }
 
+function setupContactMap() {
+  const mapFrame = document.getElementById("contact-map-iframe");
+  if (!mapFrame) return;
+  const mapCanvas = mapFrame.closest(".contact-map-canvas");
+  let skeletonFallback;
+  const showMapSkeleton = function () {
+    if (mapCanvas) mapCanvas.classList.remove("map-loaded");
+    window.clearTimeout(skeletonFallback);
+    skeletonFallback = window.setTimeout(function () {
+      if (mapCanvas) mapCanvas.classList.add("map-loaded");
+    }, 10000);
+  };
+  mapFrame.addEventListener("load", function () {
+    window.clearTimeout(skeletonFallback);
+    if (mapCanvas) mapCanvas.classList.add("map-loaded");
+  });
+  showMapSkeleton();
+}
+
 function normalizeApplicationId(value) {
   return (value || "").trim();
+}
+
+function setupTrackStatusModal() {
+  const modal = document.getElementById("track-status-modal");
+  if (!modal) return;
+  const frame = modal.querySelector(".track-status-frame");
+  let previousScrollbarCompensation = null;
+  let previousScrollbarCompensationPriority = "";
+
+  const makeFrameBackgroundTransparent = function () {
+    const frameDocument = frame?.contentDocument;
+    if (!frameDocument?.body) return;
+    frameDocument.documentElement.style.setProperty("background", "transparent", "important");
+    frameDocument.body.style.setProperty("background", "transparent", "important");
+  };
+
+  const resetTrackingFrame = function () {
+    if (!frame) return;
+    frame.src = "trackstatus.html";
+  };
+
+  const closeModal = function () {
+    modal.hidden = true;
+    document.body.classList.remove("track-status-open");
+    if (previousScrollbarCompensation !== null) {
+      if (previousScrollbarCompensation) {
+        document.body.style.setProperty(
+          "--track-status-scrollbar-width",
+          previousScrollbarCompensation,
+          previousScrollbarCompensationPriority
+        );
+      } else {
+        document.body.style.removeProperty("--track-status-scrollbar-width");
+      }
+      previousScrollbarCompensation = null;
+    }
+    resetTrackingFrame();
+  };
+
+  frame?.addEventListener("load", makeFrameBackgroundTransparent);
+  makeFrameBackgroundTransparent();
+
+  const openModal = function (event) {
+    event.preventDefault();
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    previousScrollbarCompensation = document.body.style.getPropertyValue("--track-status-scrollbar-width");
+    previousScrollbarCompensationPriority = document.body.style.getPropertyPriority("--track-status-scrollbar-width");
+    document.body.style.setProperty("--track-status-scrollbar-width", scrollbarWidth + "px");
+    modal.hidden = false;
+    document.body.classList.add("track-status-open");
+  };
+
+  document.querySelectorAll('a[href="trackstatus.html"]').forEach(function (link) {
+    link.addEventListener("click", openModal);
+  });
+
+  modal.addEventListener("click", function (event) {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && !modal.hidden) {
+      closeModal();
+    }
+  });
+
+  window.addEventListener("message", function (event) {
+    if (event.origin !== window.location.origin || event.data?.type !== "close-track-status") return;
+    closeModal();
+  });
 }
 
 function setupVerificationPage() {
@@ -5342,6 +5566,13 @@ function setupVerificationPage() {
   const verifiedId = document.getElementById("verified-application-id");
   const verifiedApplicant = document.getElementById("verified-applicant-name");
   const verificationNote = document.getElementById("verification-note");
+  const progressSummary = document.getElementById("tracking-progress-summary");
+  const progressStep = document.getElementById("tracking-progress-step");
+  const progressBar = document.getElementById("tracking-progress-bar");
+  const progressFill = document.getElementById("tracking-progress-fill");
+  const trackingHelp = document.getElementById("tracking-help");
+  const trackingHelpHeading = document.getElementById("tracking-help-heading");
+  const trackingHelpMessage = document.getElementById("tracking-help-message");
   const requestIdButton = document.getElementById("request-id-button");
   const editApplicationStep2 = document.getElementById("edit-application-step2");
   const editApplicationStep3 = document.getElementById("edit-application-step3");
@@ -5415,6 +5646,7 @@ function setupVerificationPage() {
       applicant: result.applicant,
       status: toTimelineStatus(result.status),
       note: result.note,
+      statusUpdatedAt: result.status_updated_at,
 
       hasActiveIdRequest:
         Boolean(result.has_active_id_request),
@@ -5457,6 +5689,25 @@ function setupVerificationPage() {
 
     currentApplicationStatus =
       String(record.status || "").trim().toLowerCase();
+    const statusUpdatedAt = Date.parse(record.statusUpdatedAt || "");
+    const isDelayed =
+      currentApplicationStatus !== "completed" &&
+      currentApplicationStatus !== "rejected" &&
+      Number.isFinite(statusUpdatedAt) &&
+      Date.now() - statusUpdatedAt >= 7 * 24 * 60 * 60 * 1000;
+
+    if (trackingHelp && trackingHelpHeading && trackingHelpMessage) {
+      const needsHelp =
+        currentApplicationStatus === "rejected" || isDelayed;
+      trackingHelp.hidden = !needsHelp;
+      if (currentApplicationStatus === "rejected") {
+        trackingHelpHeading.textContent = "Need help with next steps?";
+        trackingHelpMessage.textContent = "Contact OSCA Bauan for guidance about your application.";
+      } else if (isDelayed) {
+        trackingHelpHeading.textContent = "Has it been a while?";
+        trackingHelpMessage.textContent = "There has been no status update for 7 days. Contact OSCA Bauan for assistance.";
+      }
+    }
 
     const canEditFromStep2 =
       currentApplicationStatus === "pending";
@@ -5484,9 +5735,56 @@ function setupVerificationPage() {
       editApplicationStep3.disabled = !canEditFromStep3;
     }
 
+    const timelineOrder = ["pending", "under review", "in process", "ready for release", "completed"];
+    const currentIndex = timelineOrder.indexOf(currentApplicationStatus);
+    const timelineProgress = currentIndex > 0
+      ? (currentIndex / (timelineOrder.length - 1)) * 100
+      : 0;
+    const statusList = document.getElementById("verify-status-list");
+    if (statusList) {
+      statusList.style.setProperty("--tracking-progress", timelineProgress + "%");
+      statusList.classList.toggle("is-rejected", currentApplicationStatus === "rejected");
+    }
+    if (progressSummary && progressStep && progressBar && progressFill) {
+      const canShowProgress = currentIndex >= 0;
+      progressSummary.hidden = !canShowProgress;
+      if (canShowProgress) {
+        const progressText = "Step " + (currentIndex + 1) + " of " + timelineOrder.length;
+        progressStep.textContent = progressText;
+        progressBar.setAttribute("aria-valuenow", String(Math.round(timelineProgress)));
+        progressBar.setAttribute("aria-valuetext", progressText);
+        progressFill.style.width = timelineProgress + "%";
+      }
+    }
+    const statusBadge = document.getElementById("tracking-current-badge");
+    if (statusBadge) {
+      statusBadge.textContent = currentApplicationStatus === "rejected"
+        ? "REJECTED"
+        : currentApplicationStatus.toUpperCase();
+      statusBadge.dataset.status = currentApplicationStatus;
+    }
+
     statusItems.forEach(function (item) {
-      const isCurrent = item.getAttribute("data-status") === record.status;
+      const itemStatus = item.getAttribute("data-status");
+      const itemIndex = timelineOrder.indexOf(itemStatus);
+      const isCurrent = itemStatus === currentApplicationStatus;
+      const isRejected = itemStatus === "rejected";
+      const isNext = !isRejected && currentIndex >= 0 && itemIndex === currentIndex + 1;
+      item.hidden = isRejected
+        ? currentApplicationStatus !== "rejected"
+        : currentApplicationStatus === "rejected";
       item.classList.toggle("active", isCurrent);
+      item.classList.toggle("complete", !isRejected && currentIndex > itemIndex && itemIndex >= 0);
+      item.classList.toggle("upcoming", !isRejected && currentIndex >= 0 && itemIndex > currentIndex);
+      item.classList.toggle("next-step", isNext);
+      const currentLabel = item.querySelector(".tracking-step-copy em");
+      if (currentLabel && isCurrent) {
+        currentLabel.textContent = "Current status";
+      }
+      const nextLabel = item.querySelector(".tracking-next-label");
+      if (nextLabel) {
+        nextLabel.hidden = !isNext;
+      }
       if (isCurrent) {
         item.setAttribute("aria-current", "step");
       } else {
@@ -5516,6 +5814,10 @@ function setupVerificationPage() {
   };
 
   const closeVerificationPage = function () {
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: "close-track-status" }, window.location.origin);
+      return;
+    }
     window.location.href = "index.html";
   };
 
@@ -6454,6 +6756,8 @@ document.addEventListener("DOMContentLoaded", function () {
   setupFormCancelButton();
   setupDisclaimerPage();
   setupHomepageNavigation();
+  setupContactMap();
+  setupTrackStatusModal();
   setupVerificationPage();
   setupRequestIdModal();
   setupFormSubmitConfirmation();
@@ -6882,6 +7186,11 @@ function setupOscaChatbot() {
       }
     }
   );
+
+  var faqChatButton = document.getElementById("faq-chat-button");
+  if (faqChatButton) {
+    faqChatButton.addEventListener("click", openChatbot);
+  }
 
 
   closeButton.addEventListener(

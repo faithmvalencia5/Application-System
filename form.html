@@ -1,62 +1,90 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Senior Citizen ID Application Form</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
       rel="stylesheet"
     >
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="form-reference.css" />
   </head>
-  <body>
+  <body class="application-form-page">
     <div class="page-frame">
       <header class="form-header">
         <div class="header-text">
           <p>OFFICE OF SENIOR CITIZENS AFFAIRS</p>
-          <p>CITY / MUNICIPALITY BAUAN BATANGAS</p>
+          <p>MUNICIPALITY OF BAUAN</p>
         </div>
         <div class="header-bottom">
           <div class="logo-box"><img src="OSCA Bauan Logo.jpg" alt="Logo" /></div>
           <div class="title-bar">ONLINE SENIOR CITIZEN ID APPLICATION FORM</div>
         </div>
       </header>
-
+      <div class="mobile-sticky-area">
+        <button class="mobile-stepbar" type="button" aria-haspopup="dialog" aria-expanded="false" aria-label="Open application sections" aria-controls="mobile-sections-sheet">
+          <span class="mobile-stepbar-copy" aria-live="polite" aria-atomic="true">
+            <strong class="mobile-step-summary">Personal details</strong>
+          </span>
+          <span class="mobile-stepbar-chevron material-symbols-outlined" aria-hidden="true">keyboard_arrow_up</span>
+        </button>
+        <div class="mobile-progress-row">
+          <nav class="mobile-progress" aria-label="Application step progress"></nav>
+        </div>
+      </div>
+      <p class="mobile-draft-status" aria-live="polite"><span class="material-symbols-outlined" aria-hidden="true">cloud_done</span><span>Draft saved</span></p>
       <main class="form-wrapper">
-      <section class="section-block">
-        <h2>Information</h2>
-
-        <div class="row three">
+      <aside class="application-steps" id="application-steps" aria-label="Application sections" tabindex="-1">
+        <div class="mobile-drawer-heading"><strong>Application sections</strong><button class="mobile-steps-close" type="button" aria-label="Close application sections"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></div>
+        <div class="steps-mark"><img src="OSCA Bauan Logo.jpg" alt="OSCA logo" /></div>
+        <nav class="steps-nav" aria-label="Form sections">
+          <a href="#application-information"><span class="step-number"><span class="step-number-text">01</span><span class="material-symbols-outlined step-number-check" aria-hidden="true">check</span><span class="material-symbols-outlined step-number-lock" aria-hidden="true">lock</span></span><div class="step-label"><strong>Personal</strong><strong>details</strong></div><span class="step-state"><span class="material-symbols-outlined step-status step-status-current" aria-hidden="true">radio_button_checked</span><span class="material-symbols-outlined step-status step-status-done" aria-hidden="true">check</span><span class="material-symbols-outlined step-status step-status-locked" aria-hidden="true">lock</span></span></a>
+          <a href="#family-composition"><span class="step-number"><span class="step-number-text">02</span><span class="material-symbols-outlined step-number-check" aria-hidden="true">check</span><span class="material-symbols-outlined step-number-lock" aria-hidden="true">lock</span></span><div class="step-label"><strong>Family</strong><strong>composition</strong></div><span class="step-state"><span class="material-symbols-outlined step-status step-status-current" aria-hidden="true">radio_button_checked</span><span class="material-symbols-outlined step-status step-status-done" aria-hidden="true">check</span><span class="material-symbols-outlined step-status step-status-locked" aria-hidden="true">lock</span></span></a>
+          <a href="#senior-citizens-association"><span class="step-number"><span class="step-number-text">03</span><span class="material-symbols-outlined step-number-check" aria-hidden="true">check</span><span class="material-symbols-outlined step-number-lock" aria-hidden="true">lock</span></span><div class="step-label"><strong>Association</strong><strong>membership</strong></div><span class="step-state"><span class="material-symbols-outlined step-status step-status-current" aria-hidden="true">radio_button_checked</span><span class="material-symbols-outlined step-status step-status-done" aria-hidden="true">check</span><span class="material-symbols-outlined step-status step-status-locked" aria-hidden="true">lock</span></span></a>
+          <a href="#personal-background"><span class="step-number"><span class="step-number-text">04</span><span class="material-symbols-outlined step-number-check" aria-hidden="true">check</span><span class="material-symbols-outlined step-number-lock" aria-hidden="true">lock</span></span><div class="step-label"><strong>Income</strong><strong>&amp; living</strong></div><span class="step-state"><span class="material-symbols-outlined step-status step-status-current" aria-hidden="true">radio_button_checked</span><span class="material-symbols-outlined step-status step-status-done" aria-hidden="true">check</span><span class="material-symbols-outlined step-status step-status-locked" aria-hidden="true">lock</span></span></a>
+          <a href="#health-community"><span class="step-number"><span class="step-number-text">05</span><span class="material-symbols-outlined step-number-check" aria-hidden="true">check</span><span class="material-symbols-outlined step-number-lock" aria-hidden="true">lock</span></span><div class="step-label"><strong>Health</strong><strong>&amp; community</strong></div><span class="step-state"><span class="material-symbols-outlined step-status step-status-current" aria-hidden="true">radio_button_checked</span><span class="material-symbols-outlined step-status step-status-done" aria-hidden="true">check</span><span class="material-symbols-outlined step-status step-status-locked" aria-hidden="true">lock</span></span></a>
+          <a href="#upload-files"><span class="step-number"><span class="step-number-text">06</span><span class="material-symbols-outlined step-number-check" aria-hidden="true">check</span><span class="material-symbols-outlined step-number-lock" aria-hidden="true">lock</span></span><div class="step-label"><strong>Documents</strong><strong>&amp; consent</strong></div><span class="step-state"><span class="material-symbols-outlined step-status step-status-current" aria-hidden="true">radio_button_checked</span><span class="material-symbols-outlined step-status step-status-done" aria-hidden="true">check</span><span class="material-symbols-outlined step-status step-status-locked" aria-hidden="true">lock</span></span></a>
+        </nav>
+        <div class="form-side-progress" aria-live="polite">
+          <div class="form-side-progress-track"><span></span></div>
+          <div class="form-side-progress-copy"><strong><span class="form-side-step">1</span> / 6 · <b class="form-side-completed">17%</b> complete</strong></div>
+        </div>
+        <div class="form-privacy-note"><span class="material-symbols-outlined" aria-hidden="true">verified_user</span><div><strong>Your application is sent to OSCA Bauan.</strong><p>Your information and uploaded documents are reviewed by OSCA. Keep your Application ID and bring original documents when requested.</p></div></div>
+      </aside>
+      <div class="application-form-card">
+      <section class="section-block" id="application-information">
+        <div class="row three name-row">
           <div class="field">
-            <label for="surname">Name</label>
-            <input id="surname" type="text" />
+            <label for="surname">Surname</label>
+            <input id="surname" type="text" placeholder="Dela Cruz" autocomplete="family-name" required aria-required="true" />
             <small>Surname</small>
           </div>
           <div class="field">
-            <label for="firstname" class="ghost-label">.</label>
-            <input id="firstname" type="text" />
+            <label for="firstname">Firstname</label>
+            <input id="firstname" type="text" placeholder="Juan" autocomplete="given-name" required aria-required="true" />
             <small>Firstname</small>
           </div>
           <div class="field">
-            <label for="middlename" class="ghost-label">.</label>
-            <input id="middlename" type="text" />
+            <label for="middlename">Middlename</label>
+            <input id="middlename" type="text" placeholder="Santos" autocomplete="additional-name" />
             <small>Middlename</small>
           </div>
         </div>
 
-        <div class="row three">
+        <div class="row three birth-row">
           <div class="field">
             <label for="dob">Date of Birth</label>
-            <input id="dob" type="date" />
+            <input id="dob" type="date" autocomplete="bday" required aria-required="true" />
           </div>
           <div class="field">
             <label for="age">Age</label>
-            <input id="age" type="number" min="0" />
+            <input id="age" type="number" min="0" placeholder="Auto" readonly aria-readonly="true" />
           </div>
           <div class="field">
             <label for="sex">Sex</label>
-            <select id="sex">
+            <select id="sex" required aria-required="true">
               <option value="" selected disabled>Select sex</option>
               <option>Male</option>
               <option>Female</option>
@@ -64,14 +92,14 @@
           </div>
         </div>
 
-        <div class="row two-thirds">
+        <div class="row two-thirds birth-civil-row">
           <div class="field">
             <label for="birthplace">Place of Birth</label>
             <input id="birthplace" type="text" />
           </div>
           <div class="field">
             <label for="civil-status">Civil Status</label>
-            <select id="civil-status">
+            <select id="civil-status" required aria-required="true">
               <option value="" selected disabled>Select civil status</option>
               <option>Single</option>
               <option>Separated</option>
@@ -81,15 +109,15 @@
           </div>
         </div>
 
-        <div class="row two">
+        <div class="row two address-row">
           <div class="field">
             <label for="address">Address</label>
-            <input id="address" type="text" />
+            <input id="address" type="text" placeholder="Bauan Batangas" autocomplete="street-address" required aria-required="true" />
             <small>House No. &amp; Street Name</small>
           </div>
           <div class="field">
-            <label for="barangay" class="ghost-label">.</label>
-            <input id="barangay" type="text" />
+            <label for="barangay">Barangay / District</label>
+            <input id="barangay" type="text" placeholder="Bauan Batangas" required aria-required="true" />
             <small>Barangay / District</small>
           </div>
         </div>
@@ -97,7 +125,7 @@
         <div class="row one">
           <div class="field">
             <label for="education">Educational Attainment</label>
-            <select id="education">
+            <select id="education" required aria-required="true">
               <option value="" selected disabled>Select educational attainment</option>
               <option>Elementary Level</option>
               <option>Elementary Graduate</option>
@@ -129,43 +157,43 @@
           </div>
         </div>
 
-        <div class="row five labels-top">
+        <div class="row five labels-top id-numbers-row">
           <div class="field">
             <label for="id-osca">ID Number</label>
             <input id="id-osca" type="text" />
             <small>OSCA</small>
           </div>
           <div class="field">
-            <label for="id-sss" class="ghost-label">.</label>
+            <label for="id-sss">SSS</label>
             <input id="id-sss" type="text" />
             <small>SSS</small>
           </div>
           <div class="field">
-            <label for="id-philhealth" class="ghost-label">.</label>
-            <input id="id-philhealth" type="text" />
+            <label for="id-philhealth">PHILHEALTH</label>
+            <input id="id-philhealth" type="text" inputmode="numeric" />
             <small>PHILHEALTH</small>
           </div>
           <div class="field">
-            <label for="id-gsis" class="ghost-label">.</label>
-            <input id="id-gsis" type="text" />
+            <label for="id-gsis">GSIS</label>
+            <input id="id-gsis" type="text" inputmode="numeric" />
             <small>GSIS</small>
           </div>
           <div class="field">
-            <label for="id-tin" class="ghost-label">.</label>
-            <input id="id-tin" type="text" />
+            <label for="id-tin">TIN</label>
+            <input id="id-tin" type="text" inputmode="numeric" />
             <small>TIN</small>
           </div>
         </div>
 
-        <div class="row one narrow">
+        <div class="row one narrow contact-row">
           <div class="field">
             <label for="contact-number">Contact Number</label>
-            <input id="contact-number" type="number" min="0" />
+            <input id="contact-number" type="tel" inputmode="numeric" pattern="09[0-9]{9}" maxlength="11" placeholder="09XX XXX XXXX" autocomplete="tel" required aria-required="true" />
           </div>
         </div>
       </section>
 
-      <section class="section-block">
+      <section class="section-block" id="family-composition">
         <h2>Family Composition</h2>
         <div class="table-wrap">
           <table>
@@ -208,7 +236,7 @@
         </div>
       </section>
 
-      <section class="section-block">
+      <section class="section-block" id="senior-citizens-association">
         <h2>Membership to Senior Citizens Association</h2>
         <div class="row one">
           <div class="field">
@@ -234,7 +262,7 @@
         </div>
       </section>
 
-      <section class="section-block">
+      <section class="section-block" id="personal-background">
         <h2>Personal Background</h2>
 
         <div class="row one">
@@ -425,7 +453,7 @@
         </div>
       </section>
 
-      <section class="section-block">
+      <section class="section-block" id="upload-files">
         <h2>Upload Files</h2>
 
         <div class="upload-list">
@@ -567,7 +595,7 @@
                 hidden
               >
                 <span class="face-verification-form-icon">
-                  ✓
+                  âœ“
                 </span>
 
                 <div>
@@ -631,7 +659,7 @@
                 class="camera-close"
                 aria-label="Close camera"
               >
-                ✕
+                âœ•
               </button>
 
             </div>
@@ -690,9 +718,10 @@
         </div>
       </section>
 
-      <section class="section-block">
+      <section class="section-block" id="data-consent">
         <h2>Confirmation to allow the Storage and Use of My Personal Data</h2>
 
+        <p class="privacy-legal-line">Under the Data Privacy Act of 2012 (RA 10173), your personal information is collected and used to process this senior citizen ID application.</p>
         <p class="consent-title">This is to certify that</p>
 
         <label class="checkbox-row"><input id="consent-1" type="checkbox" /> The information entered above is true and correct.</label>
@@ -724,14 +753,675 @@
           <button type="button" class="btn cancel" id="cancel-application">Cancel</button>
         </div>
       </section>
+      <div class="mobile-action-bar">
+        <div class="mobile-action-hint" role="status" aria-live="polite"><span class="material-symbols-outlined" aria-hidden="true">error</span><span>Complete the required fields to continue</span></div>
+        <div class="mobile-action-buttons">
+          <button class="mobile-back" type="button">Back</button>
+          <button class="mobile-next" type="button"><span class="mobile-next-label">Continue</span><small class="mobile-next-section">Family composition</small></button>
+        </div>
+      </div>
+      </div>
+      <div class="mobile-sheet-backdrop" hidden></div>
+      <section class="mobile-sections-sheet" id="mobile-sections-sheet" role="dialog" aria-modal="true" aria-labelledby="mobile-sheet-title" tabindex="-1" hidden>
+        <button class="mobile-sheet-handle" type="button" aria-label="Close sections sheet by swiping down or tapping"><span></span></button>
+        <header class="mobile-sheet-heading"><h2 id="mobile-sheet-title">Application sections</h2><span class="mobile-sheet-counter" aria-live="polite">1 of 6</span></header>
+        <div class="mobile-sheet-rows"></div>
+        <button class="mobile-sheet-continue" type="button">Continue editing</button>
+      </section>
     </main>
     </div>
     <script src="script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const card = document.querySelector(".application-form-card");
+        if (!card) return;
+        const requiredFieldIds = ["surname", "firstname", "dob", "sex", "civil-status", "address", "barangay", "education", "contact-number"];
+        const requiredConsentIds = ["consent-1", "consent-2", "consent-3", "consent-4", "consent-5"];
+        const requiredUploadIds = ["upload-valid-id-front", "upload-valid-id-back", "upload-latest-photo", "upload-birth-certificate", "upload-cedula", "upload-signature", "upload-verification"];
+        [...card.querySelectorAll("label")].forEach((label, index) => {
+          const control = label.control || label.querySelector("input, select, textarea");
+          if (!control) return;
+          if (!control.id) control.id = `form-control-${index + 1}`;
+          label.htmlFor = control.id;
+          if (control.required || control.getAttribute("aria-required") === "true") label.setAttribute("aria-required", "true");
+        });
+        requiredConsentIds.forEach(id => {
+          const field = document.getElementById(id);
+          if (field) field.required = true, field.setAttribute("aria-required", "true");
+        });
+        const pageParams = new URLSearchParams(window.location.search);
+        const isEditingApplication = Boolean(pageParams.get("id")) && ["edit", "request-edit"].includes(pageParams.get("mode"));
+        if (!isEditingApplication) {
+          requiredUploadIds.forEach(id => {
+            const field = document.getElementById(id);
+            if (field) {
+              field.required = id !== "upload-verification";
+              field.setAttribute("aria-required", "true");
+              card.querySelector(`label[for="${id}"]`)?.setAttribute("aria-required", "true");
+              if (id === "upload-verification") document.getElementById("open-face-camera")?.setAttribute("aria-required", "true");
+            }
+          });
+        }
+        requiredFieldIds.forEach(id => {
+          const field = document.getElementById(id);
+          if (!field) return;
+          field.required = true;
+          field.setAttribute("aria-required", "true");
+          const label = card.querySelector(`label[for="${id}"]`);
+          label?.setAttribute("aria-required", "true");
+          const wrapper = field.closest(".field");
+          let caption = wrapper?.querySelector("small");
+          if (!caption && wrapper) {
+            caption = document.createElement("small");
+            caption.hidden = true;
+            wrapper.append(caption);
+          }
+          if (caption) {
+            caption.id = `${id}-caption`;
+            caption.setAttribute("aria-live", "polite");
+            caption.dataset.originalText = caption.textContent.trim();
+          }
+        });
+        requiredConsentIds.forEach(id => {
+          const field = document.getElementById(id);
+          field?.closest("label")?.setAttribute("aria-required", "true");
+        });
+        const dobField = document.getElementById("dob");
+        const ageField = document.getElementById("age");
+        const contactField = document.getElementById("contact-number");
+        if (contactField) {
+          contactField.setAttribute("inputmode", "numeric");
+          contactField.setAttribute("pattern", "09[0-9]{9}");
+        }
+        const today = new Date();
+        const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+        if (dobField) dobField.max = localToday;
+        const updateAge = () => {
+          if (!dobField || !ageField) return;
+          const birthDate = new Date(`${dobField.value}T00:00:00`);
+          if (!dobField.value || Number.isNaN(birthDate.getTime()) || dobField.value > localToday) {
+            ageField.value = "";
+            return;
+          }
+          const currentDate = new Date();
+          let age = currentDate.getFullYear() - birthDate.getFullYear();
+          if (currentDate.getMonth() < birthDate.getMonth() || (currentDate.getMonth() === birthDate.getMonth() && currentDate.getDate() < birthDate.getDate())) age--;
+          ageField.value = String(age);
+        };
+        dobField?.addEventListener("input", updateAge);
+        dobField?.addEventListener("change", updateAge);
+        updateAge();
+        const draftKey = `osca-senior-id-draft-${new URLSearchParams(window.location.search).get("id") || "new"}`;
+        const draftControls = [...card.querySelectorAll("input, select, textarea")].filter(field =>
+          field.id && field.type !== "file" && field.type !== "button" && !requiredConsentIds.includes(field.id) && field.id !== "upload-verification"
+        );
+        const draftStatus = document.querySelector(".mobile-draft-status span:last-child");
+        let draftStatusTimer;
+        const updateDraftStatus = message => {
+          if (!draftStatus) return;
+          draftStatus.textContent = message;
+          const status = draftStatus.parentElement;
+          status?.classList.add("is-visible");
+          clearTimeout(draftStatusTimer);
+          draftStatusTimer = setTimeout(() => status?.classList.remove("is-visible"), message === "Draft saved" ? 2200 : 5000);
+        };
+        try {
+          const savedDraft = localStorage.getItem(draftKey);
+          if (savedDraft) {
+            const values = JSON.parse(savedDraft);
+            draftControls.forEach(field => {
+              if (!Object.prototype.hasOwnProperty.call(values, field.id)) return;
+              const savedValue = values[field.id];
+              if (!savedValue || typeof savedValue !== "object") return;
+              if (field.type === "checkbox" || field.type === "radio") field.checked = Boolean(savedValue.checked);
+              else field.value = savedValue.value ?? "";
+            });
+            updateAge();
+          }
+        } catch (error) {
+          console.error("Unable to restore the saved application draft.", error);
+          updateDraftStatus("Draft restore unavailable");
+        }
+        let draftSaveTimer;
+        const saveDraft = () => {
+          clearTimeout(draftSaveTimer);
+          draftSaveTimer = setTimeout(() => {
+            const values = Object.fromEntries(draftControls.map(field => [
+              field.id,
+              field.type === "checkbox" || field.type === "radio"
+                ? { checked: field.checked }
+                : { value: field.value.trim() }
+            ]));
+            try {
+              localStorage.setItem(draftKey, JSON.stringify(values));
+              updateDraftStatus("Draft saved");
+            } catch (error) {
+              console.error("Unable to save the application draft locally.", error);
+              updateDraftStatus("Draft could not be saved");
+            }
+          }, 250);
+        };
+        const getFieldLabel = field => {
+          const label = card.querySelector(`label[for="${field.id}"]`);
+          return (label?.textContent || field.id).replace(/\s+/g, " ").trim();
+        };
+        const clearInlineErrors = except => {
+          card.querySelectorAll(".field.has-error").forEach(wrapper => {
+            const field = wrapper.querySelector("input, select, textarea");
+            if (field === except) return;
+            const caption = wrapper.querySelector(".field-error");
+            if (caption) {
+              caption.textContent = caption.dataset.originalText || "";
+              caption.hidden = !caption.textContent;
+              caption.classList.remove("field-error");
+            }
+            wrapper.classList.remove("has-error");
+            field?.classList.remove("field-invalid", "is-valid");
+            field?.removeAttribute("aria-invalid");
+            field?.removeAttribute("aria-describedby");
+          });
+        };
+        const setFieldError = (field, message) => {
+          const wrapper = field.closest(".field");
+          if (!wrapper) return;
+          clearInlineErrors(field);
+          let caption = wrapper.querySelector("small");
+          if (!caption) {
+            caption = document.createElement("small");
+            wrapper.append(caption);
+            caption.dataset.originalText = "";
+          }
+          if (!caption.id) caption.id = `${field.id}-caption`;
+          caption.classList.add("field-error");
+          caption.textContent = message;
+          caption.hidden = false;
+          wrapper.classList.add("has-error");
+          field.classList.add("field-invalid");
+          field.classList.remove("is-valid");
+          field.setAttribute("aria-invalid", "true");
+          field.setAttribute("aria-describedby", caption.id);
+        };
+        const clearFieldError = field => {
+          const wrapper = field.closest(".field");
+          const caption = wrapper?.querySelector(".field-error");
+          if (caption) {
+            caption.textContent = caption.dataset.originalText || "";
+            caption.hidden = !caption.textContent;
+            caption.classList.remove("field-error");
+          }
+          wrapper?.classList.remove("has-error");
+          field.classList.remove("field-invalid");
+          field.removeAttribute("aria-invalid");
+          field.removeAttribute("aria-describedby");
+        };
+        const validateField = field => {
+          if (!requiredFieldIds.includes(field.id)) return true;
+          const value = String(field.value || "").trim();
+          let message = "";
+          if (!value) message = `Please enter ${getFieldLabel(field).toLowerCase()}.`;
+          else if (field.id === "dob" && value > localToday) message = "Date of birth cannot be in the future.";
+          else if (field.id === "contact-number" && !/^09\d{9}$/.test(value)) message = "Enter a Philippine mobile number (09XX XXX XXXX).";
+          else if (!field.checkValidity()) message = `Please enter a valid ${getFieldLabel(field).toLowerCase()}.`;
+          if (message) {
+            setFieldError(field, message);
+            field.classList.remove("is-valid");
+            return false;
+          }
+          clearFieldError(field);
+          field.classList.add("is-valid");
+          return true;
+        };
+        const nameFields = ["surname", "firstname", "middlename"].map(id => document.getElementById(id)).filter(Boolean);
+        const capitalizeName = value => value.trim().replace(/\s+/g, " ").toLowerCase().replace(/(^|[\s'-])([a-z])/g, (_, separator, letter) => separator + letter.toUpperCase());
+        card.addEventListener("focusout", event => {
+          const field = event.target;
+          if (!(field instanceof HTMLInputElement || field instanceof HTMLSelectElement || field instanceof HTMLTextAreaElement)) return;
+          if (field.type !== "file" && field.type !== "checkbox" && field.type !== "radio") field.value = String(field.value || "").trim();
+          if (nameFields.includes(field)) field.value = capitalizeName(field.value);
+          if (field.id === "dob") updateAge();
+          validateField(field);
+          saveDraft();
+        });
+        card.querySelectorAll("#id-philhealth, #id-gsis, #id-tin").forEach(field => {
+          field.addEventListener("input", () => { field.value = field.value.replace(/\D/g, ""); });
+          field.addEventListener("blur", () => {
+            const digits = field.value.replace(/\D/g, "");
+            const group = field.id === "id-philhealth" ? [2, 9] : field.id === "id-tin" ? [3, 3, 3] : [4, 4];
+            let offset = 0;
+            const chunks = group.map(length => {
+              const chunk = digits.slice(offset, offset + length);
+              offset += length;
+              return chunk;
+            }).filter(Boolean);
+            if (offset < digits.length) chunks.push(digits.slice(offset));
+            field.value = chunks.join("-");
+          });
+        });
+        const sections = [...card.querySelectorAll(":scope > .section-block")];
+        if (sections.length !== 6) return;
+
+        const background = sections[3];
+        const splitRow = [...background.children].findIndex(child =>
+          child.classList.contains("row") && child.textContent.toLowerCase().includes("areas specialization")
+        );
+        if (splitRow < 0) return;
+        const health = document.createElement("section");
+        health.className = "section-block";
+        health.id = "health-community";
+        const healthTitle = document.createElement("h2");
+        healthTitle.textContent = "Health & Community";
+        health.append(healthTitle);
+        const backgroundChildren = [...background.children];
+        backgroundChildren[0].textContent = "Income & Living";
+        backgroundChildren.slice(splitRow).forEach(child => health.append(child));
+        background.after(health);
+
+        const groups = [[sections[0]], [sections[1]], [sections[2]], [background], [health], [sections[4], sections[5]]];
+        const navLinks = [...document.querySelectorAll(".steps-nav a")];
+        const progressTrack = document.querySelector(".form-side-progress-track span");
+        const progressStep = document.querySelector(".form-side-step");
+        const progressCompleted = document.querySelector(".form-side-completed");
+        const sideProgress = document.querySelector(".form-side-progress");
+        const mobileStepSummary = document.querySelector(".mobile-step-summary");
+        const mobileStepbar = document.querySelector(".mobile-stepbar");
+        const mobileProgress = document.querySelector(".mobile-progress");
+        const mobileDraftStatus = document.querySelector(".mobile-draft-status span:last-child");
+        const sheet = document.querySelector(".mobile-sections-sheet");
+        const sheetBackdrop = document.querySelector(".mobile-sheet-backdrop");
+        const sheetRows = document.querySelector(".mobile-sheet-rows");
+        const sheetCounter = document.querySelector(".mobile-sheet-counter");
+        const sheetHandle = document.querySelector(".mobile-sheet-handle");
+        const mobileBack = document.querySelector(".mobile-back");
+        const mobileNext = document.querySelector(".mobile-next");
+        const mobileNextLabel = document.querySelector(".mobile-next-label");
+        const mobileNextSection = document.querySelector(".mobile-next-section");
+        const mobileActionHint = document.querySelector(".mobile-action-hint");
+        const mobileActionHintText = mobileActionHint?.querySelector("span:last-child");
+        const stepInfo = [
+          { title: "Personal details", short: "Personal details" },
+          { title: "Family composition", short: "Family" },
+          { title: "Association membership", short: "Association" },
+          { title: "Income and living", short: "Income" },
+          { title: "Health and community", short: "Health" },
+          { title: "Documents and consent", short: "Documents" }
+        ];
+        const completedSteps = new Set();
+        let currentStepIndex = 0;
+        let sheetPreviousBodyOverflow = "";
+        let sheetCloseTimer;
+        const progressSegments = stepInfo.map((step, index) => {
+          const segment = document.createElement("button");
+          segment.type = "button";
+          segment.className = "mobile-progress-segment";
+          segment.setAttribute("aria-label", `Go back to step ${index + 1}: ${step.title}`);
+          segment.disabled = true;
+          mobileProgress?.append(segment);
+          return segment;
+        });
+        const sheetStepButtons = stepInfo.map((step, index) => {
+          const row = document.createElement("button");
+          row.type = "button";
+          row.className = "mobile-sheet-row";
+          row.dataset.step = String(index);
+          row.innerHTML = `<span class="mobile-sheet-number"><span class="mobile-sheet-number-text">0${index + 1}</span><span class="material-symbols-outlined mobile-sheet-check" aria-hidden="true">check</span></span><span class="mobile-sheet-label">${step.title}</span><span class="mobile-sheet-meta"><span class="mobile-sheet-done">Done</span><span class="material-symbols-outlined mobile-sheet-lock" aria-hidden="true">lock</span></span>`;
+          sheetRows?.append(row);
+          return row;
+        });
+        const progressBars = document.createElement("div");
+        progressBars.className = "form-progress";
+        groups.forEach(() => progressBars.append(document.createElement("span")));
+        card.prepend(progressBars);
+        const firstSection = sections[0];
+        const steps = groups.map((group, index) => {
+          const panel = document.createElement("div");
+          panel.className = "form-step-panel";
+          panel.dataset.step = String(index);
+          card.insertBefore(panel, firstSection);
+          return panel;
+        });
+
+        groups.forEach((group, index) => group.forEach(section => steps[index].append(section)));
+
+        groups.forEach((group, index) => {
+          const panel = steps[index];
+          const header = document.createElement("div");
+          header.className = "form-step-heading";
+          header.innerHTML = `<span>STEP 0${index + 1}</span><span class="form-step-total">06</span><span class="form-required-legend"><i></i> Required fields</span>`;
+          panel.prepend(header);
+          const actions = document.createElement("div");
+          actions.className = "form-step-actions";
+          if (index > 0) {
+            const back = document.createElement("button");
+            back.type = "button";
+            back.className = "form-step-back";
+            back.textContent = "Back";
+            back.addEventListener("click", () => showStep(index - 1));
+            actions.append(back);
+          } else {
+            actions.insertAdjacentHTML("beforeend", '<span class="form-step-required">* Required to continue</span>');
+          }
+          if (index < groups.length - 1) {
+            const next = document.createElement("button");
+            next.type = "button";
+            next.className = "form-step-next";
+            next.innerHTML = 'Continue <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>';
+            next.addEventListener("click", () => advanceStep(index));
+            actions.append(next);
+          }
+          panel.append(actions);
+        });
+
+        function showStep(index, moveFocus = false) {
+          currentStepIndex = index;
+          steps.forEach((step, i) => {
+            step.hidden = i !== index;
+            step.setAttribute("aria-hidden", String(i !== index));
+          });
+          navLinks.forEach((link, linkIndex) => {
+            const section = document.querySelector(link.getAttribute("href"));
+            const active = groups[index].includes(section);
+            const isComplete = completedSteps.has(linkIndex) && !active;
+            const isLocked = linkIndex > index && !completedSteps.has(linkIndex);
+            link.classList.toggle("is-current", active);
+            link.classList.toggle("is-complete", isComplete);
+            link.classList.toggle("is-locked", isLocked);
+            if (active) link.setAttribute("aria-current", "step");
+            else link.removeAttribute("aria-current");
+            link.setAttribute("aria-disabled", String(isLocked));
+            link.tabIndex = isLocked ? -1 : 0;
+          });
+          if (progressStep) progressStep.textContent = String(index + 1);
+          if (progressCompleted) progressCompleted.textContent = `${Math.round(((index + 1) / groups.length) * 100)}%`;
+          if (progressTrack) progressTrack.style.width = `${((index + 1) / groups.length) * 100}%`;
+          progressBars.querySelectorAll("span").forEach((bar, i) => bar.classList.toggle("is-complete", i <= index));
+          if (mobileStepSummary) {
+            mobileStepSummary.textContent = stepInfo[index].title;
+          }
+          if (sheetCounter) sheetCounter.textContent = `${index + 1} of ${groups.length}`;
+          progressSegments.forEach((segment, segmentIndex) => {
+            const isComplete = completedSteps.has(segmentIndex);
+            const isCurrent = segmentIndex === index;
+            segment.classList.toggle("is-complete", isComplete && !isCurrent);
+            segment.classList.toggle("is-current", isCurrent);
+            segment.disabled = !isComplete || isCurrent;
+            segment.setAttribute("aria-current", isCurrent ? "step" : "false");
+          });
+          sheetStepButtons.forEach((row, rowIndex) => {
+            const isComplete = completedSteps.has(rowIndex);
+            const isCurrent = rowIndex === index;
+            const isReachable = isComplete || isCurrent;
+            row.classList.toggle("is-complete", isComplete && !isCurrent);
+            row.classList.toggle("is-current", isCurrent);
+            row.classList.toggle("is-locked", !isReachable);
+            row.disabled = !isReachable;
+            row.setAttribute("aria-disabled", String(!isReachable));
+            row.setAttribute("aria-current", isCurrent ? "step" : "false");
+            row.querySelector(".mobile-sheet-done").hidden = !isComplete || isCurrent;
+            row.querySelector(".mobile-sheet-lock").hidden = isReachable;
+          });
+          if (mobileBack) mobileBack.disabled = index === 0;
+          if (mobileNext) {
+            const nextTitle = stepInfo[index + 1]?.short;
+            if (mobileNextLabel) mobileNextLabel.textContent = nextTitle ? "Continue" : "Review and submit";
+            if (mobileNextSection) {
+              mobileNextSection.textContent = nextTitle ? stepInfo[index + 1].title : "";
+              mobileNextSection.hidden = !nextTitle;
+            }
+          }
+          updateActionHint();
+          if (moveFocus) {
+            card.scrollIntoView({ behavior: "smooth", block: "start" });
+            const heading = steps[index].querySelector("h2");
+            if (heading) heading.setAttribute("tabindex", "-1"), heading.focus({ preventScroll: true });
+          }
+        }
+
+        navLinks.forEach(link => link.addEventListener("click", event => {
+          const section = document.querySelector(link.getAttribute("href"));
+          const target = groups.findIndex(group => group.includes(section));
+          if (target >= 0) {
+            event.preventDefault();
+            if (target === currentStepIndex) return;
+            if (completedSteps.has(target)) showStep(target, true);
+          }
+        }));
+
+        function getStepValidationIssue(index) {
+          if (index === 0) {
+            const required = [
+              ["surname", "Surname"], ["firstname", "First name"], ["dob", "Date of birth"],
+              ["sex", "Sex"], ["civil-status", "Civil status"], ["address", "House No. & Street Name"],
+              ["barangay", "Barangay / District"], ["education", "Educational attainment"],
+              ["contact-number", "Contact number"]
+            ];
+            for (const [id, label] of required) {
+              const field = document.getElementById(id);
+              if (field && !String(field.value || "").trim()) return { field, label };
+            }
+            const age = document.getElementById("age");
+            if (age?.value && !age.checkValidity()) return { field: age, label: "Age" };
+            const contact = document.getElementById("contact-number");
+            if (contact?.value && !/^09\d{9}$/.test(contact.value.trim())) return { field: contact, label: "Contact number" };
+          }
+          if (index === 5) {
+            const consent = ["consent-1", "consent-2", "consent-3", "consent-4", "consent-5"]
+              .map(id => document.getElementById(id)).find(field => field && !field.checked);
+            if (consent) return { field: consent, label: "Required consent" };
+            const params = new URLSearchParams(window.location.search);
+            const editing = Boolean(params.get("id")) && ["edit", "request-edit"].includes(params.get("mode"));
+            if (!editing) {
+              const upload = ["upload-valid-id-front", "upload-valid-id-back", "upload-latest-photo", "upload-birth-certificate", "upload-cedula", "upload-signature"]
+                .map(id => document.getElementById(id)).find(field => field && (!field.files || !field.files.length));
+              if (upload) return { field: upload, label: "Required document" };
+            }
+            const verification = document.getElementById("upload-verification");
+            if (verification?.dataset.faceVerified !== "true") return { field: document.getElementById("open-face-camera") || verification, label: "Face verification" };
+          }
+          const fields = groups[index].flatMap(section => [...section.querySelectorAll("input, select, textarea")]);
+          const invalidField = fields.find(field => field.willValidate && !field.checkValidity());
+          return invalidField ? { field: invalidField, label: "Required field" } : null;
+        }
+        function updateActionHint() {
+          if (!mobileActionHint || !mobileActionHintText) return;
+          const issue = getStepValidationIssue(currentStepIndex);
+          const hasCompletionChecks = currentStepIndex === 0 || currentStepIndex === groups.length - 1;
+          const isComplete = !issue && hasCompletionChecks;
+          mobileActionHint.classList.toggle("is-valid", isComplete);
+          mobileActionHint.classList.toggle("is-neutral", !issue && !hasCompletionChecks);
+          const icon = mobileActionHint.querySelector(".material-symbols-outlined");
+          if (icon) icon.textContent = issue ? "error" : isComplete ? "check_circle" : "info";
+          mobileActionHintText.textContent = issue
+            ? "Complete or correct the fields to continue"
+            : isComplete
+              ? currentStepIndex === groups.length - 1
+                ? "All required information is complete"
+                : "Required personal details are complete"
+              : "Optional section - add details if applicable";
+        }
+        function validateStep(index) {
+          const issue = getStepValidationIssue(index);
+          if (!issue) return true;
+          const field = issue.field;
+          field.classList.add("field-invalid");
+          field.setAttribute("aria-invalid", "true");
+          if (requiredFieldIds.includes(field.id)) validateField(field);
+          else if (field.closest(".field")) setFieldError(field, `Please enter a valid ${issue.label.toLowerCase()}.`);
+          let focusTarget = field;
+          let scrollTarget = field;
+          if (field.type === "file" || field.id === "open-face-camera") {
+            const uploadId = field.id === "open-face-camera" ? "upload-verification" : field.id;
+            const uploadItem = field.closest(".upload-item");
+            const uploadBox = uploadItem?.querySelector(".upload-box");
+            uploadBox?.classList.add("is-invalid");
+            const uploadCaption = uploadBox?.querySelector(".upload-file-name");
+            if (uploadCaption) {
+              uploadCaption.id = `${uploadId}-error`;
+              uploadCaption.classList.add("field-error");
+              uploadCaption.textContent = uploadId === "upload-verification"
+                ? "Complete face verification before continuing."
+                : "Please upload the required document.";
+              field.setAttribute("aria-describedby", uploadCaption.id);
+            }
+            if (uploadBox) focusTarget = uploadBox;
+            if (uploadItem) scrollTarget = uploadItem;
+          } else if (field.type === "checkbox") {
+            const checkboxRow = field.closest(".checkbox-row");
+            checkboxRow?.classList.add("is-invalid");
+            const consentError = document.getElementById("consent-error");
+            if (consentError) {
+              consentError.textContent = "Please confirm all required statements before continuing.";
+              consentError.hidden = false;
+              field.setAttribute("aria-describedby", consentError.id);
+            }
+            if (checkboxRow) scrollTarget = checkboxRow;
+          }
+          updateActionHint();
+          scrollTarget.scrollIntoView({ behavior: "smooth", block: "center" });
+          focusTarget.focus({ preventScroll: true });
+          return false;
+        }
+        function advanceStep(index) {
+          if (!validateStep(index)) return;
+          completedSteps.add(index);
+          if (index < groups.length - 1) showStep(index + 1);
+          else document.querySelector(".btn.submit")?.click();
+        }
+
+        function openSectionsSheet() {
+          if (!sheet || !sheetBackdrop) return;
+          clearTimeout(sheetCloseTimer);
+          sheet.hidden = false;
+          sheetBackdrop.hidden = false;
+          sheet.setAttribute("aria-hidden", "false");
+          sheetPreviousBodyOverflow = document.body.style.overflow;
+          document.body.style.overflow = "hidden";
+          mobileStepbar?.setAttribute("aria-expanded", "true");
+          requestAnimationFrame(() => sheet.classList.add("is-open"));
+          sheetHandle?.focus();
+        }
+        function closeSectionsSheet(restoreFocus = true) {
+          if (!sheet || sheet.hidden) return;
+          sheet.classList.remove("is-open");
+          sheet.setAttribute("aria-hidden", "true");
+          mobileStepbar?.setAttribute("aria-expanded", "false");
+          document.body.style.overflow = sheetPreviousBodyOverflow;
+          sheetCloseTimer = setTimeout(() => {
+            sheet.hidden = true;
+            sheetBackdrop.hidden = true;
+          }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 250);
+          if (restoreFocus) mobileStepbar?.focus();
+        }
+        mobileStepbar?.addEventListener("click", openSectionsSheet);
+        sheetBackdrop?.addEventListener("click", () => closeSectionsSheet());
+        document.querySelector(".mobile-sheet-continue")?.addEventListener("click", () => closeSectionsSheet());
+        sheetHandle?.addEventListener("click", () => closeSectionsSheet());
+        let handleTouchStartY = null;
+        sheetHandle?.addEventListener("pointerdown", event => {
+          handleTouchStartY = event.clientY;
+          sheetHandle.setPointerCapture(event.pointerId);
+        });
+        sheetHandle?.addEventListener("pointerup", event => {
+          if (handleTouchStartY !== null && event.clientY - handleTouchStartY > 45) closeSectionsSheet();
+          handleTouchStartY = null;
+        });
+        sheetStepButtons.forEach((row, index) => row.addEventListener("click", () => {
+          if (index === currentStepIndex) return closeSectionsSheet();
+          if (completedSteps.has(index)) {
+            showStep(index, true);
+            closeSectionsSheet();
+          }
+        }));
+        progressSegments.forEach((segment, index) => segment.addEventListener("click", () => {
+          if (!completedSteps.has(index)) return;
+          showStep(index, true);
+        }));
+        mobileBack?.addEventListener("click", () => { if (currentStepIndex > 0) showStep(currentStepIndex - 1); });
+        mobileNext?.addEventListener("click", () => advanceStep(currentStepIndex));
+        document.addEventListener("application:draft-saved", () => {
+          if (mobileDraftStatus) mobileDraftStatus.textContent = "Draft saved";
+        });
+        const refreshCompletedStep = event => {
+          const field = event.target;
+          if (field.type === "file" && field.id !== "upload-verification" && field.files?.length) {
+            field.closest(".upload-item")?.querySelector(".upload-box")?.classList.remove("is-invalid");
+            field.removeAttribute("aria-invalid");
+            field.removeAttribute("aria-describedby");
+            field.closest(".upload-item")?.querySelector(".upload-file-name")?.classList.remove("field-error");
+          }
+          if (field.type === "checkbox" && requiredConsentIds.includes(field.id)) {
+            field.closest(".checkbox-row")?.classList.remove("is-invalid");
+            field.removeAttribute("aria-invalid");
+            field.removeAttribute("aria-describedby");
+            if (requiredConsentIds.every(id => document.getElementById(id)?.checked)) {
+              const consentError = document.getElementById("consent-error");
+              if (consentError) consentError.hidden = true;
+              requiredConsentIds.forEach(id => document.getElementById(id)?.closest(".checkbox-row")?.classList.remove("is-invalid"));
+            }
+          }
+          const stepIndex = steps.findIndex(step => step.contains(event.target));
+          if (stepIndex >= 0 && completedSteps.has(stepIndex) && !validateStep(stepIndex, false)) {
+            completedSteps.delete(stepIndex);
+            showStep(currentStepIndex);
+          } else updateActionHint();
+        };
+        card.addEventListener("input", () => {
+          updateActionHint();
+          saveDraft();
+        });
+        card.addEventListener("change", event => {
+          refreshCompletedStep(event);
+          saveDraft();
+        });
+        const verificationField = document.getElementById("upload-verification");
+        if (verificationField && "MutationObserver" in window) {
+          new MutationObserver(() => {
+            if (verificationField.dataset.faceVerified === "true") {
+              document.getElementById("open-face-camera")?.classList.remove("field-invalid");
+              document.getElementById("open-face-camera")?.removeAttribute("aria-invalid");
+              document.getElementById("open-face-camera")?.removeAttribute("aria-describedby");
+              const caption = document.querySelector("#open-face-camera .upload-file-name");
+              if (caption?.classList.contains("field-error")) {
+                caption.classList.remove("field-error");
+                caption.textContent = "Tap to open camera";
+              }
+            }
+            updateActionHint();
+          }).observe(verificationField, { attributes: true, attributeFilter: ["data-face-verified"] });
+        }
+        document.addEventListener("keydown", event => {
+          if (sheet?.hidden) return;
+          if (event.key === "Escape") {
+            event.preventDefault();
+            closeSectionsSheet();
+            return;
+          }
+          if (event.key !== "Tab") return;
+          const focusable = [...sheet.querySelectorAll("button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])")].filter(element => !element.hidden);
+          if (!focusable.length) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        });
+        const mobileActions = document.querySelector(".mobile-action-bar");
+        if (mobileActions && "IntersectionObserver" in window) {
+          const mobileActionObserver = new IntersectionObserver(([entry]) => {
+            const isMobile = window.matchMedia("(max-width: 900px)").matches;
+            document.body.classList.toggle(
+              "mobile-actions-visible",
+              isMobile && entry.isIntersecting
+            );
+          }, { threshold: 0.01 });
+          mobileActionObserver.observe(mobileActions);
+        }
+        showStep(0);
+      });
+    </script>
     <div id="file-preview-modal" class="file-preview-modal" hidden aria-hidden="true">
       <div class="file-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="file-preview-title">
         <div class="file-preview-head">
           <h3 id="file-preview-title">File Preview</h3>
-          <button id="file-preview-close" class="camera-close" aria-label="Close preview">✕</button>
+          <button id="file-preview-close" class="camera-close" aria-label="Close preview">âœ•</button>
         </div>
         <div class="file-preview-body">
           <img id="file-preview-image" alt="Preview image" hidden />
@@ -744,7 +1434,7 @@
     <div id="success-notification-overlay" class="notification-overlay" hidden>
       <div id="success-notification" class="notification-card" role="status" aria-live="polite">
         <div class="notification-body">
-          <div id="notification-icon" class="notification-icon">✔</div>
+          <div id="notification-icon" class="notification-icon">âœ”</div>
           <div>
             <strong id="notification-title" class="notification-title">Submission Successful</strong>
             <p id="notification-message">Your application has been submitted successfully.</p>
@@ -766,7 +1456,7 @@
         <div class="notification-body">
 
           <div class="notification-icon notification-icon-error">
-            ⚠
+            âš 
           </div>
 
           <div>

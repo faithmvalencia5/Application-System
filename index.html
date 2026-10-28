@@ -16,59 +16,117 @@
   <header id="mainHeader" class="fixed-header bg-white shadow-md">
     <nav class="flex justify-between items-center px-4 md:px-8 py-3 md:py-4 max-w-7xl mx-auto w-full">
       <div class="flex items-center gap-3">
-        <span class="text-xl md:text-2xl font-black text-[#001f78] font-headline tracking-tighter">OSCA Bauan</span>
+        <img class="home-brand-emblem" src="OSCA Bauan Logo.jpg" alt="OSCA Bauan Logo">
+        <span class="home-brand-name">OSCA <span>Bauan</span></span>
       </div>
       
       <!-- Desktop Navigation -->
       <div class="hidden md:flex items-center space-x-6 lg:space-x-8">
         <a href="#home" class="nav-link text-slate-700 hover:text-[#001f78] font-headline font-bold text-base lg:text-lg">Home</a>
         <a href="#about" class="nav-link text-slate-700 hover:text-[#001f78] font-headline font-bold text-base lg:text-lg">About</a>
+        <a href="#stories" class="nav-link text-slate-700 hover:text-[#001f78] font-headline font-bold text-base lg:text-lg">Stories</a>
         <a href="#contact" class="nav-link text-slate-700 hover:text-[#001f78] font-headline font-bold text-base lg:text-lg">Contact</a>
+        <a href="trackstatus.html" class="nav-link text-slate-700 hover:text-[#001f78] font-headline font-bold text-base lg:text-lg">Track Status</a>
+        <a href="register-disclaimer.html" class="home-header-cta">Apply Now <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
       </div>
       
       <!-- Mobile Menu Button -->
-      <button id="hamburgerBtn" class="md:hidden p-2 text-primary hover:bg-gray-100 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40 z-50 relative" aria-label="Open navigation menu">
-        <span class="material-symbols-outlined text-3xl">menu</span>
+      <button id="hamburgerBtn" class="md:hidden p-2 text-primary hover:bg-gray-100 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40 z-50 relative" type="button" aria-label="Open navigation menu" aria-controls="mobileMenu" aria-expanded="false">
+        <span class="material-symbols-outlined text-3xl" aria-hidden="true">menu</span>
       </button>
     </nav>
   </header>
   
   <!-- Mobile Menu Overlay -->
-  <div id="menuOverlay" class="menu-overlay"></div>
+  <button id="menuOverlay" class="menu-overlay" type="button" aria-label="Close navigation menu" aria-hidden="true" tabindex="-1"></button>
   
-  <!-- Mobile Navigation Drawer - Fully visible -->
-  <div id="mobileMenu" class="mobile-menu">
-    <div class="flex justify-between items-center pb-6 mb-4 border-b border-gray-200">
-      <span class="text-2xl font-black text-primary font-headline">OSCA Bauan</span>
-      <button id="closeMenuBtn" class="p-2 rounded-full hover:bg-gray-100 transition-colors" aria-label="Close menu">
-        <span class="material-symbols-outlined text-gray-700 text-2xl">close</span>
+  <!-- Mobile Navigation Drawer -->
+  <aside id="mobileMenu" class="mobile-menu" role="dialog" aria-label="OSCA Bauan mobile menu" aria-modal="true" aria-hidden="true" inert>
+    <div class="mobile-menu-header">
+      <div class="mobile-menu-brand">
+        <img src="OSCA Bauan Logo.jpg" alt="" aria-hidden="true">
+        <span>OSCA Bauan</span>
+      </div>
+      <button id="closeMenuBtn" class="mobile-menu-close" type="button" aria-label="Close menu">
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
       </button>
     </div>
-    
-    <div class="flex flex-col gap-2 mt-2">
-      <a href="#home" class="mobile-nav-link">
-        <span class="material-symbols-outlined text-primary text-2xl">home</span>
+
+    <div class="mobile-menu-greeting">
+      <p>Mabuhay!</p>
+      <span>How can we help you today?</span>
+    </div>
+
+    <div class="mobile-menu-actions" aria-label="Quick actions">
+      <a href="register-disclaimer.html" class="mobile-menu-action mobile-menu-action-primary">
+        <span class="mobile-menu-action-icon mobile-menu-action-icon-primary">
+          <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+        </span>
+        <span class="mobile-menu-action-copy">
+          <strong>Start an application</strong>
+          <span>Apply for your OSCA ID</span>
+        </span>
+        <span class="material-symbols-outlined mobile-menu-chevron" aria-hidden="true">chevron_right</span>
+      </a>
+      <a href="trackstatus.html" class="mobile-menu-action mobile-menu-action-secondary">
+        <span class="mobile-menu-action-icon mobile-menu-action-icon-secondary">
+          <span class="material-symbols-outlined" aria-hidden="true">search</span>
+        </span>
+        <span class="mobile-menu-action-copy">
+          <strong>Track application status</strong>
+          <span>Check where your application is</span>
+        </span>
+        <span class="material-symbols-outlined mobile-menu-chevron" aria-hidden="true">chevron_right</span>
+      </a>
+    </div>
+
+    <nav class="mobile-menu-nav" aria-label="Main pages">
+      <a href="#home" class="mobile-nav-link" aria-current="page">
+        <span class="material-symbols-outlined" aria-hidden="true">home</span>
         <span>Home</span>
+        <span class="mobile-nav-current-dot" aria-hidden="true"></span>
       </a>
       <a href="#about" class="mobile-nav-link">
-        <span class="material-symbols-outlined text-primary text-2xl">info</span>
+        <span class="material-symbols-outlined" aria-hidden="true">info</span>
         <span>About</span>
       </a>
+      <a href="#stories" class="mobile-nav-link">
+        <span class="material-symbols-outlined" aria-hidden="true">photo_library</span>
+        <span>Stories</span>
+      </a>
       <a href="#contact" class="mobile-nav-link">
-        <span class="material-symbols-outlined text-primary text-2xl">contact_support</span>
+        <span class="material-symbols-outlined" aria-hidden="true">contact_support</span>
         <span>Contact</span>
       </a>
-    </div>
-    
-    <div class="mt-auto pt-8 mt-8 border-t border-gray-100">
-      <div class="text-xs text-gray-500 space-y-2">
-        <p>📍 Ground Floor, Municipal Hall</p>
-        <p>📞 432-332-723 / +63 9295517826</p>
-        <p>✉️ oscabauan@gmail.com</p>
-        <p class="pt-2 text-center">© 2024 OSCA Bauan</p>
+    </nav>
+
+    <section class="mobile-menu-help" aria-labelledby="mobileMenuHelpTitle">
+      <h2 id="mobileMenuHelpTitle">NEED HELP?</h2>
+      <div class="mobile-menu-help-actions">
+        <a class="mobile-menu-help-button" href="tel:432332723">
+          <span class="material-symbols-outlined" aria-hidden="true">call</span>
+          <span>Call</span>
+        </a>
+        <a class="mobile-menu-help-button" href="https://m.me/61585151669657" target="_blank" rel="noopener noreferrer">
+          <span class="material-symbols-outlined" aria-hidden="true">chat</span>
+          <span>Message</span>
+        </a>
+        <a class="mobile-menu-help-button mobile-menu-help-directions" href="https://www.google.com/maps/dir/?api=1&amp;destination=13.7925,121.0076" target="_blank" rel="noopener noreferrer">
+          <span class="material-symbols-outlined" aria-hidden="true">directions</span>
+          <span>Directions</span>
+        </a>
       </div>
+    </section>
+
+    <div class="mobile-menu-text-size">
+      <span id="mobileMenuTextSizeLabel">Text size</span>
+      <div class="mobile-menu-text-size-controls">
+        <button type="button" class="mobile-menu-text-size-button" data-text-size="decrease" aria-label="Decrease text size">A-</button>
+        <button type="button" class="mobile-menu-text-size-button" data-text-size="increase" aria-label="Increase text size">A+</button>
+      </div>
+      <span id="mobileMenuTextSizeValue" class="mobile-menu-text-size-value" aria-live="polite"></span>
     </div>
-  </div>
+  </aside>
   
   <main>
     <!-- Hero Section - FIXED: No image cropping, fully responsive -->
@@ -76,79 +134,114 @@
       <div class="hero-image-container">
         <picture>
           <!-- Mobile optimized -->
-          <source media="(max-width: 768px)" srcset="https://lh3.googleusercontent.com/aida-public/AB6AXuBiCWwdTh4USRnyNEipbMJUZxeVP8y-hdy-BvvwOwrINNOF_rlX2VwZ_iA253b6qhhq1U1Z5pXltr6tBOOzjJtB4TKNHaRkZeqluOTDEdfGFQ2Vf0BwOKyOt-d9zWil2okQylcm_c3Y88WGomOdlQ9FkLAg5RAcflqozJdhvzrdq69qu93WNkrm6PC-jTnGLDCpgTxypWjRi5mFcGRSHbiJRl0og06aWiB8Zi9FXIaC9HtBz6Ox3soe-1u881A7M2qqvJT9VqZB3D7B">
+          <source media="(max-width: 768px)" srcset="https://images.pexels.com/photos/30043809/pexels-photo-30043809.jpeg?auto=compress&amp;cs=tinysrgb&amp;fit=crop&amp;h=1500&amp;w=2400">
           <!-- Desktop: ensure full visibility, no cut-off -->
-          <img class="hero-image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiCWwdTh4USRnyNEipbMJUZxeVP8y-hdy-BvvwOwrINNOF_rlX2VwZ_iA253b6qhhq1U1Z5pXltr6tBOOzjJtB4TKNHaRkZeqluOTDEdfGFQ2Vf0BwOKyOt-d9zWil2okQylcm_c3Y88WGomOdlQ9FkLAg5RAcflqozJdhvzrdq69qu93WNkrm6PC-jTnGLDCpgTxypWjRi5mFcGRSHbiJRl0og06aWiB8Zi9FXIaC9HtBz6Ox3soe-1u881A7M2qqvJT9VqZB3D7B" alt="Senior citizens community celebration in Bauan">
+          <img class="hero-image" src="https://images.pexels.com/photos/30043809/pexels-photo-30043809.jpeg?auto=compress&amp;cs=tinysrgb&amp;fit=crop&amp;h=1500&amp;w=2400" alt="Senior citizens community celebration in Bauan">
         </picture>
         <div class="absolute inset-0 bg-gradient-to-r from-primary/85 via-primary/40 to-transparent"></div>
       </div>
       <div class="relative z-10 max-w-7xl mx-auto px-6 md:px-8 w-full">
         <div class="max-w-2xl">
-          <span class="inline-block bg-secondary text-on-secondary px-4 py-1 rounded-full text-sm font-bold tracking-widest mb-6 font-headline">LUNSOD NG BAUAN</span>
+          <span class="inline-block bg-secondary text-on-secondary px-4 py-1 rounded-full text-sm font-bold tracking-widest mb-6 font-headline">LUNGSOD NG BAUAN</span>
           <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-on-primary font-headline leading-[1.05] tracking-tight mb-6 md:mb-8">
-            Pusong Para sa <span class="text-secondary-fixed-dim">Seniors</span>
+            Care that honors<br><span class="text-secondary-fixed-dim">a lifetime.</span>
           </h1>
           <p class="text-base md:text-xl lg:text-2xl text-on-primary/90 font-body leading-relaxed mb-8 md:mb-10 max-w-xl">
             Dedicated to honoring and serving the vibrant senior citizen community of Bauan with dignity, respect, and accessible care.
           </p>
           <div class="flex flex-wrap gap-4">
-            <a href="register-disclaimer.html" class="bg-secondary text-on-secondary px-6 md:px-8 py-3 md:py-4 rounded-xl font-headline font-extrabold text-base md:text-lg flex items-center gap-3 shadow-xl hover:scale-[1.02] transition-all">Register Now <span class="material-symbols-outlined">arrow_forward</span></a>
-            <a href="trackstatus.html" class="inline-flex items-center justify-center bg-white/10 backdrop-blur-md text-on-primary border border-white/20 px-6 md:px-8 py-3 md:py-4 rounded-xl font-headline font-extrabold text-base md:text-lg hover:bg-white/20 transition-all">Track Status</a>
+            <a href="register-disclaimer.html" class="bg-secondary text-on-secondary px-6 md:px-8 py-3 md:py-4 rounded-xl font-headline font-extrabold text-base md:text-lg flex items-center gap-3 shadow-xl hover:scale-[1.02] transition-all">Start an application <span class="material-symbols-outlined">arrow_forward</span></a>
+            <a href="trackstatus.html" class="hero-track-button inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 rounded-xl font-headline font-extrabold text-base md:text-lg transition-all">Track Status</a>
           </div>
         </div>
       </div>
     </section>
     
     <!-- About Section -->
-    <section id="about" class="py-16 md:py-24 px-6 md:px-8 max-w-7xl mx-auto scroll-mt-24">
-      <div class="about-panel rounded-xl p-6 md:p-12 flex flex-col lg:flex-row items-center gap-10 editorial-shadow">
-        <div class="lg:w-1/2">
-          <h2 class="text-3xl md:text-4xl font-black text-primary font-headline mb-6">About OSCA Bauan</h2>
-          <p class="text-on-surface-variant text-base md:text-xl mb-6">The Office of Senior Citizens Affairs (OSCA) Bauan is committed to promoting the welfare, rights, and empowerment of senior citizens. Established under the Expanded Senior Citizens Act, we provide accessible services, social pension distribution, health programs, and community engagement initiatives.</p>
-          <p class="text-on-surface-variant text-base">We honor the wisdom and contributions of our elderly population, ensuring they live with dignity, security, and opportunities for active participation.</p>
-          <div class="mt-8"><a class="inline-flex bg-secondary text-on-secondary px-6 py-3 rounded-xl font-bold" href="https://www.facebook.com/p/BAUAN-OSCA-61585151669657/">Learn More</a></div>
+    <section id="about" class="about-section scroll-mt-24">
+      <div class="about-layout">
+        <div class="about-heading"><p class="about-kicker">A COMMUNITY THAT CARES</p><h2>Good care begins with being seen.</h2></div>
+        <div class="about-copy">
+          <h3>The Office of Senior Citizens Affairs (OSCA) Bauan is committed to promoting the welfare, rights, and empowerment of senior citizens.</h3>
+          <p>Established under the Expanded Senior Citizens Act, we provide accessible services, social pension distribution, health programs, and community engagement initiatives.</p>
+          <p>We honor the wisdom and contributions of our elderly population, ensuring they live with dignity, security, and opportunities for active participation.</p>
+          <a class="about-learn-link" href="https://www.facebook.com/p/BAUAN-OSCA-61585151669657/">Learn More <span aria-hidden="true">↗</span></a>
+          <div class="about-logo-inline"><img src="OSCA Bauan Logo.jpg" alt="OSCA Bauan Logo"><span>Since 1993</span></div>
         </div>
-        <div class="lg:w-1/2 flex justify-center"><div class="about-logo-shell relative w-full max-w-sm aspect-square bg-white/5 rounded-xl flex items-center justify-center p-8"><div class="w-full h-full border-4 border-dashed border-white/20 rounded-xl flex items-center justify-center"><img class="about-logo-main" src="OSCA Bauan Logo.jpg" alt="OSCA Bauan Logo"></div><div class="absolute -bottom-4 bg-secondary text-on-secondary px-5 py-2 rounded-lg font-bold shadow-xl text-sm">Since 1993</div></div></div>
       </div>
+      <div class="about-values" aria-label="Our values"><span><i></i>Dignity, always</span><span><i></i>Support within reach</span><span><i></i>Community, together</span></div>
     </section>
 
     <!-- Benefits Section -->
-    <section id="benefits" class="py-16 md:py-24 px-6 md:px-8 max-w-7xl mx-auto scroll-mt-24">
-      <div class="rounded-xl p-6 md:p-12 bg-white shadow-xl">
-        <h2 class="text-3xl md:text-4xl font-black text-primary font-headline mb-6">Benefits for Senior Citizens in Bauan, Batangas</h2>
-        <p class="text-on-surface-variant text-base md:text-lg mb-8">OSCA Bauan supports senior citizens through programs and services aligned with national law and tailored to local needs. These benefits include both cash assistance and community-based support through the municipal senior citizen office.</p>
-        <div class="grid gap-6 md:grid-cols-2">
-          <article class="rounded-3xl border border-slate-200 p-6 bg-slate-50">
-            <h3 class="text-xl font-bold text-primary mb-3">Social Pension</h3>
-            <p class="text-on-surface-variant text-sm md:text-base">Qualified senior citizens receive monthly cash assistance under the Social Pension Program. OSCA Bauan helps local elders claim their stipend and ensures timely disbursement from DSWD.</p>
-          </article>
-          <article class="rounded-3xl border border-slate-200 p-6 bg-slate-50">
-            <h3 class="text-xl font-bold text-primary mb-3">Health and Welfare Services</h3>
-            <p class="text-on-surface-variant text-sm md:text-base">Seniors in Bauan gain access to medical missions, free checkups, and referral support for hospital care through coordinated barangay and municipal health programs.</p>
-          </article>
-          <article class="rounded-3xl border border-slate-200 p-6 bg-slate-50">
-            <h3 class="text-xl font-bold text-primary mb-3">Educational and Livelihood Activities</h3>
-            <p class="text-on-surface-variant text-sm md:text-base">OSCA offers seminars, livelihood workshops, and skills training designed for elderly residents so they can stay active and connected in the community.</p>
-          </article>
-          <article class="rounded-3xl border border-slate-200 p-6 bg-slate-50">
-            <h3 class="text-xl font-bold text-primary mb-3">Senior Citizen Discounts</h3>
-            <p class="text-on-surface-variant text-sm md:text-base">Senior citizens are entitled to local and national discounts on medicine, transportation, and other essential services when they present their valid OSCA ID.</p>
-          </article>
+    <section id="benefits" class="benefits-section scroll-mt-24">
+      <div class="benefits-inner">
+        <div class="benefits-heading"><div><p class="benefits-kicker">SENIOR CITIZEN SUPPORT</p><h2>Benefits for Senior Citizens in Bauan, Batangas</h2></div><p class="benefits-intro">OSCA Bauan supports senior citizens through programs and services aligned with national law and tailored to local needs. These benefits include both cash assistance and community-based support through the municipal senior citizen office.</p></div>
+        <div class="benefit-list">
+          <article class="benefit-row"><span class="benefit-number">01</span><span class="benefit-icon material-symbols-outlined">verified_user</span><div class="benefit-content"><h3>Social Pension</h3><p>Qualified senior citizens receive monthly cash assistance under the Social Pension Program. OSCA Bauan helps local elders claim their stipend and ensures timely disbursement from DSWD.</p></div><span class="benefit-check material-symbols-outlined" aria-hidden="true">check_circle</span></article>
+          <article class="benefit-row"><span class="benefit-number">02</span><span class="benefit-icon material-symbols-outlined">favorite</span><div class="benefit-content"><h3>Health and Welfare Services</h3><p>Seniors in Bauan gain access to medical missions, free checkups, and referral support for hospital care through coordinated barangay and municipal health programs.</p></div><span class="benefit-check material-symbols-outlined" aria-hidden="true">check_circle</span></article>
+          <article class="benefit-row"><span class="benefit-number">03</span><span class="benefit-icon material-symbols-outlined">groups</span><div class="benefit-content"><h3>Educational and Livelihood Activities</h3><p>OSCA offers seminars, livelihood workshops, and skills training designed for elderly residents so they can stay active and connected in the community.</p></div><span class="benefit-check material-symbols-outlined" aria-hidden="true">check_circle</span></article>
+          <article class="benefit-row"><span class="benefit-number">04</span><span class="benefit-icon material-symbols-outlined">sell</span><div class="benefit-content"><h3>Senior Citizen Discounts</h3><p>Senior citizens are entitled to local and national discounts on medicine, transportation, and other essential services when they present their valid OSCA ID.</p></div><span class="benefit-check material-symbols-outlined" aria-hidden="true">check_circle</span></article>
         </div>
       </div>
     </section>
 
-    <!-- Contact Section -->
-    <section id="contact" class="py-16 md:py-24 px-6 md:px-8 bg-surface-container-low scroll-mt-20">
-      <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        <div><h2 class="text-3xl md:text-4xl font-black text-primary font-headline mb-6">Get in Touch</h2><p class="text-base md:text-lg text-on-surface-variant mb-8">Visit our main office or reach out through digital channels.</p><div class="space-y-6"><div class="flex gap-4"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-primary">location_on</span></div><div><h4 class="text-lg font-bold text-primary font-headline mb-1">Office Location</h4><p class="text-on-surface-variant">Ground Floor, Municipal Hall, Bauan, Batangas 4201</p></div></div><div class="flex gap-4"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-primary">call</span></div><div><h4 class="text-lg font-bold text-primary font-headline mb-1">Phone Number</h4><p class="text-on-surface-variant">432-332-723 / +63 9295517826</p></div></div><div class="flex gap-4"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-primary">mail</span></div><div><h4 class="text-lg font-bold text-primary font-headline mb-1">Email Address</h4><p class="text-on-surface-variant">oscabauan@gmail.com</p></div></div></div></div>
-        <div class="relative overflow-hidden rounded-xl h-[350px] md:h-[450px] shadow-xl"><img class="w-full h-full object-cover object-center" src="Bauan Municipal Hall.jpg" alt="Bauan Municipal Hall"><div class="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent"></div></div>
+    <section id="stories" class="stories-section">
+      <div class="stories-inner">
+        <div class="stories-heading"><div><p class="stories-kicker">THE PEOPLE MAKE THE PLACE</p><h2>Life is better<br>when we belong.</h2></div><div class="stories-aside"><p>Every shared meal, new friendship, and familiar smile is part of a stronger community.</p><span class="stories-note">OSCA Bauan community programs</span></div></div>
+        <div class="gallery-grid">
+          <figure class="gallery-tile gallery-tile-1"><img src="mayor.jpg" alt="Bauan mayor meeting with senior citizens"><figcaption><small>COMMUNITY CARE</small><strong>Care that comes closer</strong></figcaption></figure>
+          <figure class="gallery-tile gallery-tile-2"><img src="PCSO.jpg" alt="Senior citizens gathering for community assistance"><figcaption><small>PCSO ASSISTANCE</small><strong>Support reaching seniors</strong></figcaption></figure>
+          <figure class="gallery-tile gallery-tile-3"><img src="Pension.jpg" alt="Senior citizens receiving pension support"><figcaption><small>TOGETHER</small><strong>Good days, shared together</strong></figcaption></figure>
+          <figure class="gallery-tile gallery-tile-4"><img src="meals.jpg" alt="A shared meal among senior residents"><figcaption><small>BAUAN SENIORS</small><strong>Celebrating a lifetime of stories</strong></figcaption></figure>
+        </div>
       </div>
+    </section>
+    <section id="faq" class="faq-section">
+      <div class="faq-layout">
+        <div class="faq-heading"><p class="faq-kicker">BEFORE YOU BEGIN</p><h2>A few useful things to know.</h2><p>Can't find what you're looking for? Our virtual assistant can help you find a starting point.</p><button class="faq-chat-link" id="faq-chat-button" type="button">Ask the OSCA assistant <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></button></div>
+        <div class="faq-list">
+          <details class="faq-item" open><summary>Who can apply for a senior citizen ID?<span class="faq-chevron-wrap" aria-hidden="true"><svg class="faq-chevron" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></summary><p>The application is for residents who are 60 years old and above. OSCA Bauan can confirm the current requirements and accepted proof of age and residency before you visit.</p></details>
+          <details class="faq-item"><summary>What should I bring to the OSCA office?<span class="faq-chevron-wrap" aria-hidden="true"><svg class="faq-chevron" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></summary><p>Please contact OSCA Bauan before visiting to confirm the current application requirements and supporting documents.</p></details>
+          <details class="faq-item"><summary>Can someone assist a senior who cannot travel?<span class="faq-chevron-wrap" aria-hidden="true"><svg class="faq-chevron" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></summary><p>Call the OSCA office to discuss available assistance and the documents a representative may need to bring.</p></details>
+        </div>
+      </div>
+    </section>
+    <section id="contact" class="contact-section scroll-mt-20">
+      <div class="contact-inner"><div class="contact-layout">
+        <div class="contact-information"><div class="contact-intro"><p class="contact-kicker">GET IN TOUCH</p><h2>Come say hello.</h2><p class="contact-description">Tap a card for directions, to call, or to email us. We're here to help.</p></div>
+          <div class="contact-list" aria-label="Contact OSCA Bauan">
+            <a class="contact-row contact-row-location" href="https://www.openstreetmap.org/?mlat=13.7925&amp;mlon=121.0076#map=17/13.7925/121.0076" target="_blank" rel="noopener noreferrer"><span class="contact-icon material-symbols-outlined">location_on</span><span class="contact-detail"><small>VISIT THE OFFICE</small><strong>Ground Floor, Municipal Hall</strong><span>Bauan, Batangas 4201 · J.P. Rizal St.</span></span><span class="contact-card-action"><span class="material-symbols-outlined">north_east</span><small>GET DIRECTIONS</small></span></a>
+            <a class="contact-row" href="tel:+63432332723"><span class="contact-icon material-symbols-outlined">call</span><span class="contact-detail"><small>CALL THE OFFICE</small><strong>432-332-723</strong><span>Landline · Call OSCA Bauan</span></span><span class="contact-card-action"><span class="material-symbols-outlined">call</span><small>CALL OFFICE</small></span></a>
+            <a class="contact-row" href="tel:+639295517826"><span class="contact-icon material-symbols-outlined">call</span><span class="contact-detail"><small>CALL MOBILE</small><strong>+63 929 551 7826</strong><span>Mobile · Call OSCA Bauan</span></span><span class="contact-card-action"><span class="material-symbols-outlined">call</span><small>CALL MOBILE</small></span></a>
+            <a class="contact-row" href="mailto:oscabauan@gmail.com"><span class="contact-icon material-symbols-outlined">mail</span><span class="contact-detail"><small>SEND AN EMAIL</small><strong>oscabauan@gmail.com</strong><span>Contact us with your questions</span></span><span class="contact-card-action"><span class="material-symbols-outlined">north_east</span><small>EMAIL OSCA</small></span></a>
+          </div>
+          <aside class="contact-visit-note"><span class="material-symbols-outlined">event_available</span><div><strong>Planning a visit?</strong><p>Call ahead to confirm office hours and any documents you may need.</p></div></aside>
+        </div>
+        <div class="contact-map-card">
+          <div class="contact-map-canvas">
+            <div class="contact-map-skeleton" aria-hidden="true"><span class="skeleton-road skeleton-road-one"></span><span class="skeleton-road skeleton-road-two"></span><span class="skeleton-block skeleton-block-one"></span><span class="skeleton-block skeleton-block-two"></span><span class="skeleton-map-pin"></span></div>
+            <iframe id="contact-map-iframe" title="OpenStreetMap showing the OSCA Bauan office" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=121.0020%2C13.7880%2C121.0135%2C13.7970&amp;layer=mapnik&amp;marker=13.7925%2C121.0076" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div></div>
     </section>
   </main>
   
   <!-- Footer -->
-  <footer class="bg-slate-100 border-t-8 border-[#001f78]"><div class="max-w-7xl mx-auto px-6 md:px-12 py-12 grid grid-cols-1 md:grid-cols-4 gap-10"><div><span class="text-xl font-bold text-[#001f78] font-headline mb-4 block">OSCA Bauan</span><p class="text-slate-600 text-sm">Empowering senior citizens of Bauan.</p></div><div><h5 class="text-[#001f78] font-headline font-bold mb-5">Quick Links</h5><ul class="space-y-2"><li><a href="#home" class="text-slate-600 hover:text-[#bc000d] transition-all">Home</a></li><li><a href="#about" class="text-slate-600 hover:text-[#bc000d] transition-all">About</a></li><li><a href="#contact" class="text-slate-600 hover:text-[#bc000d] transition-all">Contact</a></li></ul></div><div><h5 class="text-[#001f78] font-headline font-bold mb-5">Resources</h5><ul class="space-y-2"><li><a href="#" class="text-slate-600 hover:text-[#bc000d]">Senior ID Application</a></li><li><a href="#" class="text-slate-600 hover:text-[#bc000d]">Social Pension Form</a></li></ul></div><div><h5 class="text-[#001f78] font-headline font-bold mb-5">Government</h5><ul class="space-y-2"><li><a href="#" class="text-slate-600 hover:text-[#bc000d]">DSWD</a></li><li><a href="#" class="text-slate-600 hover:text-[#bc000d]">NCSC</a></li></ul></div></div><div class="max-w-7xl mx-auto px-6 md:px-12 py-6 border-t border-slate-200"><p class="text-slate-600 text-center text-sm">© 2024 Office of Senior Citizens Affairs (OSCA) Bauan. All Rights Reserved.</p></div></footer>
+  <footer class="homepage-footer">
+    <div class="homepage-footer-inner">
+      <nav class="homepage-footer-nav" aria-label="Footer navigation">
+        <a href="#home"><span class="material-symbols-outlined" aria-hidden="true">home</span>Home</a>
+        <a href="#about"><span class="material-symbols-outlined" aria-hidden="true">info</span>About</a>
+        <a href="#stories"><span class="material-symbols-outlined" aria-hidden="true">photo</span>Stories</a>
+        <a href="#contact"><span class="material-symbols-outlined" aria-hidden="true">mail</span>Contact</a>
+      </nav>
+      <p class="homepage-footer-copy">© 2024 Office of Senior Citizens Affairs (OSCA), Municipality of Bauan, Batangas.</p>
+    </div>
+  </footer>
+  <div id="track-status-modal" class="track-status-modal" hidden>
+    <iframe class="track-status-frame" src="trackstatus.html" title="Track OSCA Bauan application status"></iframe>
+  </div>
   <!-- Gemini Applicant Assistant -->
   <div id="osca-chatbot" class="osca-chatbot">
 

@@ -11,6 +11,7 @@ import {
     recoverVerifiedApplicationId as recoverVerifiedApplicationIdService,
     updateDocumentAuthentication as updateDocumentAuthenticationService
 } from "../services/applicationService.js";
+import { sendApplicationIdSms } from "../services/smsService.js";
 
 
 export async function testDatabase(req, res) {
@@ -52,9 +53,37 @@ export async function registerApplication(req, res) {
             });
         }
 
-        res.status(201).json({
+        let smsNotification = {
+            sent: false,
+            message: "Your application was saved, but the SMS could not be sent. Please keep your Application ID."
+        };
+
+        try {
+            if (result.contact_number && result.application_id) {
+                const smsResult = await sendApplicationIdSms({
+                    phone: result.contact_number,
+                    applicationId: result.application_id
+                });
+
+                smsNotification = {
+                    sent: true,
+                    message: "The application ID SMS was accepted by the SMS provider.",
+                    referenceId: smsResult?.message?.reference_id ?? null
+                };
+            } else {
+                console.warn(
+                    "Application ID SMS skipped: contact number or application ID is missing."
+                );
+            }
+        } catch (smsError) {
+            // Do not fail a saved registration just because SMS failed.
+            console.error("Application ID SMS failed:", smsError.message);
+        }
+
+        return res.status(201).json({
             success: true,
-            application: result
+            application: result,
+            smsNotification
         });
 
     } catch (error) {

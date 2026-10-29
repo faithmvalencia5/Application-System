@@ -1078,12 +1078,6 @@
 
         groups.forEach((group, index) => {
           const panel = steps[index];
-          const cancel = document.createElement("button");
-          cancel.type = "button";
-          cancel.className = "form-cancel-application";
-          cancel.textContent = "Cancel Application";
-          cancel.addEventListener("click", cancelApplication);
-          actions.append(cancel);
           const header = document.createElement("div");
           header.className = "form-step-heading";
           header.innerHTML = `<span>STEP 0${index + 1}</span><span class="form-step-total">06</span><span class="form-required-legend"><i></i> Required fields</span>`;
@@ -1108,6 +1102,12 @@
             next.addEventListener("click", () => advanceStep(index));
             actions.append(next);
           }
+          const cancel = document.createElement("button");
+          cancel.type = "button";
+          cancel.className = "form-cancel-application";
+          cancel.textContent = "Cancel Application";
+          cancel.addEventListener("click", cancelApplication);
+          actions.append(cancel);
           panel.append(actions);
         });
 

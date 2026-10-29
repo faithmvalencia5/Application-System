@@ -1126,6 +1126,7 @@
         }
         function showStep(index, moveFocus = false) {
           currentStepIndex = index;
+          if (mobileBack) mobileBack.hidden = index === 0;
           steps.forEach((step, i) => {
             step.hidden = i !== index;
             step.setAttribute("aria-hidden", String(i !== index));

@@ -1504,3 +1504,57 @@ body.application-form-page .application-form-card {
     margin: 0;
   }
 }
+
+
+/* Correct mobile action layout: grid prevents flex children from collapsing. */
+@media (max-width: 900px) {
+  body.application-form-page .mobile-action-bar {
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  body.application-form-page .mobile-action-buttons {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+    grid-auto-flow: row;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.application-form-page .mobile-action-buttons > button {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    white-space: normal;
+    writing-mode: horizontal-tb;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  body.application-form-page .mobile-action-buttons > .mobile-back {
+    grid-column: 1;
+    width: 100%;
+    flex: initial;
+  }
+
+  body.application-form-page .mobile-action-buttons > .mobile-next {
+    grid-column: 2;
+    width: 100%;
+    min-height: 58px;
+    flex: initial;
+  }
+
+  body.application-form-page .mobile-action-buttons > .mobile-cancel-application {
+    grid-column: 1 / -1;
+    display: block;
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 14px;
+    flex: initial;
+    font-size: .9rem;
+    line-height: 1.2;
+  }
+}

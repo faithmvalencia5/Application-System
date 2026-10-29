@@ -877,7 +877,19 @@
           updateDraftStatus("Draft restore unavailable");
         }
         let draftSaveTimer;
+        let draftCleared = false;
+        const clearSavedDraft = () => {
+          draftCleared = true;
+          clearTimeout(draftSaveTimer);
+          try {
+            localStorage.removeItem(draftKey);
+          } catch (error) {
+            console.error("Unable to clear the saved application draft.", error);
+          }
+        };
+        document.addEventListener("application:draft-cleared", clearSavedDraft);
         const saveDraft = () => {
+          if (draftCleared) return;
           clearTimeout(draftSaveTimer);
           draftSaveTimer = setTimeout(() => {
             const values = Object.fromEntries(draftControls.map(field => [
@@ -1121,6 +1133,8 @@
           );
 
           if (!confirmed) return;
+
+          clearSavedDraft();
 
           window.location.href = "index.html";
         }

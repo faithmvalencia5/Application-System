@@ -3349,6 +3349,34 @@ function showConfirmationModal(title, message, onConfirm) {
   confirmBtn.focus();
 }
 
+function getApplicationDraftKey() {
+  const applicationId =
+    new URLSearchParams(
+      window.location.search
+    ).get("id");
+
+  return "osca-senior-id-draft-" +
+    (applicationId || "new");
+}
+
+function clearApplicationDraft() {
+  // Let the form page cancel any pending draft save before we remove it.
+  document.dispatchEvent(
+    new CustomEvent("application:draft-cleared")
+  );
+
+  try {
+    window.localStorage.removeItem(
+      getApplicationDraftKey()
+    );
+  } catch (error) {
+    console.error(
+      "Unable to clear the saved application draft.",
+      error
+    );
+  }
+}
+
 function setupFormCancelButton() {
   const cancelButton =
     document.getElementById("cancel-application");
@@ -3373,6 +3401,8 @@ function setupFormCancelButton() {
         duplicateSessionId
       );
 
+      clearApplicationDraft();
+
       window.location.href =
         "index.html";
 
@@ -3388,6 +3418,8 @@ function setupFormCancelButton() {
           ? "3"
           : "2";
 
+      clearApplicationDraft();
+
       window.location.href =
         "trackstatus.html?id=" +
         encodeURIComponent(applicationId) +
@@ -3401,6 +3433,7 @@ function setupFormCancelButton() {
       "Cancel Application?",
       "Are you sure you want to cancel this application? Your data will not be saved.",
       function () {
+        clearApplicationDraft();
         window.location.href = "index.html";
       }
     );
@@ -4947,6 +4980,8 @@ function setupFormSubmitConfirmation() {
               existingApplicationId
             );
 
+            clearApplicationDraft();
+
             window.location.href =
               "trackstatus.html?id=" +
               encodeURIComponent(existingApplicationId) +
@@ -5084,6 +5119,8 @@ function setupFormSubmitConfirmation() {
               duplicateSessionId
             );
 
+            clearApplicationDraft();
+
             showSuccessNotification(
               "Your existing information has been updated successfully.\n\n" +
 
@@ -5112,6 +5149,8 @@ function setupFormSubmitConfirmation() {
               result?.application?.application_id ||
               existingApplicationId;
 
+            clearApplicationDraft();
+
             showSuccessNotification(
               "Your application changes have been saved successfully.",
               function () {
@@ -5137,6 +5176,8 @@ function setupFormSubmitConfirmation() {
           sessionStorage.removeItem(
             "applicationFormAccess"
           );
+
+          clearApplicationDraft();
 
           showSuccessNotification(
             "Your application has been submitted successfully.\n\n" +

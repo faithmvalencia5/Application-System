@@ -7494,8 +7494,7 @@ function setupOscaChatbot() {
   }
 }
 
-
-document.addEventListener(
-  "DOMContentLoaded",
-  setupOscaChatbot
-);
+document.addEventListener("DOMContentLoaded", function () {
+  protectApplicationForm();
+  setupOscaChatbot();
+});

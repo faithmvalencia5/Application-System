@@ -741,79 +741,31 @@ body.application-form-page .mobile-sticky-area { display: none; }
     font-weight: 800;
     cursor: pointer;
   }
-  /* One authoritative mobile action layout. */
-  body.application-form-page .mobile-action-buttons {
-    display: grid;
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-    align-items: stretch;
-    gap: 8px;
-    width: 100%;
-    min-width: 0;
-  }
-  body.application-form-page .mobile-action-buttons > button {
-    position: static;
-    box-sizing: border-box;
-    display: flex;
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    margin: 0;
-    align-items: center;
-    justify-content: center;
-    white-space: normal;
-    writing-mode: horizontal-tb;
-    word-break: normal;
-    overflow-wrap: normal;
-    transform: none;
-  }
+  body.application-form-page .mobile-action-buttons { display: flex; align-items: stretch; gap: 12px; }
   body.application-form-page .mobile-back {
-    grid-column: 1;
-    min-height: 58px;
+    flex: 0 0 34%;
     border: 1px solid #cbd5e1;
     background: #fff;
     color: #334155;
   }
   body.application-form-page .mobile-back:disabled { opacity: 1; cursor: default; }
-  body.application-form-page .mobile-back[hidden] { display: none !important; }
   body.application-form-page .mobile-next {
-    grid-column: 2;
+    flex: 1;
+    display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 1px;
-    min-height: 58px !important;
-    padding: 5px 8px;
+    min-height: 56px !important;
+    padding: 5px 12px;
     border: 1px solid #0f2557;
     background: #0f2557;
     color: #fff;
   }
-  body.application-form-page .mobile-next-label {
-    display: block;
-    max-width: 100%;
-    font-size: 1rem;
-    line-height: 1.15;
-    text-align: center;
-  }
-  body.application-form-page .mobile-next-section {
-    display: block;
-    max-width: 100%;
-    color: rgba(255,255,255,.8);
-    font-size: .72rem;
-    font-weight: 600;
-    line-height: 1.15;
-    overflow-wrap: anywhere;
-    text-align: center;
-  }
+  body.application-form-page .mobile-next { min-height: 58px !important; white-space: normal; }
+  body.application-form-page .mobile-next-label { display: block; max-width: 100%; font-size: 1rem; line-height: 1.15; text-align: center; }
+  body.application-form-page .mobile-next-section { display: block; max-width: 100%; color: rgba(255,255,255,.8); font-size: .82rem; font-weight: 600; line-height: 1.15; overflow-wrap: anywhere; text-align: center; }
   body.application-form-page .mobile-next-section[hidden] { display: none; }
-  body.application-form-page .mobile-cancel-application {
-    grid-column: 1 / -1;
-    min-height: 46px !important;
-    padding: 10px 14px;
-    border: 1px solid #d93b49;
-    background: #fff;
-    color: #b92f3d;
-    font-size: .9rem !important;
-    line-height: 1.2;
-  }
-  body.application-form-page .mobile-cancel-application:active { background: #fff0f1; }
   body.application-form-page .upload-box.is-invalid { border-color: #b42318; background: #fff1f1; box-shadow: 0 0 0 3px rgba(180,35,24,.14); }
   body.application-form-page .scan-face-btn.field-invalid { border-color: #b42318; background: #fff1f1; box-shadow: 0 0 0 3px rgba(180,35,24,.14); }
   body.application-form-page .checkbox-row.is-invalid { border-radius: 8px; background: #fff1f1; box-shadow: 0 0 0 2px rgba(180,35,24,.18); }
@@ -1402,110 +1354,4 @@ body.application-form-page .form-cancel-application:hover {
 body.application-form-page .form-cancel-application:focus-visible {
   outline: 3px solid rgba(217, 59, 73, 0.25);
   outline-offset: 2px;
-/* Application form cancellation action */
-body.application-form-page .form-cancel-application {
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid #d93b49;
-  border-radius: 9px;
-  background: #fff;
-  color: #b92f3d;
-  font: inherit;
-  font-weight: 800;
-  cursor: pointer;
-  transition: background 160ms ease, color 160ms ease;
-}
-
-body.application-form-page .form-cancel-application:hover {
-  background: #fff0f1;
-}
-
-body.application-form-page .form-cancel-application:focus-visible {
-  outline: 3px solid rgba(217, 59, 73, 0.25);
-  outline-offset: 2px;
-}
-
-/* Allow the browser page and form content to resize naturally. */
-html:has(body.application-form-page) {
-  height: auto;
-  min-height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
-  scroll-padding-top: 0;
-}
-
-body.application-form-page {
-  height: auto;
-  min-height: 100dvh;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-body.application-form-page .page-frame {
-  display: flex;
-  flex-direction: column;
-  width: calc(100% - 24px);
-  max-width: 1800px;
-  height: auto;
-  min-height: 100dvh;
-  margin: 0 auto 12px;
-  overflow: visible;
-  border-radius: 18px;
-}
-
-body.application-form-page .page-frame > .form-header {
-  flex: 0 0 auto;
-}
-
-body.application-form-page .form-wrapper {
-  display: grid;
-  grid-template-columns: 24.5% minmax(0, 75.5%);
-  align-items: stretch;
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  padding: 0;
-  gap: 0;
-  overflow: visible;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-body.application-form-page .application-form-card {
-  min-width: 0;
-  min-height: 0;
-  margin: 0;
-  padding: 20px 24px 24px;
-  overflow: visible;
-  overscroll-behavior-y: auto;
-}
-
-@media (min-width: 901px) {
-  body.application-form-page .application-steps {
-    height: auto;
-    min-height: 100%;
-    overflow: visible;
-  }
-}
-
-@media (max-width: 900px) {
-  body.application-form-page .page-frame {
-    width: 100%;
-    min-height: 100dvh;
-    margin: 0;
-    overflow: visible;
-    border-radius: 0;
-  }
-
-  body.application-form-page .form-wrapper {
-    grid-template-columns: 1fr;
-    overflow: visible;
-  }
-
-  body.application-form-page .application-form-card {
-    overflow: visible;
-  }
 }

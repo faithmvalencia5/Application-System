@@ -1102,12 +1102,14 @@
             next.addEventListener("click", () => advanceStep(index));
             actions.append(next);
           }
-          const cancel = document.createElement("button");
-          cancel.type = "button";
-          cancel.className = "form-cancel-application";
-          cancel.textContent = "Cancel Application";
-          cancel.addEventListener("click", cancelApplication);
-          actions.append(cancel);
+          if (index < groups.length - 1) {
+            const cancel = document.createElement("button");
+            cancel.type = "button";
+            cancel.className = "form-cancel-application";
+            cancel.textContent = "Cancel Application";
+            cancel.addEventListener("click", cancelApplication);
+            actions.append(cancel);
+          }
           panel.append(actions);
         });
 

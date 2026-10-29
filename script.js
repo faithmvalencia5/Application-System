@@ -5429,11 +5429,16 @@ function setupHomepageNavigation() {
           ? header.getBoundingClientRect().height
           : 72;
 
+        const contentTarget =
+          targetElement.querySelector(
+            ".about-layout, .stories-inner, .contact-layout"
+          ) || targetElement;
+
         const targetTop =
-          targetElement.getBoundingClientRect().top +
+          contentTarget.getBoundingClientRect().top +
           window.scrollY -
           headerHeight -
-          16;
+          24;
 
         window.scrollTo({
           top: Math.max(0, targetTop),

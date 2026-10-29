@@ -20,6 +20,15 @@
   --paper: #f7f8fa;
 }
 * { box-sizing: border-box; }
+
+/* Desktop: keep the application within the viewport and avoid a second page scrollbar. */
+@media (min-width: 901px) {
+  html, body.application-form-page {
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
 html { scroll-behavior: smooth; scroll-padding-top: 90px; }
 body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Atkinson Hyperlegible Next", sans-serif; }
 
@@ -1084,10 +1093,10 @@ body.application-form-page .mobile-sticky-area { display: none; }
   body.application-form-page .page-frame {
     display: flex;
     min-height: 100vh;
-    height: auto;
-    margin: 0 auto 12px;
+    height: 100vh;
+    margin: 0 auto;
     flex-direction: column;
-    overflow: visible;
+    overflow: hidden;
   }
   body.application-form-page .page-frame > .form-header { flex: 0 0 auto; }
   body.application-form-page .page-frame > .form-header .logo-box {
@@ -1096,11 +1105,11 @@ body.application-form-page .mobile-sticky-area { display: none; }
   body.application-form-page .page-frame > .form-header .title-bar { max-width: none; font-size: clamp(.9rem, 1.2vw, 1.1rem); text-align: center; }
   body.application-form-page .form-wrapper {
     display: grid; grid-template-columns: 24.5% minmax(0, 75.5%); align-items: stretch;
-    flex: 1 1 auto; min-height: 0; width: 100%; max-width: none; margin: 0; padding: 0; gap: 0; overflow: visible;
+    flex: 1 1 auto; min-height: 0; width: 100%; max-width: none; margin: 0; padding: 0; gap: 0; overflow: hidden;
     border: 0; border-radius: 0; box-shadow: none;
   }
   body.application-form-page .application-steps {
-    position: sticky; top: 0; align-self: start; display: flex; width: auto; height: 100vh; min-height: 0;
+    position: relative; top: auto; align-self: stretch; display: flex; width: auto; height: 100%; min-height: 0;
     flex-direction: column; gap: 0; overflow: hidden; padding: 30px 22px 22px; border-radius: 0;
   }
   body.application-form-page .steps-mark {
@@ -1142,7 +1151,7 @@ body.application-form-page .mobile-sticky-area { display: none; }
   body.application-form-page .form-privacy-note { margin-top: auto; padding: 12px; font-size: .65rem; line-height: 1.4; }
   body.application-form-page .application-form-card {
     min-width: 0; min-height: 0; margin: 0; padding: 20px 24px 24px;
-    overflow-x: hidden; overflow-y: visible; overscroll-behavior-y: auto;
+    overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain;
   }
   body.application-form-page .form-progress { gap: 6px; margin: 0 0 18px; }
   body.application-form-page .form-progress span { height: 3px; }

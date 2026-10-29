@@ -749,6 +749,17 @@ body.application-form-page .mobile-sticky-area { display: none; }
     color: #334155;
   }
   body.application-form-page .mobile-back:disabled { opacity: 1; cursor: default; }
+  body.application-form-page .mobile-cancel-application {
+    width: 100%;
+    min-height: 44px !important;
+    border: 1px solid #d93b49;
+    background: #fff;
+    color: #b92f3d;
+    font-size: .9rem !important;
+  }
+  body.application-form-page .mobile-cancel-application:active {
+    background: #fff0f1;
+  }
   body.application-form-page .mobile-next {
     flex: 1;
     display: flex;

@@ -396,17 +396,23 @@ function protectApplicationForm() {
     return;
   }
 
-  // New applications require permission from the disclaimer page.
+  // A short-lived sessionStorage flag is fragile across redirects/reloads.
+  // Keep the CAPTCHA/consent gate, but consume the permission only after
+  // confirming it exists. The successful first navigation to form.html
+  // must not immediately invalidate access before other initializers run.
   const hasAccess =
     sessionStorage.getItem("applicationFormAccess") === "verified";
 
-  // Consume the permission immediately so it cannot be reused
-  // to refresh or reopen the new-application form directly.
-  sessionStorage.removeItem("applicationFormAccess");
-
   if (!hasAccess) {
     window.location.replace("register-disclaimer.html");
+    return;
   }
+
+  // Defer consumption until the form has finished initializing so the
+  // immediate page load cannot trigger a second redirect.
+  window.addEventListener("pagehide", function clearFormAccess() {
+    sessionStorage.removeItem("applicationFormAccess");
+  }, { once: true });
 }
 
 

@@ -4628,6 +4628,7 @@ body.homepage-page .homepage-footer-nav .material-symbols-outlined {
   white-space: nowrap;
   direction: ltr;
   -webkit-font-feature-settings: "liga";
+  font-feature-settings: "liga";
   -webkit-font-smoothing: antialiased;
 }
 
@@ -7267,4 +7268,44 @@ body.verify-page #verify-request-id-modal .verify-close-inline:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   body.verify-page #verify-request-id-modal .verify-actions > button { transition: none; }
+}
+
+
+/* Mobile: prevent fixed navigation from covering section headings */
+@media (max-width: 768px) {
+  html {
+    scroll-padding-top: 76px;
+    scroll-behavior: smooth;
+  }
+
+  body.homepage-page {
+    padding-top: 60px;
+  }
+
+  body.homepage-page #mainHeader {
+    height: 60px;
+    z-index: 1000;
+  }
+
+  body.homepage-page #mainHeader nav {
+    min-height: 60px;
+    height: 60px;
+  }
+
+  body.homepage-page #home,
+  body.homepage-page #about,
+  body.homepage-page #stories,
+  body.homepage-page #contact,
+  body.homepage-page #benefits,
+  body.homepage-page #questions {
+    scroll-margin-top: 76px;
+  }
+
+  body.homepage-page #about,
+  body.homepage-page #stories,
+  body.homepage-page #contact,
+  body.homepage-page #benefits,
+  body.homepage-page #questions {
+    position: relative;
+  }
 }

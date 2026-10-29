@@ -741,8 +741,24 @@ body.application-form-page .mobile-sticky-area { display: none; }
     font-weight: 800;
     cursor: pointer;
   }
-  body.application-form-page .mobile-action-buttons { display: flex; align-items: stretch; gap: 12px; }
-  body.application-form-page .mobile-back {
+  body.application-form-page .mobile-action-buttons {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+  }
+
+  body.application-form-page .mobile-action-buttons button {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    height: auto;
+    flex: initial;
+    writing-mode: horizontal-tb;
+    overflow-wrap: normal;
+    word-break: normal;
+  }  body.application-form-page .mobile-back {
     flex: 0 0 34%;
     border: 1px solid #cbd5e1;
     background: #fff;

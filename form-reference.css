@@ -1099,6 +1099,8 @@ body.application-form-page .mobile-sticky-area { display: none; }
     overflow: hidden;
   }
   body.application-form-page .page-frame > .form-header { flex: 0 0 auto; }
+  body.application-form-page .page-frame > .form-header .header-text { padding-bottom: 0; }
+  body.application-form-page .page-frame > .form-header .header-bottom { margin-top: 8px; margin-bottom: 10px; }
   body.application-form-page .page-frame > .form-header .logo-box {
     display: grid; left: 14px; width: 48px; height: 48px; padding: 3px; border-radius: 50%;
   }
@@ -1110,17 +1112,17 @@ body.application-form-page .mobile-sticky-area { display: none; }
   }
   body.application-form-page .application-steps {
     position: relative; top: auto; align-self: stretch; display: flex; width: auto; height: 100%; min-height: 0;
-    flex-direction: column; gap: 0; overflow: hidden; padding: 30px 22px 22px; border-radius: 0;
+    flex-direction: column; gap: 0; overflow: hidden; padding: 16px 18px 14px; border-radius: 0;
   }
   body.application-form-page .steps-mark {
     display: grid; width: 40px; height: 40px; min-height: 40px; flex: 0 0 40px; place-items: center;
-    margin: 0 0 32px; padding: 0; border: 1px solid rgba(255,255,255,.18); border-radius: 12px;
+    margin: 0 0 14px; padding: 0; border: 1px solid rgba(255,255,255,.18); border-radius: 12px;
     background: rgba(255,255,255,.09); color: #ff727c;
   }
   body.application-form-page .steps-mark .material-symbols-outlined { font-size: 22px; }
-  body.application-form-page .steps-nav { display: flex !important; flex: 0 0 auto; flex-direction: column; gap: 8px; margin: 0; }
+  body.application-form-page .steps-nav { display: flex !important; flex: 0 1 auto; min-height: 0; flex-direction: column; gap: 5px; margin: 0; }
   body.application-form-page .steps-nav a {
-    display: grid !important; height: 60px; min-height: 60px; grid-template-columns: 36px minmax(0,1fr) 38px !important;
+    display: grid !important; height: 52px; min-height: 52px; grid-template-columns: 36px minmax(0,1fr) 38px !important;
     align-items: center; gap: 9px; padding: 6px 9px; border-radius: 11px; font-size: .76rem; line-height: 1.15;
   }
   body.application-form-page .steps-nav a > .step-number {
@@ -1148,7 +1150,7 @@ body.application-form-page .mobile-sticky-area { display: none; }
   body.application-form-page .steps-nav .step-number-check,
   body.application-form-page .steps-nav .step-number-lock { display: none !important; }
   body.application-form-page .form-side-progress { display: none !important; }
-  body.application-form-page .form-privacy-note { margin-top: auto; padding: 12px; font-size: .65rem; line-height: 1.4; }
+  body.application-form-page .form-privacy-note { margin-top: auto; padding: 9px; font-size: .61rem; line-height: 1.3; }
   body.application-form-page .application-form-card {
     min-width: 0; min-height: 0; margin: 0; padding: 20px 24px 24px;
     overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain;

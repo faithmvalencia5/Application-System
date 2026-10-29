@@ -374,40 +374,41 @@ function setupUploadButtons() {
 }
 
 function protectApplicationForm() {
-  const isFormPage =
-    window.location.pathname.endsWith("form.html");
-
-  if (!isFormPage) {
+  if (!window.location.pathname.endsWith("form.html")) {
     return;
   }
 
-  const params =
-    new URLSearchParams(window.location.search);
-
+  const params = new URLSearchParams(window.location.search);
   const mode = params.get("mode");
+  const applicationId = params.get("id");
+  const sessionId = params.get("session");
 
-  const isEditMode =
-    mode === "edit" ||
-    mode === "request-edit" ||
-    mode === "duplicate-update";
+  // Preserve the existing application-editing flows.
+  const isNormalEdit =
+    (mode === "edit" || mode === "request-edit") &&
+    Boolean(applicationId);
 
-  // Existing applications may open the form directly
-  // from the Track Status page.
-  if (isEditMode) {
+  const isDuplicateUpdate =
+    mode === "duplicate-update" &&
+    Boolean(sessionId);
+
+  if (isNormalEdit || isDuplicateUpdate) {
     return;
   }
 
-  // New applications must pass through the disclaimer
-  // and reCAPTCHA page first.
+  // New applications require permission from the disclaimer page.
   const hasAccess =
-    sessionStorage.getItem("applicationFormAccess") ===
-    "verified";
+    sessionStorage.getItem("applicationFormAccess") === "verified";
+
+  // Consume the permission immediately so it cannot be reused
+  // to refresh or reopen the new-application form directly.
+  sessionStorage.removeItem("applicationFormAccess");
 
   if (!hasAccess) {
-    window.location.href =
-      "register-disclaimer.html";
+    window.location.replace("register-disclaimer.html");
   }
 }
+
 
 function setupFormMode() {
 

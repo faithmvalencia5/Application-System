@@ -7309,3 +7309,135 @@ body.verify-page #verify-request-id-modal .verify-close-inline:focus-visible {
     position: relative;
   }
 }
+
+.file-preview-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  background: rgba(15, 23, 42, 0.68);
+}
+
+.file-preview-modal[hidden] {
+  display: none !important;
+}
+
+.file-preview-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 1000px);
+  max-height: calc(100dvh - 40px);
+  margin: auto;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.file-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  gap: 16px;
+  padding: 18px 22px;
+}
+
+.file-preview-head h3 {
+  margin: 0;
+}
+
+#file-preview-close {
+  display: inline-flex;
+  flex: 0 0 42px;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: inherit;
+  cursor: pointer;
+}
+
+#file-preview-close .material-symbols-outlined {
+  font-size: 26px;
+  line-height: 1;
+}
+
+#file-preview-close:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+#file-preview-close:focus-visible {
+  outline: 3px solid #e24b4a;
+  outline-offset: 3px;
+}
+
+.file-preview-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  overflow: auto;
+  background: #f8fafc;
+}
+
+.file-preview-body img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: calc(100dvh - 150px);
+  object-fit: contain;
+}
+
+.file-preview-body iframe {
+  display: block;
+  width: 100%;
+  height: min(75dvh, 760px);
+  min-height: 300px;
+  border: 0;
+  background: #fff;
+}
+
+.file-preview-body img[hidden],
+.file-preview-body iframe[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 600px) {
+  .file-preview-modal {
+    padding: 10px;
+  }
+
+  .file-preview-dialog {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    border-radius: 12px;
+  }
+
+  .file-preview-head {
+    padding: 14px 16px;
+  }
+
+  .file-preview-body {
+    padding: 8px;
+  }
+
+  .file-preview-body img {
+    max-height: calc(100dvh - 115px);
+  }
+
+  .file-preview-body iframe {
+    height: 75dvh;
+    min-height: 250px;
+  }
+}

@@ -266,6 +266,21 @@ function setupUploadButtons() {
 
   if (previewClose) {
     previewClose.addEventListener("click", closePreview);
+    filePreviewModal?.addEventListener("click", (event) => {
+      if (event.target === filePreviewModal) {
+        closePreview();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (
+        event.key === "Escape" &&
+        filePreviewModal &&
+        !filePreviewModal.hidden
+      ) {
+        closePreview();
+      }
+    });
   }
 
   uploadInputs.forEach(function (inputElement) {

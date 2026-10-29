@@ -1371,3 +1371,72 @@ body.application-form-page .form-cancel-application:focus-visible {
   outline: 3px solid rgba(217, 59, 73, 0.25);
   outline-offset: 2px;
 }
+
+/* Final mobile action-bar sizing fix */
+@media (max-width: 768px) {
+  body.application-form-page .mobile-action-bar {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    gap: 8px;
+  }
+
+  body.application-form-page .mobile-action-buttons {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 8px;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  body.application-form-page .mobile-action-buttons button {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    height: auto;
+    margin: 0;
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    writing-mode: horizontal-tb;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  body.application-form-page .mobile-action-buttons .mobile-back {
+    grid-column: 1;
+    flex: initial;
+  }
+
+  body.application-form-page .mobile-action-buttons .mobile-next {
+    grid-column: 2;
+    flex: initial;
+    min-height: 50px !important;
+    padding: 6px 8px;
+  }
+
+  body.application-form-page .mobile-action-buttons .mobile-next-label {
+    font-size: 0.95rem;
+  }
+
+  body.application-form-page .mobile-action-buttons .mobile-next-section {
+    font-size: 0.72rem;
+    overflow-wrap: anywhere;
+  }
+
+  body.application-form-page .mobile-action-buttons .mobile-cancel-application {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 12px;
+    border: 1px solid #dc3545;
+    border-radius: 10px;
+    background: #fff;
+    color: #c82333;
+    font-size: 0.88rem;
+    font-weight: 700;
+    white-space: normal;
+  }
+}

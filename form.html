@@ -1078,6 +1078,12 @@
 
         groups.forEach((group, index) => {
           const panel = steps[index];
+          const cancel = document.createElement("button");
+          cancel.type = "button";
+          cancel.className = "form-cancel-application";
+          cancel.textContent = "Cancel Application";
+          cancel.addEventListener("click", cancelApplication);
+          actions.append(cancel);
           const header = document.createElement("div");
           header.className = "form-step-heading";
           header.innerHTML = `<span>STEP 0${index + 1}</span><span class="form-step-total">06</span><span class="form-required-legend"><i></i> Required fields</span>`;
@@ -1105,6 +1111,16 @@
           panel.append(actions);
         });
 
+        function cancelApplication() {
+          const confirmed = window.confirm(
+            "Are you sure you want to cancel this application? " +
+            "Any information not submitted may be lost."
+          );
+
+          if (!confirmed) return;
+
+          window.location.href = "index.html";
+        }
         function showStep(index, moveFocus = false) {
           currentStepIndex = index;
           steps.forEach((step, i) => {
@@ -1153,7 +1169,7 @@
             row.querySelector(".mobile-sheet-done").hidden = !isComplete || isCurrent;
             row.querySelector(".mobile-sheet-lock").hidden = isReachable;
           });
-          if (mobileBack) mobileBack.disabled = index === 0;
+          if (mobileBack) {mobileBack.hidden = index === 0; mobileBack.disabled = index === 0;}
           if (mobileNext) {
             const nextTitle = stepInfo[index + 1]?.short;
             if (mobileNextLabel) mobileNextLabel.textContent = nextTitle ? "Continue" : "Review and submit";

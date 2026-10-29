@@ -1381,3 +1381,25 @@ body.application-form-page .application-form-card {
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
 }
+
+body.application-form-page .form-cancel-application {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #d93b49;
+  border-radius: 9px;
+  background: #fff;
+  color: #b92f3d;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+body.application-form-page .form-cancel-application:hover {
+  background: #fff0f1;
+}
+
+body.application-form-page .form-cancel-application:focus-visible {
+  outline: 3px solid rgba(217, 59, 73, 0.25);
+  outline-offset: 2px;
+}

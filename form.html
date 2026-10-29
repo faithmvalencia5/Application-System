@@ -751,6 +751,7 @@
         <div class="mobile-action-buttons">
           <button class="mobile-back" type="button">Back</button>
           <button class="mobile-next" type="button"><span class="mobile-next-label">Continue</span><small class="mobile-next-section">Family composition</small></button>
+          <button class="mobile-cancel-application" type="button">Cancel Application</button>
         </div>
       </div>
       </div>
@@ -1369,6 +1370,7 @@
         }));
         mobileBack?.addEventListener("click", () => { if (currentStepIndex > 0) showStep(currentStepIndex - 1); });
         mobileNext?.addEventListener("click", () => advanceStep(currentStepIndex));
+        document.querySelector(".mobile-cancel-application")?.addEventListener("click", cancelApplication);
         document.addEventListener("application:draft-saved", () => {
           if (mobileDraftStatus) mobileDraftStatus.textContent = "Draft saved";
         });

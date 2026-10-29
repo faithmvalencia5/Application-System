@@ -5336,7 +5336,21 @@ function setupHomepageNavigation() {
       setTimeout(function () {
         const targetElement = document.querySelector(targetId);
         if (targetElement) {
-          targetElement.scrollIntoView({ behavior: "smooth" });
+          const header = document.getElementById("mainHeader");
+          const headerHeight = header
+            ? header.getBoundingClientRect().height
+            : 72;
+
+          const targetTop =
+            targetElement.getBoundingClientRect().top +
+            window.scrollY -
+            headerHeight -
+            16;
+
+          window.scrollTo({
+            top: Math.max(0, targetTop),
+            behavior: "smooth"
+          });
         }
       }, 200);
     });
@@ -5375,7 +5389,21 @@ function setupHomepageNavigation() {
 
       const targetElement = document.querySelector(targetId);
       if (targetElement) {
-        targetElement.scrollIntoView({ behavior: "smooth" });
+        const header = document.getElementById("mainHeader");
+        const headerHeight = header
+          ? header.getBoundingClientRect().height
+          : 72;
+
+        const targetTop =
+          targetElement.getBoundingClientRect().top +
+          window.scrollY -
+          headerHeight -
+          16;
+
+        window.scrollTo({
+          top: Math.max(0, targetTop),
+          behavior: "smooth"
+        });
       }
 
       document.querySelectorAll(".nav-link").forEach(function (navLink) {
@@ -5396,12 +5424,26 @@ function setupHomepageNavigation() {
 
       const targetElement = document.querySelector(targetId);
       if (targetElement) {
-        targetElement.scrollIntoView({ behavior: "smooth" });
+        const header = document.getElementById("mainHeader");
+        const headerHeight = header
+          ? header.getBoundingClientRect().height
+          : 72;
+
+        const targetTop =
+          targetElement.getBoundingClientRect().top +
+          window.scrollY -
+          headerHeight -
+          16;
+
+        window.scrollTo({
+          top: Math.max(0, targetTop),
+          behavior: "smooth"
+        });
       }
     });
   });
 
-  const sections = ["home", "about", "contact"];
+  const sections = ["home", "about", "stories", "contact"];
   const observer = new IntersectionObserver(
     function (entries) {
       entries.forEach(function (entry) {

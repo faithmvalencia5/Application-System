@@ -5397,8 +5397,7 @@ function setupHomepageNavigation() {
         const targetTop =
           targetElement.getBoundingClientRect().top +
           window.scrollY -
-          headerHeight -
-          16;
+          headerHeight;
 
         window.scrollTo({
           top: Math.max(0, targetTop),

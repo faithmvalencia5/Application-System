@@ -4628,7 +4628,6 @@ body.homepage-page .homepage-footer-nav .material-symbols-outlined {
   white-space: nowrap;
   direction: ltr;
   -webkit-font-feature-settings: "liga";
-  font-feature-settings: "liga";
   -webkit-font-smoothing: antialiased;
 }
 
@@ -6051,7 +6050,7 @@ body.homepage-page.track-status-open .fixed-header {
 body.homepage-page #about.about-section {
   max-width: none;
   margin: 0;
-  padding: 112px 8.4vw 0;
+  padding: 40px 8.4vw 0;
   background: #fff;
 }
 

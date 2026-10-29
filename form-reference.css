@@ -1472,3 +1472,35 @@ body.application-form-page .application-form-card {
     overflow: visible;
   }
 }
+
+
+/* Keep Cancel Application visible on mobile without pushing it off-screen. */
+@media (max-width: 900px) {
+  body.application-form-page .mobile-action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+  }
+
+  body.application-form-page .mobile-action-buttons .mobile-back {
+    flex: 0 0 30%;
+    width: auto;
+    min-width: 0;
+  }
+
+  body.application-form-page .mobile-action-buttons .mobile-next {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+  }
+
+  body.application-form-page .mobile-action-buttons .mobile-cancel-application {
+    display: block;
+    flex: 1 0 100%;
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+  }
+}

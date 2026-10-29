@@ -7441,3 +7441,125 @@ body.verify-page #verify-request-id-modal .verify-close-inline:focus-visible {
     min-height: 250px;
   }
 }
+
+
+/* Face verification modal: prevent overlap and improve close button */
+.camera-modal {
+  z-index: 20000;
+  padding: 16px;
+  overflow-y: auto;
+  background: rgba(8, 24, 34, 0.96);
+  backdrop-filter: blur(8px);
+}
+
+.camera-dialog {
+  isolation: isolate;
+  flex: 0 0 auto;
+  width: min(460px, 100%);
+  height: min(700px, calc(100dvh - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  overflow: hidden;
+}
+
+#face-camera-video,
+#face-camera-canvas {
+  z-index: 0;
+}
+
+.camera-dialog-head {
+  top: max(16px, env(safe-area-inset-top));
+  left: 16px;
+  right: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: #fff;
+  backdrop-filter: none;
+}
+
+.camera-dialog-head > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.camera-dialog-head h3 {
+  margin: 0 0 6px;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+}
+
+.camera-status {
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+.camera-close {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #dbe3ed;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #173a7c;
+}
+
+.camera-close .material-symbols-outlined {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.camera-close:focus-visible {
+  outline: 3px solid #e24b4a;
+  outline-offset: 3px;
+}
+
+.face-verification-result {
+  bottom: 86px;
+  z-index: 3;
+}
+
+.face-camera-actions {
+  z-index: 3;
+}
+
+@media (max-width: 600px) {
+  .camera-modal {
+    padding: 0;
+  }
+
+  .camera-dialog {
+    width: 100%;
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .camera-dialog-head {
+    top: max(14px, env(safe-area-inset-top));
+    left: 12px;
+    right: 12px;
+    padding: 13px;
+  }
+
+  .camera-dialog-head h3 {
+    font-size: 17px;
+  }
+
+  .camera-status {
+    font-size: 12px;
+  }
+
+  .camera-close {
+    flex-basis: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .face-verification-result {
+    bottom: 86px;
+  }
+}

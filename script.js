@@ -1883,6 +1883,9 @@ function setupFaceCamera() {
 
   const previewWrap =
     document.getElementById("face-camera-preview");
+    if (previewWrap && previewWrap.parentElement !== document.body) {
+      document.body.appendChild(previewWrap);
+    }
 
   const videoElement =
     document.getElementById("face-camera-video");

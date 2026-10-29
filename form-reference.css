@@ -774,6 +774,7 @@ body.application-form-page .mobile-sticky-area { display: none; }
     color: #334155;
   }
   body.application-form-page .mobile-back:disabled { opacity: 1; cursor: default; }
+  body.application-form-page .mobile-back[hidden] { display: none !important; }
   body.application-form-page .mobile-next {
     grid-column: 2;
     flex-direction: column;

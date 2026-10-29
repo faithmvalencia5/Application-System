@@ -5625,6 +5625,34 @@ function setupVerificationPage() {
   const statusStep = document.getElementById("verify-step-status");
   const entryForm = document.getElementById("verify-id-form");
   const inputField = document.getElementById("application-id-input");
+  if (inputField) {
+    inputField.addEventListener("input", function () {
+      let value = inputField.value.toUpperCase();
+
+      // Keep the OSCA prefix and avoid duplicating it.
+      value = value.replace(/^OSCA/i, "");
+      inputField.value = "OSCA" + value;
+    });
+
+    inputField.addEventListener("keydown", function (event) {
+      // Prevent deleting the fixed OSCA prefix.
+      if (
+        (event.key === "Backspace" || event.key === "Delete") &&
+        inputField.selectionStart <= 4 &&
+        inputField.selectionEnd <= 4
+      ) {
+        event.preventDefault();
+        inputField.setSelectionRange(4, 4);
+      }
+    });
+
+    inputField.addEventListener("focus", function () {
+      if (!inputField.value) inputField.value = "OSCA";
+      if (inputField.selectionStart < 4) {
+        inputField.setSelectionRange(4, 4);
+      }
+    });
+  }
   const errorLabel = document.getElementById("application-id-error");
   const statusItems = document.querySelectorAll(".verify-status-item[data-status]");
   const verifiedId = document.getElementById("verified-application-id");

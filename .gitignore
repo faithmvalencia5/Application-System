@@ -18,3 +18,11 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Python-generated cache files
+__pycache__/
+*.py[cod]
+
+# Local virtual environments
+.venv/
+venv/

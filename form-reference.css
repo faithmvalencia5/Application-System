@@ -972,8 +972,8 @@ body.application-form-page .mobile-sticky-area { display: none; }
     color: #fff;
   }
   body.application-form-page .steps-nav a.is-locked:not(.is-current) .step-number-text { display: grid !important; }
-  body.application-form-page .steps-nav a.is-locked:not(.is-current) .step-number-lock { display: none !important; }
   body.application-form-page .steps-nav a.is-locked:not(.is-current) .step-number-lock {
+    display: none !important;
     width: 20px !important;
     height: 20px !important;
     min-width: 0 !important;

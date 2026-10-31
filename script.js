@@ -4016,10 +4016,6 @@ function setupFormSubmitConfirmation() {
     return;
   }
 
-  const getSupabaseClient = function () {
-    return window.supabaseClient || window.supabase || null;
-  };
-
   const getInputValue = function (id) {
     const field = document.getElementById(id);
     if (!field) {
@@ -4370,88 +4366,6 @@ function setupFormSubmitConfirmation() {
       confirmationsData: confirmationsData,
       statusHistoryData: statusHistoryData
     };
-  };
-
-  const saveApplicationOLD = async function (supabaseClient) {
-    const { data: appRow, error: appError } = await supabaseClient
-      .from('applications')
-      .insert({
-        surname: getInputValue('surname'),
-        first_name: getInputValue('firstname'),
-        middle_name: toNull(getInputValue('middlename')),
-        date_of_birth: getInputValue('dob'),
-        age: parseInteger(getInputValue('age')),
-        sex: toNull(getInputValue('sex')),
-        place_of_birth: toNull(getInputValue('birthplace')),
-        civil_status: toNull(getInputValue('civil-status')),
-        house_street: toNull(getInputValue('address')),
-        barangay_district: toNull(getInputValue('barangay')),
-        educational_attainment: (toNull(getInputValue('education')) === 'Not Attended Any School') ? 'Not Attend Any School' : toNull(getInputValue('education')),
-        religion: toNull(getInputValue('religion')),
-        religion_specify: getSelectSpecifyValue('religion'),
-        occupation: toNull(getInputValue('occupation')),
-        osca_id_number: toNull(getInputValue('id-osca')),
-        sss_id_number: toNull(getInputValue('id-sss')),
-        philhealth_id_number: toNull(getInputValue('id-philhealth')),
-        gsis_id_number: toNull(getInputValue('id-gsis')),
-        tin_id_number: toNull(getInputValue('id-tin')),
-        contact_number: toNull(getInputValue('contact-number')),
-        application_status: 'Pending'
-      })
-      .select('application_id')
-      .single();
-
-    if (appError || !appRow || !appRow.application_id) {
-      throw appError || new Error('Unable to create application record.');
-    }
-
-    const applicationId = appRow.application_id;
-    const payloads = collectAllPayloads(applicationId);
-
-    try {
-      if (payloads.familyRowsData.length > 0) {
-        const { error: familyError } = await supabaseClient.from('family_composition').insert(payloads.familyRowsData);
-        if (familyError) {
-          throw familyError;
-        }
-      }
-
-      const hasMembershipData = payloads.membershipsData.association_name || payloads.membershipsData.association_address || payloads.membershipsData.association_date || payloads.membershipsData.position;
-      if (hasMembershipData) {
-        const { error: membershipError } = await supabaseClient.from('memberships').insert(payloads.membershipsData);
-        if (membershipError) {
-          throw membershipError;
-        }
-      }
-
-      const { error: personalBackgroundError } = await supabaseClient.from('personal_background').insert(payloads.personalBackgroundData);
-      if (personalBackgroundError) {
-        throw personalBackgroundError;
-      }
-
-      const { error: problemsNeedsError } = await supabaseClient.from('problems_needs').insert(payloads.problemsNeedsData);
-      if (problemsNeedsError) {
-        throw problemsNeedsError;
-      }
-
-      const { error: applicationFilesError } = await supabaseClient.from('application_files').insert(payloads.applicationFilesData);
-      if (applicationFilesError) {
-        throw applicationFilesError;
-      }
-
-      const { error: confirmationsError } = await supabaseClient.from('confirmations').insert(payloads.confirmationsData);
-      if (confirmationsError) {
-        throw confirmationsError;
-      }
-
-      const { error: statusHistoryError } = await supabaseClient.from('application_status_history').insert(payloads.statusHistoryData);
-      if (statusHistoryError) {
-        throw statusHistoryError;
-      }
-    } catch (error) {
-      await supabaseClient.from('applications').delete().eq('application_id', applicationId);
-      throw error;
-    }
   };
 
   const saveApplication = async function () {

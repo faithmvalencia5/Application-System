@@ -6,7 +6,7 @@ function blockNonNumericInput() {
   const contactField = document.getElementById("contact-number");
   const familyBody = document.getElementById("family-body");
 
-  const numericFields = [ageField].filter(Boolean);
+  const numericFields = [ageField, contactField].filter(Boolean);
   const blockedKeys = ["e", "E", "+", "-", "."];
 
   const isControlKey = function (event) {
@@ -61,60 +61,6 @@ function blockNonNumericInput() {
       sanitizeDigitsOnly(field);
     });
   });
-
-  // Philippine mobile number: keep the grouping guide visible while the user types.
-  if (contactField) {
-    const formatMobile = function (value) {
-      const digits = String(value || "").replace(/\D/g, "").slice(0, 11);
-      if (digits.length <= 4) return digits;
-      if (digits.length <= 7) return digits.slice(0, 4) + " " + digits.slice(4);
-      return digits.slice(0, 4) + " " + digits.slice(4, 7) + " " + digits.slice(7);
-    };
-
-    const digitCountBeforeCaret = function (value, caret) {
-      return value.slice(0, caret).replace(/\D/g, "").length;
-    };
-
-    const moveCaretAfterDigits = function (field, count) {
-      if (typeof field.setSelectionRange !== "function") return;
-      if (count <= 0) {
-        field.setSelectionRange(0, 0);
-        return;
-      }
-      let digitsSeen = 0;
-      let position = field.value.length;
-      for (let i = 0; i < field.value.length; i += 1) {
-        if (/\d/.test(field.value[i])) digitsSeen += 1;
-        if (digitsSeen === count) {
-          position = i + 1;
-          break;
-        }
-      }
-      if (field.value[position] === " ") position += 1;
-      field.setSelectionRange(position, position);
-    };
-
-    contactField.setAttribute("inputmode", "numeric");
-    contactField.setAttribute("maxlength", "13");
-    contactField.setAttribute("pattern", "09[0-9]{2} [0-9]{3} [0-9]{4}");
-    contactField.setAttribute("placeholder", "09_ ___ ____");
-
-    contactField.addEventListener("input", function () {
-      const caret = contactField.selectionStart ?? contactField.value.length;
-      const digitsBeforeCaret = digitCountBeforeCaret(contactField.value, caret);
-      contactField.value = formatMobile(contactField.value);
-      moveCaretAfterDigits(contactField, digitsBeforeCaret);
-    });
-
-    contactField.addEventListener("paste", function (event) {
-      event.preventDefault();
-      const pasted = (event.clipboardData || window.clipboardData).getData("text");
-      contactField.value = formatMobile(pasted);
-      contactField.dispatchEvent(new Event("input", { bubbles: true }));
-    });
-
-    if (contactField.value) contactField.value = formatMobile(contactField.value);
-  }
 
   if (familyBody) {
     familyBody.querySelectorAll('input[aria-label="Family age"], input[aria-label="Family income"]').forEach(function (field) {
@@ -4248,7 +4194,7 @@ function setupFormSubmitConfirmation() {
       philhealth_id_number: toNull(getInputValue('id-philhealth')),
       gsis_id_number: toNull(getInputValue('id-gsis')),
       tin_id_number: toNull(getInputValue('id-tin')),
-      contact_number: toNull(getInputValue('contact-number').replace(/\\D/g, '')),
+      contact_number: toNull(getInputValue('contact-number')),
     };
 
     const membershipsData = {
@@ -4449,7 +4395,7 @@ function setupFormSubmitConfirmation() {
         philhealth_id_number: toNull(getInputValue('id-philhealth')),
         gsis_id_number: toNull(getInputValue('id-gsis')),
         tin_id_number: toNull(getInputValue('id-tin')),
-        contact_number: toNull(getInputValue('contact-number').replace(/\\D/g, '')),
+        contact_number: toNull(getInputValue('contact-number')),
         application_status: 'Pending'
       })
       .select('application_id')
@@ -4771,10 +4717,10 @@ function setupFormSubmitConfirmation() {
       return false;
     }
 
-    const contactValue = getInputValue('contact-number').replace(/\\D/g, '');
+    const contactValue = getInputValue('contact-number');
     if (contactValue !== '' && !/^09\d{9}$/.test(contactValue)) {
       markFieldInvalid('contact-number');
-      showInlineError('Please enter an 11-digit Philippine mobile number (09XX XXX XXXX).');
+      showInlineError('Please enter a Philippine mobile number (09XX XXX XXXX).');
       const contactField = document.getElementById('contact-number');
       if (contactField) {
         contactField.focus();

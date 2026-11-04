@@ -7563,15 +7563,3 @@ body.verify-page #verify-request-id-modal .verify-close-inline:focus-visible {
     bottom: 86px;
   }
 }
-
-/* Application ID entry guidance */
-body.verify-page #application-id-help {
-  display: block;
-  margin: -6px 0 0;
-  color: #6b7c96;
-  font-size: 0.82rem;
-  line-height: 1.45;
-}
-body.verify-page #application-id-input {
-  letter-spacing: 0.04em;
-}

@@ -5647,7 +5647,7 @@ function setupContactMap() {
 }
 
 function normalizeApplicationId(value) {
-  return (value || "").replace(/\s+/g, "").trim().toUpperCase();
+  return (value || "").trim();
 }
 
 function setupTrackStatusModal() {
@@ -5728,40 +5728,30 @@ function setupVerificationPage() {
   const entryForm = document.getElementById("verify-id-form");
   const inputField = document.getElementById("application-id-input");
   if (inputField) {
-    const formatApplicationId = function (rawValue) {
-      let value = String(rawValue || "").toUpperCase().replace(/\s+/g, "");
-      value = value.replace(/^OSCA/, "").replace(/[^0-9]/g, "").slice(0, 6);
-      return value ? "OSCA" + value : "";
-    };
-
-    inputField.setAttribute("maxlength", "10");
-    inputField.setAttribute("pattern", "OSCA[0-9]{6}");
-    inputField.setAttribute("placeholder", "OSCA######");
-    inputField.value = formatApplicationId(inputField.value);
-
     inputField.addEventListener("input", function () {
-      const formatted = formatApplicationId(inputField.value);
-      inputField.value = formatted;
-      inputField.setCustomValidity(
-        formatted === "" || /^OSCA\d{6}$/.test(formatted)
-          ? ""
-          : "Enter the 6 digits after OSCA."
-      );
-    });
+      let value = inputField.value.toUpperCase();
 
-    inputField.addEventListener("paste", function (event) {
-      event.preventDefault();
-      const pastedText = (event.clipboardData || window.clipboardData).getData("text");
-      inputField.value = formatApplicationId(pastedText);
-      inputField.dispatchEvent(new Event("input", { bubbles: true }));
+      // Keep the OSCA prefix and avoid duplicating it.
+      value = value.replace(/^OSCA/i, "");
+      inputField.value = "OSCA" + value;
     });
 
     inputField.addEventListener("keydown", function (event) {
-      if (event.ctrlKey || event.metaKey || ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Home", "End", "Tab"].includes(event.key)) {
-        return;
-      }
-      if (!/^\d$/.test(event.key) && !/^OSCA\d{0,6}$/i.test(inputField.value + event.key)) {
+      // Prevent deleting the fixed OSCA prefix.
+      if (
+        (event.key === "Backspace" || event.key === "Delete") &&
+        inputField.selectionStart <= 4 &&
+        inputField.selectionEnd <= 4
+      ) {
         event.preventDefault();
+        inputField.setSelectionRange(4, 4);
+      }
+    });
+
+    inputField.addEventListener("focus", function () {
+      if (!inputField.value) inputField.value = "OSCA";
+      if (inputField.selectionStart < 4) {
+        inputField.setSelectionRange(4, 4);
       }
     });
   }
@@ -6034,9 +6024,9 @@ function setupVerificationPage() {
 
     const applicationId = normalizeApplicationId(inputField.value);
 
-    if (!/^OSCA\d{6}$/.test(applicationId)) {
+    if (!applicationId) {
       if (errorLabel) {
-        errorLabel.textContent = "Please enter the complete Application ID: OSCA followed by 6 digits (example: OSCA260163).";
+        errorLabel.textContent = "Please enter your Application ID.";
       }
       inputField.focus();
       return;

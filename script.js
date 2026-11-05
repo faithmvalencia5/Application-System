@@ -2992,22 +2992,44 @@ function setupFaceCamera() {
 
 
         /*
-        * DOB from form does not match ID.
+        * Distinguish API errors and unreadable OCR from a genuine mismatch.
         */
-        if (
-          ageResult.birthDateMatches !==
-          true
-        ) {
+        if (!ageResult || ageResult.success !== true) {
+          const serviceMessage =
+            ageResult?.message ||
+            "The age verification service could not process the uploaded ID.";
 
-          showErrorNotification(
-            "The date of birth entered in the application does not match the date of birth on your Valid ID."
-          );
-
+          showErrorNotification(serviceMessage);
           setVerificationResult(
-            "✕ Date of birth does not match the uploaded Valid ID.",
+            "Unable to verify the date of birth: " + serviceMessage,
             "error"
           );
+          return;
+        }
 
+        if (!ageResult.detectedBirthDate) {
+          const unreadableMessage =
+            ageResult.message ||
+            "We could not read a date of birth from the uploaded ID. Please upload a clearer, front-facing image.";
+
+          showErrorNotification(unreadableMessage);
+          setVerificationResult(
+            "✕ " + unreadableMessage,
+            "error"
+          );
+          return;
+        }
+
+        if (ageResult.birthDateMatches !== true) {
+          showErrorNotification(
+            "The date of birth entered in the application does not match the date of birth detected on your Valid ID (" +
+            ageResult.detectedBirthDate + ")."
+          );
+          setVerificationResult(
+            "✕ DOB mismatch. The ID date detected was " +
+            ageResult.detectedBirthDate + ".",
+            "error"
+          );
           return;
         }
 

@@ -6,11 +6,12 @@ const key="osca-bauan-language";
 function get(){try{return localStorage.getItem(key)==="tl"?"tl":"en"}catch(_){return"en"}}
 function translateNode(node,lang){
  const el=node.parentElement;if(!el||el.closest("script,style,noscript,textarea,code,pre,[data-no-translate]"))return;
- if(node.__oscaEnglish===undefined)node.__oscaEnglish=node.nodeValue;
+ if(node.__oscaEnglish===undefined||node.nodeValue!==node.__oscaRendered)node.__oscaEnglish=node.nodeValue;
  const original=node.__oscaEnglish;if(!original.trim())return;
  let value=original;
  if(lang==="tl"){for(const [en,fil] of pairs)value=value.split(en).join(fil);}
- node.nodeValue=value;
+ if(node.nodeValue!==value)node.nodeValue=value;
+ node.__oscaRendered=value;
 }
 function apply(lang){
  document.documentElement.lang=lang==="tl"?"fil":"en";
@@ -26,6 +27,9 @@ function apply(lang){
  });
  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);while(walker.nextNode())translateNode(walker.currentNode,lang);
  document.querySelectorAll(".osca-language-control select").forEach(select=>select.value=lang);
+ const baseTitle=document.documentElement.dataset.oscaEnglishTitle||(document.documentElement.dataset.oscaEnglishTitle=document.title);
+ let translatedTitle=baseTitle;if(lang==="tl"){for(const [en,fil] of pairs)translatedTitle=translatedTitle.split(en).join(fil);}
+ document.title=translatedTitle;
 }
 function set(lang){const v=lang==="tl"?"tl":"en";try{localStorage.setItem(key,v)}catch(_){}apply(v);document.dispatchEvent(new CustomEvent("osca:languagechange",{detail:{language:v}}))}
 function makeControl(id){
@@ -41,7 +45,7 @@ function init(){
  if(drawer&&!drawer.querySelector(".osca-language-control"))drawer.insertBefore(makeControl("osca-language-select-mobile"),drawer.querySelector(".mobile-menu-greeting")||drawer.firstChild);
  apply(get());
  const observer=new MutationObserver(records=>{for(const r of records)for(const n of r.addedNodes){if(n.nodeType===Node.TEXT_NODE)translateNode(n,get());else if(n.nodeType===Node.ELEMENT_NODE){const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT);while(w.nextNode())translateNode(w.currentNode,get());}}});
- observer.observe(document.body,{childList:true,subtree:true});
+ observer.observe(document.body,{childList:true,subtree:true,characterData:true});
 }
 document.addEventListener("DOMContentLoaded",init);
 window.OSCALanguage={getLanguage:get,setLanguage:set,translateText:s=>get()==="tl"?(dict[s]||s):s};

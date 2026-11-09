@@ -42,7 +42,7 @@ function init(){
  }
  apply(get());
  const observer=new MutationObserver(records=>{for(const r of records)for(const n of r.addedNodes){if(n.nodeType===Node.TEXT_NODE)translateNode(n,get());else if(n.nodeType===Node.ELEMENT_NODE){const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT);while(w.nextNode())translateNode(w.currentNode,get());}}});
- observer.observe(document.body,{childList:true,subtree:true,characterData:true});
+ observer.observe(document.body,{childList:true,subtree:true});
 }
 document.addEventListener("DOMContentLoaded",init);
 window.OSCALanguage={getLanguage:get,setLanguage:set,translateText:s=>get()==="tl"?(dict[s]||s):s};

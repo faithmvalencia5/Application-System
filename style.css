@@ -8412,3 +8412,32 @@ body.application-form-page .application-form-card {
 
 /* Accessible English / Tagalog language selector */
 .osca-language-control{display:inline-flex;align-items:center;gap:7px;position:relative;z-index:80;margin-left:10px;padding:7px 10px;border:1px solid #d2dce5;border-radius:12px;background:#fff;color:#18334b;font:700 13px/1.2 "Segoe UI",sans-serif;box-shadow:0 3px 12px rgba(15,35,51,.08);flex-shrink:0}.osca-language-control .material-symbols-outlined{font-size:20px}.osca-language-control select{min-width:92px;padding:5px 22px 5px 7px;border:0;border-radius:7px;background:#f5f8fa;color:inherit;font:inherit;cursor:pointer}.osca-language-control select:focus-visible{outline:3px solid #0a66c2;outline-offset:2px}.form-header .osca-language-control,.disclaimer-card .osca-language-control,.verify-flow .osca-language-control{margin:10px auto;width:fit-content}@media(max-width:767px){.osca-language-control{padding:5px 7px}.osca-language-label{display:none}.osca-language-control select{min-width:82px}}
+
+/* Keep the mobile language picker inside the hamburger drawer. */
+@media (max-width: 767px) {
+  body.homepage-page .fixed-header nav > .osca-language-control { display: none !important; }
+  body.homepage-page #mobileMenu > .osca-language-control {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: space-between;
+    margin: 0;
+    padding: 12px 14px;
+    gap: 12px;
+    border-radius: 14px;
+    font-size: 15px;
+  }
+  body.homepage-page #mobileMenu > .osca-language-control .osca-language-label {
+    display: inline;
+    font-size: 15px;
+  }
+  body.homepage-page #mobileMenu > .osca-language-control select {
+    min-width: 120px;
+    min-height: 44px;
+    padding: 8px 30px 8px 10px;
+    font-size: 15px;
+  }
+}
+@media (min-width: 768px) {
+  body.homepage-page #mobileMenu > .osca-language-control { display: none; }
+}

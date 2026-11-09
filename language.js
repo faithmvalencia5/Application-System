@@ -7,11 +7,14 @@ const page=location.pathname.split("/").pop()||"index.html";
 const supported=["index.html","form.html","register-disclaimer.html","trackstatus.html"];
 function get(){try{return localStorage.getItem(key)==="tl"?"tl":"en"}catch(_){return"en"}}
 function translateNode(node,lang){
- const el=node.parentElement;if(!el||el.closest("script,style,noscript,textarea,code,pre,[data-no-translate]"))return;
+ const el=node.parentElement;if(!el||el.closest("script,style,noscript,textarea,code,pre,[data-no-translate],select"))return;
  if(node.__oscaEnglish===undefined)node.__oscaEnglish=node.nodeValue;
- const original=node.__oscaEnglish,trim=original.trim();if(!trim)return;
- let value=trim;if(lang==="tl"){for(const [en,fil] of pairs){if(trim===en){value=fil;break}}}
- node.nodeValue=(original.match(/^\s*/)?.[0]||"")+value+(original.match(/\s*$/)?.[0]||"");
+ const original=node.__oscaEnglish;if(!original.trim())return;
+ let value=original;
+ if(lang==="tl"){
+  for(const [en,fil] of pairs)value=value.split(en).join(fil);
+ }
+ node.nodeValue=value;
 }
 function apply(lang){
  document.documentElement.lang=lang==="tl"?"fil":"en";
@@ -21,18 +24,25 @@ function apply(lang){
   }
  });
  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);while(walker.nextNode())translateNode(walker.currentNode,lang);
- const select=document.getElementById("osca-language-select");if(select)select.value=lang;
+ document.querySelectorAll(".osca-language-control select").forEach(select=>select.value=lang);
 }
 function set(lang){const v=lang==="tl"?"tl":"en";try{localStorage.setItem(key,v)}catch(_){}apply(v);document.dispatchEvent(new CustomEvent("osca:languagechange",{detail:{language:v}}))}
+function makeControl(id){
+ const wrap=document.createElement("label");wrap.className="osca-language-control";
+ wrap.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">language</span><span class="osca-language-label">Wika / Language</span><select id="'+id+'" aria-label="Choose language"><option value="en">English</option><option value="tl">Tagalog</option></select>';
+ wrap.querySelector("select").addEventListener("change",e=>set(e.target.value));
+ return wrap;
+}
 function init(){
- if(supported.includes(page)&&!document.getElementById("osca-language-select")){
-  const wrap=document.createElement("label");wrap.className="osca-language-control";wrap.innerHTML='<span class="material-symbols-outlined" aria-hidden="true">language</span><span class="osca-language-label">Wika / Language</span><select id="osca-language-select" aria-label="Choose language"><option value="en">English</option><option value="tl">Tagalog</option></select>';
-  const target=document.querySelector(".fixed-header nav")||document.querySelector(".form-header")||document.querySelector(".disclaimer-card")||document.querySelector(".verify-flow")||document.body;
-  target.appendChild(wrap);wrap.querySelector("select").addEventListener("change",e=>set(e.target.value));
+ if(supported.includes(page)){
+  const desktopTarget=document.querySelector(".fixed-header nav")||document.querySelector(".form-header")||document.querySelector(".disclaimer-card")||document.querySelector(".verify-flow")||document.body;
+  if(!desktopTarget.querySelector(":scope > .osca-language-control"))desktopTarget.appendChild(makeControl("osca-language-select"));
+  const drawer=document.getElementById("mobileMenu");
+  if(drawer&&!drawer.querySelector(".osca-language-control"))drawer.insertBefore(makeControl("osca-language-select-mobile"),drawer.querySelector(".mobile-menu-greeting")||drawer.firstChild);
  }
  apply(get());
  const observer=new MutationObserver(records=>{for(const r of records)for(const n of r.addedNodes){if(n.nodeType===Node.TEXT_NODE)translateNode(n,get());else if(n.nodeType===Node.ELEMENT_NODE){const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT);while(w.nextNode())translateNode(w.currentNode,get());}}});
- observer.observe(document.body,{childList:true,subtree:true});
+ observer.observe(document.body,{childList:true,subtree:true,characterData:true});
 }
 document.addEventListener("DOMContentLoaded",init);
 window.OSCALanguage={getLanguage:get,setLanguage:set,translateText:s=>get()==="tl"?(dict[s]||s):s};

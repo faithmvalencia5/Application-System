@@ -1,0 +1,15 @@
+{
+  "name": "osca-application-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local development launcher for the OSCA Bauan application frontend and backend",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node local-dev.js",
+    "dev": "node local-dev.js",
+    "start:frontend": "node local-server.js --port=5501",
+    "start:backend": "npm --prefix backend start"
+  }
+}

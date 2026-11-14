@@ -1163,44 +1163,22 @@ export async function updateApplication(
     const authenticationResets = [];
 
 
-    if (
-        files?.valid_id_front?.[0] ||
-        files?.valid_id_back?.[0]
-    ) {
+    const replacedDocumentTypes = [
+        ["valid_id_front", "valid_id"],
+        ["valid_id_back", "valid_id_back"],
+        ["latest_photo", "latest_photo"],
+        ["birth_certificate", "birth_certificate"],
+        ["community_tax_certificate", "community_tax_certificate"],
+        ["signature", "signature"]
+    ];
 
-        authenticationResets.push(
-            resetDocumentAuthentication(
-                applicationId,
-                "valid_id"
-            )
-        );
-    }
-
-
-    if (
-        files?.birth_certificate?.[0]
-    ) {
-
-        authenticationResets.push(
-            resetDocumentAuthentication(
-                applicationId,
-                "birth_certificate"
-            )
-        );
-    }
-
-
-    if (
-        files?.community_tax_certificate?.[0]
-    ) {
-
-        authenticationResets.push(
-            resetDocumentAuthentication(
-                applicationId,
-                "community_tax_certificate"
-            )
-        );
-    }
+    replacedDocumentTypes.forEach(([fileKey, documentType]) => {
+        if (files?.[fileKey]?.[0]) {
+            authenticationResets.push(
+                resetDocumentAuthentication(applicationId, documentType)
+            );
+        }
+    });
 
 
     if (

@@ -7745,6 +7745,14 @@ body.registration-page .captcha-help {
   background: #eef3f6;
   cursor: zoom-in;
 }
+
+.upload-box iframe.upload-thumbnail {
+  width: min(100%, 320px);
+  height: 150px;
+  object-fit: initial;
+  pointer-events: none;
+  cursor: zoom-in;
+}
 .upload-box .upload-file-name { max-width: 100%; overflow-wrap: anywhere; }
 .upload-box.has-file .upload-file-name { font-size: .88rem; font-weight: 700; color: #31556a; }
 .notification-icon .material-symbols-outlined {

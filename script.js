@@ -917,12 +917,17 @@ async function loadApplicationForEditing() {
     uploadBox.classList.add("has-file");
 
     const previewSource = signedUrl || "";
-    const fileExtension = String(filePath || previewSource)
-      .split("?")[0]
-      .split("#")[0]
-      .split(".")
-      .pop()
-      .toLowerCase();
+    // Prefer the signed URL path because storage object paths may be encoded
+    // or may not retain the original extension in filePath.
+    const extensionSource = previewSource || filePath || "";
+    let extensionPath = String(extensionSource).split("#")[0];
+    try {
+      extensionPath = new URL(extensionPath, window.location.href).pathname;
+    } catch (_) {
+      extensionPath = extensionPath.split("?")[0];
+    }
+    const fileExtension = (extensionPath.split("/").pop() || "")
+      .split(".").pop().toLowerCase();
     const isImage = /^(png|jpe?g|webp|gif|bmp)$/i.test(fileExtension);
     const isPdf = fileExtension === "pdf";
 
@@ -936,11 +941,19 @@ async function loadApplicationForEditing() {
     // Images use an image thumbnail; PDFs show their first page in an embedded viewer.
     if (previewSource && (isImage || isPdf)) {
       let thumbnail = uploadBox.querySelector(".upload-thumbnail");
+      const requiredTag = isPdf ? "IFRAME" : "IMG";
+
+      // setupUploadButtons creates a hidden IMG for newly selected files.
+      // Replace it when the saved existing file is a PDF (or vice versa).
+      if (thumbnail && thumbnail.tagName !== requiredTag) {
+        const replacement = document.createElement(isPdf ? "iframe" : "img");
+        replacement.className = "upload-thumbnail";
+        thumbnail.replaceWith(replacement);
+        thumbnail = replacement;
+      }
 
       if (!thumbnail) {
-        thumbnail = isPdf
-          ? document.createElement("iframe")
-          : document.createElement("img");
+        thumbnail = document.createElement(isPdf ? "iframe" : "img");
         thumbnail.className = "upload-thumbnail";
         uploadBox.insertBefore(thumbnail, fileNameLabel || null);
       }

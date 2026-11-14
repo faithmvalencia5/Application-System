@@ -2932,3 +2932,30 @@ body.application-form-page #upload-files .upload-item > .upload-control {
   order: 1;
   width: 100%;
 }
+
+/* Keep the upload boxes compact while retaining the stacked text layout. */
+body.application-form-page #upload-files .upload-item > .upload-control {
+  width: min(100%, 520px) !important;
+  max-width: 520px !important;
+  align-self: flex-start;
+}
+
+body.application-form-page #upload-files .upload-box {
+  width: 100%;
+  min-height: 150px;
+  max-width: 520px;
+  box-sizing: border-box;
+}
+
+body.application-form-page #upload-files .upload-box .upload-thumbnail {
+  max-width: min(100%, 220px);
+  max-height: 112px;
+  object-fit: contain;
+}
+
+@media (max-width: 600px) {
+  body.application-form-page #upload-files .upload-item > .upload-control {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}

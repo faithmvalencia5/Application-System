@@ -75,6 +75,35 @@ export async function getApplicationStatus(req, res) {
             throw idRequestError;
         }
 
+        const {
+            data: reuploadRows,
+            error: reuploadError
+        } = await supabase
+            .from("document_authentications")
+            .select("document_type, authentication_status, authentication_remarks, updated_at")
+            .eq("application_id", applicationId)
+            .eq("authentication_status", "reupload");
+
+        if (reuploadError) {
+            throw reuploadError;
+        }
+
+        const documentLabels = {
+            valid_id: "Valid ID (Front)",
+            valid_id_back: "Valid ID (Back)",
+            latest_photo: "Latest Photo",
+            birth_certificate: "Birth Certificate",
+            community_tax_certificate: "Community Tax Certificate (Cedula)",
+            signature: "Signature"
+        };
+
+        const documentsRequiringReupload = (reuploadRows || []).map(row => ({
+            document_type: row.document_type,
+            label: documentLabels[row.document_type] || row.document_type,
+            remarks: row.authentication_remarks || "Please upload a corrected copy.",
+            updated_at: row.updated_at || null
+        }));
+
         const applicantName = [
             applicationRow.first_name,
             applicationRow.middle_name,
@@ -90,6 +119,7 @@ export async function getApplicationStatus(req, res) {
             applicant: applicantName || "Applicant",
             status: statusText,
             status_updated_at: latestStatus?.updated_at || null,
+            documents_requiring_reupload: documentsRequiringReupload,
 
             has_active_id_request: Boolean(activeIdRequest),
 

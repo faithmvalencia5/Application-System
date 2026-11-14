@@ -501,7 +501,7 @@ function setupUploadButtons() {
       currentPreviewUrl = null;
 
       const cleanUrl = String(fileUrl).split("?")[0].split("#")[0];
-      const isImage = /\\.(png|jpe?g|webp|gif)$/i.test(cleanUrl);
+      const isImage = /\.(png|jpe?g|webp|gif)$/i.test(cleanUrl);
 
       if (isImage) {
         if (previewIframe) {

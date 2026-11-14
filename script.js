@@ -5996,6 +5996,9 @@ function setupVerificationPage() {
       status: toTimelineStatus(result.status),
       note: result.note,
       statusUpdatedAt: result.status_updated_at,
+      documentsRequiringReupload: Array.isArray(result.documents_requiring_reupload)
+        ? result.documents_requiring_reupload
+        : [],
 
       hasActiveIdRequest:
         Boolean(result.has_active_id_request),
@@ -6022,6 +6025,30 @@ function setupVerificationPage() {
     currentApplicationId = applicationId;
     verifiedApplicant.textContent = record.applicant;
     verificationNote.textContent = getDefaultNoteByStatus(record.status);
+
+    const reuploadNotice = document.getElementById("document-reupload-notice");
+    const reuploadList = document.getElementById("document-reupload-list");
+    const requestedDocuments = Array.isArray(record.documentsRequiringReupload)
+      ? record.documentsRequiringReupload
+      : [];
+    if (reuploadNotice && reuploadList) {
+      reuploadList.replaceChildren();
+      requestedDocuments.forEach(function (documentItem) {
+        const item = document.createElement("li");
+        const label = document.createElement("strong");
+        const remarks = document.createElement("span");
+        label.textContent = documentItem.label || documentItem.document_type || "Document";
+        remarks.textContent = " — " + (documentItem.remarks || "Please upload a corrected copy.");
+        item.append(label, remarks);
+        reuploadList.appendChild(item);
+      });
+      reuploadNotice.hidden = requestedDocuments.length === 0;
+      if (requestedDocuments.length) {
+        verificationNote.textContent =
+          "OSCA requested corrections to your application. Please use Edit Application to update the information and re-upload the documents listed below.";
+      }
+    }
+
     if (
       record.hasActiveIdRequest &&
       record.idRequest

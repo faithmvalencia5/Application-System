@@ -577,6 +577,10 @@ td select {
   padding: 12px;
 }
 
+.upload-item > div:last-child {
+  order: -1;
+}
+
 .upload-control {
   width: 100%;
 }

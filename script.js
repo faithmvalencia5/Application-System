@@ -916,22 +916,44 @@ async function loadApplicationForEditing() {
 
     uploadBox.classList.add("has-file");
 
+    const previewSource = signedUrl || "";
+    const fileExtension = String(filePath || previewSource)
+      .split("?")[0]
+      .split("#")[0]
+      .split(".")
+      .pop()
+      .toLowerCase();
+    const isImage = /^(png|jpe?g|webp|gif|bmp)$/i.test(fileExtension);
+    const isPdf = fileExtension === "pdf";
+
     if (fileNameLabel) {
-      fileNameLabel.textContent =
-        signedUrl
-          ? "Existing file · tap preview to view"
-          : getFileNameFromPath(filePath);
+      fileNameLabel.textContent = previewSource
+        ? getFileNameFromPath(filePath) || "Existing document"
+        : getFileNameFromPath(filePath);
     }
 
-    if (signedUrl && /\.(png|jpe?g|webp|gif)(?:[?#]|$)/i.test(signedUrl)) {
+    // Show the saved file directly inside its upload box.
+    // Images use an image thumbnail; PDFs show their first page in an embedded viewer.
+    if (previewSource && (isImage || isPdf)) {
       let thumbnail = uploadBox.querySelector(".upload-thumbnail");
+
       if (!thumbnail) {
-        thumbnail = document.createElement("img");
+        thumbnail = isPdf
+          ? document.createElement("iframe")
+          : document.createElement("img");
         thumbnail.className = "upload-thumbnail";
-        thumbnail.alt = "Existing document preview";
         uploadBox.insertBefore(thumbnail, fileNameLabel || null);
       }
-      thumbnail.src = signedUrl;
+
+      if (isPdf) {
+        thumbnail.title = "Existing PDF document preview";
+        thumbnail.setAttribute("aria-label", "Existing PDF document preview");
+        thumbnail.src = previewSource + "#page=1&toolbar=0&navpanes=0&scrollbar=0";
+      } else {
+        thumbnail.alt = "Existing document preview";
+        thumbnail.src = previewSource;
+      }
+
       thumbnail.hidden = false;
     }
 

@@ -1044,7 +1044,7 @@ export async function updateApplication(
         error: existingApplicationError
     } = await supabase
         .from("applications")
-        .select("application_id")
+        .select("*")
         .eq("application_id", applicationId)
         .maybeSingle();
 
@@ -1516,6 +1516,47 @@ export async function updateApplication(
                 return deleteStorageFile(filePath);
             })
         );
+
+        // Record exactly which top-level applicant fields and uploaded documents changed.
+        const changedInformation = Object.keys(applicationsData || {})
+            .filter((key) => !["application_id", "application_status"].includes(key))
+            .filter((key) => String(existingApplication[key] ?? "") !== String(applicationsData[key] ?? ""));
+        const documentLabels = {
+            valid_id_front: "Valid ID (Front)",
+            valid_id_back: "Valid ID (Back)",
+            latest_photo: "Latest Photo",
+            birth_certificate: "Birth Certificate",
+            community_tax_certificate: "Community Tax Certificate (Cedula)",
+            signature: "Signature"
+        };
+        const changedDocuments = Object.keys(documentLabels)
+            .filter((key) => Boolean(files?.[key]?.[0]))
+            .map((key) => documentLabels[key]);
+        const changeParts = [];
+        if (changedInformation.length) {
+            changeParts.push("Information changed: " + changedInformation.join(", "));
+        }
+        if (changedDocuments.length) {
+            changeParts.push("Documents re-uploaded: " + changedDocuments.join(", "));
+        }
+        if (changeParts.length) {
+            const { error: changeLogError } = await supabase
+                .from("audit_logs")
+                .insert({
+                    user_id: null,
+                    username: "Applicant",
+                    role: "Applicant",
+                    action: "APPLICANT_APPLICATION_UPDATED",
+                    entity_type: "APPLICATION",
+                    entity_id: String(applicationId),
+                    details: changeParts.join(". ") + "."
+                });
+            if (changeLogError) {
+                // The application update has already succeeded. Keep it saved,
+                // but surface the logging failure for server-side diagnosis.
+                console.error("Unable to record applicant edit details:", changeLogError);
+            }
+        }
 
         /*
         * Editing information does not change the status.

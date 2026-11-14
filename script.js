@@ -494,6 +494,41 @@ function setupUploadButtons() {
       updateButtonsState();
     });
 
+    const openExistingFile = function (fileUrl) {
+      if (!fileUrl) return;
+
+      if (currentPreviewUrl) URL.revokeObjectURL(currentPreviewUrl);
+      currentPreviewUrl = null;
+
+      const cleanUrl = String(fileUrl).split("?")[0].split("#")[0];
+      const isImage = /\\.(png|jpe?g|webp|gif)$/i.test(cleanUrl);
+
+      if (isImage) {
+        if (previewIframe) {
+          previewIframe.hidden = true;
+          previewIframe.src = "";
+        }
+        if (previewImage) {
+          previewImage.src = fileUrl;
+          previewImage.hidden = false;
+        }
+      } else {
+        if (previewImage) {
+          previewImage.hidden = true;
+          previewImage.src = "";
+        }
+        if (previewIframe) {
+          previewIframe.src = fileUrl;
+          previewIframe.hidden = false;
+        }
+      }
+
+      if (filePreviewModal) {
+        filePreviewModal.hidden = false;
+        filePreviewModal.setAttribute("aria-hidden", "false");
+      }
+    };
+
     const openSelectedFile = function (file) {
       if (!file) return;
 
@@ -536,7 +571,7 @@ function setupUploadButtons() {
       const existingFileUrl = inputElement.dataset.existingFileUrl;
       if (existingFileUrl) {
         event.preventDefault();
-        window.open(existingFileUrl, "_blank", "noopener,noreferrer");
+        openExistingFile(existingFileUrl);
       }
     });
 
@@ -554,7 +589,7 @@ function setupUploadButtons() {
           openSelectedFile(file);
         } else if (inputElement.dataset.existingFileUrl) {
           event.preventDefault();
-          window.open(inputElement.dataset.existingFileUrl, "_blank", "noopener,noreferrer");
+          openExistingFile(inputElement.dataset.existingFileUrl);
         } else {
           event.preventDefault();
           inputElement.click();
@@ -888,7 +923,7 @@ async function loadApplicationForEditing() {
           : getFileNameFromPath(filePath);
     }
 
-    if (signedUrl && /\\.(png|jpe?g|webp|gif)(?:[?#]|$)/i.test(signedUrl)) {
+    if (signedUrl && /\.(png|jpe?g|webp|gif)(?:[?#]|$)/i.test(signedUrl)) {
       let thumbnail = uploadBox.querySelector(".upload-thumbnail");
       if (!thumbnail) {
         thumbnail = document.createElement("img");

@@ -559,77 +559,199 @@ def generate_dob_variants(
     )
 
 
+def _valid_date_candidate(year, month, day):
+    """Return a valid ISO date candidate, or None when OCR digits are invalid."""
+    try:
+        return datetime(
+            int(year),
+            int(month),
+            int(day)
+        ).date().isoformat()
+    except (TypeError, ValueError):
+        return None
+
+
+def extract_dob_candidates(ocr_text):
+    """
+    Extract recognizable calendar dates from OCR text.
+
+    Month names are matched exactly or with conservative OCR-tolerant
+    similarity so handwritten/poorly scanned month names such as
+    'Septem6er' can still be interpreted. Ambiguous numeric dates are
+    retained as multiple candidates instead of being guessed.
+    """
+    if not ocr_text:
+        return set()
+
+    text = str(ocr_text).upper()
+    candidates = set()
+
+    month_names = {}
+    for month_number in range(1, 13):
+        month_date = datetime(2000, month_number, 1)
+        month_names[month_date.strftime("%B").upper()] = month_number
+        month_names[month_date.strftime("%b").upper()] = month_number
+
+    # --------------------------------------------------------
+    # 1. Numeric dates with separators (MM/DD/YYYY, DD-MM-YYYY,
+    #    YYYY-MM-DD, and similar formats).
+    # --------------------------------------------------------
+    numeric_patterns = [
+        (
+            re.compile(
+                r"(?<!\d)((?:19|20)\d{2})\s*[-/.]\s*(\d{1,2})\s*[-/.]\s*(\d{1,2})(?!\d)"
+            ),
+            ("ymd",)
+        ),
+        (
+            re.compile(
+                r"(?<!\d)(\d{1,2})\s*[-/.]\s*(\d{1,2})\s*[-/.]\s*((?:19|20)\d{2})(?!\d)"
+            ),
+            ("mdy", "dmy")
+        )
+    ]
+
+    for pattern, formats in numeric_patterns:
+        for match in pattern.finditer(text):
+            values = match.groups()
+
+            for date_format in formats:
+                if date_format == "ymd":
+                    year, month, day = values
+                elif date_format == "mdy":
+                    month, day, year = values
+                else:
+                    day, month, year = values
+
+                candidate = _valid_date_candidate(
+                    year,
+                    month,
+                    day
+                )
+
+                if candidate:
+                    candidates.add(candidate)
+
+    # --------------------------------------------------------
+    # 2. Month-name dates, e.g. September 18, 1964 or
+    #    18 September 1964. OCR errors in month names are allowed,
+    #    but the day and four-digit year must be readable.
+    # --------------------------------------------------------
+    tokens = re.findall(r"[A-Z0-9]+", text)
+
+    def numeric_token(token, maximum_digits=2):
+        digits = re.sub(r"\D", "", token)
+        if not digits or len(digits) > maximum_digits:
+            return None
+        return int(digits)
+
+    for index, token in enumerate(tokens):
+        token_letters = re.sub(r"[^A-Z]", "", token)
+        if not token_letters:
+            continue
+
+        matched_month = None
+        best_score = 0.0
+
+        for month_name, month_number in month_names.items():
+            if token_letters == month_name:
+                matched_month = month_number
+                best_score = 1.0
+                break
+
+            # Full month names and common abbreviations only.
+            # A minimum token length avoids matching ordinary short words.
+            if len(token_letters) >= 3:
+                score = similarity_score(token_letters, month_name)
+                if score >= 0.78 and score > best_score:
+                    matched_month = month_number
+                    best_score = score
+
+        if matched_month is None:
+            continue
+
+        # Month Day Year
+        if index + 2 < len(tokens):
+            day = numeric_token(tokens[index + 1])
+            year_digits = re.sub(r"\D", "", tokens[index + 2])
+            if day is not None and len(year_digits) == 4:
+                candidate = _valid_date_candidate(
+                    year_digits,
+                    matched_month,
+                    day
+                )
+                if candidate:
+                    candidates.add(candidate)
+
+        # Day Month Year
+        if index >= 1 and index + 1 < len(tokens):
+            day = numeric_token(tokens[index - 1])
+            year_digits = re.sub(r"\D", "", tokens[index + 1])
+            if day is not None and len(year_digits) == 4:
+                candidate = _valid_date_candidate(
+                    year_digits,
+                    matched_month,
+                    day
+                )
+                if candidate:
+                    candidates.add(candidate)
+
+    return candidates
+
+
 def check_dob(
     date_of_birth,
     ocr_text
 ):
+    """
+    Compare the applicant DOB with dates that OCR can confidently read.
 
+    True  = the expected date was found.
+    False = one unambiguous, valid date was read and it differs.
+    None  = OCR did not produce enough reliable date information;
+            staff review is required instead of automatic rejection.
+    """
     if not date_of_birth:
         return None
 
+    try:
+        expected_dob = datetime.strptime(
+            str(date_of_birth).strip()[:10],
+            "%Y-%m-%d"
+        ).date().isoformat()
+    except (TypeError, ValueError):
+        return None
 
-    variants = (
-        generate_dob_variants(
-            date_of_birth
-        )
-    )
+    if not ocr_text or not str(ocr_text).strip():
+        return None
 
+    candidates = extract_dob_candidates(ocr_text)
 
-    if not variants:
+    if expected_dob in candidates:
+        return True
+
+    # Do not guess between numeric formats such as 04/05/1964.
+    # If OCR produces more than one valid interpretation and none
+    # matches the applicant, the result is uncertain.
+    if len(candidates) > 1:
+        return None
+
+    if len(candidates) == 1:
         return False
 
+    # Retain support for OCR output that captures a complete date
+    # in one of the expected textual formats but not as a tokenized
+    # date candidate.
+    for variant in generate_dob_variants(expected_dob):
+        normalized_variant = normalize_value(variant)
+        normalized_text = normalize_value(ocr_text)
 
-    document_text = (
-        normalize_value(
-            ocr_text
-        )
-    )
-
-
-    # --------------------------------------------------------
-    # Exact comparison
-    # --------------------------------------------------------
-
-    for variant in variants:
-
-        normalized_variant = (
-            normalize_value(
-                variant
-            )
-        )
-
-
-        if (
-            normalized_variant
-            and
-            normalized_variant
-            in
-            document_text
-        ):
-
+        if normalized_variant and normalized_variant in normalized_text:
             return True
 
-
-    # --------------------------------------------------------
-    # OCR-tolerant comparison
-    # --------------------------------------------------------
-
-    for variant in variants:
-
-        result = (
-            value_exists_in_document(
-                variant,
-                ocr_text,
-                threshold=0.80
-            )
-        )
-
-
-        if result is True:
-            return True
-
-
-    return False
+    # OCR may have missed or distorted the handwritten month/day.
+    # Absence of a readable date is not evidence of a mismatch.
+    return None
 
 
 # ============================================================

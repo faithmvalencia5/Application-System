@@ -1622,81 +1622,136 @@ def screen_document_type(
     document_type,
     ocr_text
 ):
-
+    """
+    Identify the uploaded document using exact and OCR-tolerant
+    indicator matching. For birth certificates, accept a strong
+    certificate-specific title/form indicator even when OCR misses
+    secondary fields; downstream structure checks and OSCA staff
+    verification remain in place.
+    """
     document_type = (
         document_type
         or
         ""
     ).strip().lower()
 
-
-    rules = (
-        DOCUMENT_RULES.get(
-            document_type
-        )
-    )
-
+    rules = DOCUMENT_RULES.get(document_type)
 
     if not rules:
-
         return {
             "matched": False,
             "matchedIndicators": [],
-
-            "message":
-                "Unsupported document type."
+            "message": "Unsupported document type."
         }
 
+    normalized_text = normalize_value(ocr_text)
 
-    normalized_text = (
-        normalize_value(
-            ocr_text
-        )
-    )
-
+    if not normalized_text:
+        return {
+            "matched": False,
+            "matchedIndicators": [],
+            "message": "No readable document text was detected."
+        }
 
     matched_indicators = []
+    fuzzy_matches = []
 
+    document_words = normalized_text.split()
 
-    for indicator in rules[
-        "indicators"
-    ]:
+    for indicator in rules["indicators"]:
+        normalized_indicator = normalize_value(indicator)
 
-        normalized_indicator = (
-            normalize_value(
-                indicator
-            )
-        )
+        if not normalized_indicator:
+            continue
 
+        if normalized_indicator in normalized_text:
+            matched_indicators.append(indicator)
+            continue
 
-        if (
-            normalized_indicator
-            in
-            normalized_text
+        # Fuzzy matching is limited to multi-word phrases. This helps
+        # with OCR substitutions and spacing errors without allowing
+        # generic single words such as CHILD or ID to identify a document.
+        indicator_words = normalized_indicator.split()
+        if len(indicator_words) < 2:
+            continue
+
+        expected_length = len(indicator_words)
+        best_score = 0.0
+
+        for window_size in range(
+            max(1, expected_length - 1),
+            expected_length + 2
         ):
+            for window_start in range(
+                0,
+                max(0, len(document_words) - window_size + 1)
+            ):
+                candidate = " ".join(
+                    document_words[
+                        window_start:window_start + window_size
+                    ]
+                )
+                score = similarity_score(
+                    normalized_indicator,
+                    candidate
+                )
+                if score > best_score:
+                    best_score = score
 
-            matched_indicators.append(
-                indicator
-            )
+        if best_score >= 0.82:
+            matched_indicators.append(indicator)
+            fuzzy_matches.append({
+                "indicator": indicator,
+                "score": round(best_score, 2)
+            })
 
+    # A Philippine Certificate of Live Birth can appear on older
+    # Local Civil Registrar forms or PSA/NSO copies. These are strong,
+    # document-specific anchors; one clear anchor is enough to send
+    # the document to the later identity/structure checks.
+    birth_certificate_anchors = {
+        "CERTIFICATE OF LIVE BIRTH",
+        "CERTIFICATE OF BIRTH",
+        "OFFICE OF THE CIVIL REGISTRAR GENERAL",
+        "MUNICIPAL FORM NO 102",
+        "MUNICIPAL FORM 102",
+        "PHILIPPINE STATISTICS AUTHORITY",
+        "NATIONAL STATISTICS OFFICE"
+    }
 
-    matched = (
-        len(
-            matched_indicators
-        )
-        >=
-        rules[
-            "minimum_indicators"
-        ]
+    normalized_anchors = {
+        normalize_value(item)
+        for item in birth_certificate_anchors
+    }
+
+    matched_anchor = any(
+        normalize_value(item) in normalized_anchors
+        for item in matched_indicators
     )
 
+    if document_type == "birth_certificate":
+        # Avoid rejecting a genuine older/low-quality certificate just
+        # because OCR missed multiple secondary labels. A strong anchor
+        # or two independent indicators is sufficient for further checks.
+        matched = (
+            matched_anchor
+            or len(set(matched_indicators)) >= 2
+        )
+    else:
+        matched = (
+            len(set(matched_indicators))
+            >= rules["minimum_indicators"]
+        )
 
     return {
-        "matched":
-            matched,
-
-        "matchedIndicators":
-            matched_indicators
+        "matched": matched,
+        "matchedIndicators": matched_indicators,
+        "fuzzyMatches": fuzzy_matches,
+        "strongDocumentAnchorMatched": (
+            matched_anchor
+            if document_type == "birth_certificate"
+            else None
+        )
     }
 
 

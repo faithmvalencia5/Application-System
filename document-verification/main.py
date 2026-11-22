@@ -913,7 +913,12 @@ def evaluate_identity_consistency(
     # Birth certificates can contain dense tables, stamps, and
     # overprinted fields. OCR non-detection of a name is not proof
     # of an identity mismatch, so route name checks to staff review.
-    if document_type == "birth_certificate":
+    if document_type in {"birth_certificate", "cedula"}:
+        # Birth certificates and Community Tax Certificates (Cedula)
+        # often contain handwritten or tightly packed name fields.
+        # OCR failing to read those fields is not proof that the
+        # applicant's name is incorrect. Keep the name fields advisory
+        # and require OSCA staff to visually verify them.
         name_checks = {
             "nameMatched": None,
             "firstNameMatched": None,
@@ -1787,7 +1792,9 @@ def perform_information_checks(
 
     # Birth-certificate name OCR is advisory. Unconfirmed names
     # must be manually checked by OSCA staff, not auto-rejected.
-    if document_type == "birth_certificate":
+    if document_type in {"birth_certificate", "cedula"}:
+        # OCR non-detection of handwritten/dense name fields is
+        # inconclusive. Staff must visually confirm the name.
         name_results = {
             "nameMatched": None,
             "firstNameMatched": None,

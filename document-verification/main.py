@@ -139,7 +139,13 @@ DOCUMENT_RULES = {
             "DATE OF BIRTH",
             "PLACE OF BIRTH",
             "CHILD",
-            "REGISTRY NO"
+            "REGISTRY NO",
+            "MUNICIPAL FORM NO 102",
+            "MUNICIPAL FORM 102",
+            "NATIONAL STATISTICS OFFICE",
+            "LOCAL CIVIL REGISTRAR",
+            "PROVINCE",
+            "CITY MUNICIPALITY"
         ]
     },
 

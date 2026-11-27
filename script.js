@@ -7308,9 +7308,13 @@ function setupOscaChatbot() {
       "true"
     );
 
-    setTimeout(function () {
-      input.focus();
-    }, 100);
+    // Avoid opening the mobile keyboard automatically when the chat opens.
+    // The user can tap the composer when ready; desktop keeps the existing focus behavior.
+    if (!window.matchMedia("(max-width: 600px)").matches) {
+      setTimeout(function () {
+        input.focus();
+      }, 100);
+    }
   }
 
 

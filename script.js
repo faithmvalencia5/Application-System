@@ -7883,3 +7883,45 @@ document.addEventListener("DOMContentLoaded", function () {
   protectApplicationForm();
   setupOscaChatbot();
 });
+
+
+/* On phones, collapse the branding/step header as the applicant scrolls down.
+   Restore it on upward scroll so the form gets more usable vertical space. */
+function setupMobileFormHeaderAutoHide() {
+  if (!document.body?.classList.contains("application-form-page")) return;
+  if (!window.matchMedia("(max-width: 600px)").matches) return;
+
+  const scrollPanel = document.querySelector("body.application-form-page .application-form-card");
+  if (!scrollPanel) return;
+
+  let previousScrollTop = scrollPanel.scrollTop;
+  let ticking = false;
+
+  const updateHeaderVisibility = function () {
+    const currentScrollTop = Math.max(0, scrollPanel.scrollTop);
+    const delta = currentScrollTop - previousScrollTop;
+
+    if (currentScrollTop <= 24) {
+      document.body.classList.remove("mobile-header-hidden");
+    } else if (delta > 5) {
+      document.body.classList.add("mobile-header-hidden");
+    } else if (delta < -5) {
+      document.body.classList.remove("mobile-header-hidden");
+    }
+
+    previousScrollTop = currentScrollTop;
+    ticking = false;
+  };
+
+  scrollPanel.addEventListener("scroll", function () {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(updateHeaderVisibility);
+  }, { passive: true });
+
+  window.addEventListener("resize", function () {
+    if (!window.matchMedia("(max-width: 600px)").matches) {
+      document.body.classList.remove("mobile-header-hidden");
+    }
+  });
+}

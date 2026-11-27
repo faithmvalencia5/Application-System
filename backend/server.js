@@ -21,7 +21,10 @@ function sendHealthResponse(req, res) {
 }
 
 app.disable("x-powered-by");
-app.use(cors());
+const defaultAllowedOrigins=["https://osca-application.techsite.live","https://www.osca-application.techsite.live","https://osca-management.techsite.live","https://www.osca-management.techsite.live","http://localhost:5500","http://127.0.0.1:5500","http://localhost:3000","http://127.0.0.1:3000"];
+const allowedOrigins=new Set([...defaultAllowedOrigins,...(process.env.CORS_ALLOWED_ORIGINS||"").split(",").map(v=>v.trim()).filter(Boolean)]);
+app.use(cors({origin(origin,cb){if(!origin||allowedOrigins.has(origin))return cb(null,true);return cb(null,false);},methods:["GET","POST","PUT","PATCH","DELETE","OPTIONS"],allowedHeaders:["Content-Type","Authorization"],optionsSuccessStatus:204}));
+app.use((req,res,next)=>{res.setHeader("X-Content-Type-Options","nosniff");res.setHeader("Referrer-Policy","strict-origin-when-cross-origin");res.setHeader("X-Frame-Options","SAMEORIGIN");if(req.secure||req.headers["x-forwarded-proto"]==="https")res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");next();});
 app.use(express.json({ limit: "2mb" }));
 
 // Lightweight probes for Render health checks and external uptime monitors.

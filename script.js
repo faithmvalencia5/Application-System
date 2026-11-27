@@ -7889,39 +7889,42 @@ document.addEventListener("DOMContentLoaded", function () {
    Restore it on upward scroll so the form gets more usable vertical space. */
 function setupMobileFormHeaderAutoHide() {
   if (!document.body?.classList.contains("application-form-page")) return;
-  if (!window.matchMedia("(max-width: 600px)").matches) return;
 
-  const scrollPanel = document.querySelector("body.application-form-page .application-form-card");
-  if (!scrollPanel) return;
+  const mobileQuery = window.matchMedia("(max-width: 600px)");
+  if (!mobileQuery.matches) return;
 
-  let previousScrollTop = scrollPanel.scrollTop;
+  let previousScrollY = window.scrollY || document.documentElement.scrollTop || 0;
   let ticking = false;
+  let lastDirectionChangeAt = 0;
 
   const updateHeaderVisibility = function () {
-    const currentScrollTop = Math.max(0, scrollPanel.scrollTop);
-    const delta = currentScrollTop - previousScrollTop;
+    const currentScrollY = Math.max(0, window.scrollY || document.documentElement.scrollTop || 0);
+    const delta = currentScrollY - previousScrollY;
 
-    if (currentScrollTop <= 24) {
+    if (currentScrollY <= 24) {
       document.body.classList.remove("mobile-header-hidden");
-    } else if (delta > 5) {
+    } else if (delta > 7) {
       document.body.classList.add("mobile-header-hidden");
-    } else if (delta < -5) {
+    } else if (delta < -7) {
       document.body.classList.remove("mobile-header-hidden");
     }
 
-    previousScrollTop = currentScrollTop;
+    previousScrollY = currentScrollY;
     ticking = false;
   };
 
-  scrollPanel.addEventListener("scroll", function () {
-    if (ticking) return;
+  window.addEventListener("scroll", function () {
+    if (!mobileQuery.matches || ticking) return;
     ticking = true;
     window.requestAnimationFrame(updateHeaderVisibility);
   }, { passive: true });
 
   window.addEventListener("resize", function () {
-    if (!window.matchMedia("(max-width: 600px)").matches) {
+    if (!mobileQuery.matches) {
       document.body.classList.remove("mobile-header-hidden");
     }
-  });
+  }, { passive: true });
+
+  // If the page opens already partway down, start with the compact header.
+  if (previousScrollY > 24) document.body.classList.add("mobile-header-hidden");
 }

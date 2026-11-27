@@ -6,55 +6,55 @@ export async function sendChatMessage(
   req,
   res
 ) {
-  try {
-    const {
-      message,
-      previousInteractionId
-    } = req.body;
+  const {
+    message,
+    previousInteractionId
+  } = req.body;
 
-    if (
-      !message ||
-      !String(message).trim()
-    ) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Please enter a message."
-      });
-    }
-
-    const result =
-      await askGemini(
-        String(message),
-        previousInteractionId || null
-      );
-
-    return res.status(200).json({
-      success: true,
-
-      reply:
-        result.reply,
-
-      interactionId:
-        result.interactionId,
-
-      source:
-        result.source || "gemini",
-
-      faqId:
-        result.faqId || null
+  if (!message || !String(message).trim()) {
+    return res.status(400).json({
+      success: false,
+      message: "Please enter a message."
     });
+  }
 
-  } catch (error) {
-    console.error(
-      "Gemini chatbot error:",
-      error
+  const sendEvent = (event, payload) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
+  };
+
+  // Keep the connection alive while the model is generating.
+  res.status(200);
+  res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders?.();
+
+  try {
+    const result = await askGemini(
+      String(message),
+      previousInteractionId || null,
+      (text) => sendEvent("token", { text })
     );
 
-    return res.status(500).json({
-      success: false,
-      message:
-        "The chatbot is temporarily unavailable. Please try again."
+    // Local FAQ responses are returned as a complete answer, so send them
+    // as one chunk; Gemini answers have already been streamed incrementally.
+    if (result.source === "local_faq") {
+      sendEvent("token", { text: result.reply });
+    }
+
+    sendEvent("done", {
+      interactionId: result.interactionId || null,
+      source: result.source || "gemini",
+      faqId: result.faqId || null
     });
+    res.end();
+  } catch (error) {
+    console.error("Chatbot response error:", error);
+
+    sendEvent("chat_error", {
+      message: "The chatbot is temporarily unavailable. Please try again."
+    });
+    res.end();
   }
 }

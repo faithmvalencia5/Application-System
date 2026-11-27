@@ -61,7 +61,7 @@ router.put(
     ]),
     updateVerifiedDuplicateRecord
 );
-router.get("/status/:applicationId", getApplicationStatus);
+router.post("/status/lookup", getApplicationStatus);
 router.post("/:applicationId/id-request",
     upload.fields([
         { name: "valid_id_front", maxCount: 1 },

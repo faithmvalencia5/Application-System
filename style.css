@@ -9018,3 +9018,89 @@ body.registration-page .disclaimer-close {
     transition: none !important;
   }
 }
+
+
+/* Senior-friendly typography across the entire public website. */
+:root {
+  /* Scale rem-based typography site-wide, not only inside the application form. */
+  font-size: 112.5%;
+}
+
+body {
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+/* Keep small supporting text readable on the homepage, registration,
+   verification, tracking, and application pages. */
+body :is(
+  small,
+  .contact-kicker,
+  .contact-detail small,
+  .contact-card-action small,
+  .contact-visit-note p,
+  .captcha-help,
+  .verify-eyebrow,
+  .form-required-legend,
+  .steps-nav a,
+  .upload-file-name,
+  .chatbot-disclaimer,
+  .chatbot-status,
+  .chatbot-suggestion,
+  .notice-box p:last-child
+) {
+  font-size: max(0.85rem, 1em) !important;
+  line-height: 1.45;
+}
+
+/* Give interactive text and common content a comfortable reading size.
+   Icon fonts are intentionally excluded so symbols keep their proportions. */
+body :is(
+  p, li, label, summary, dt, dd, th, td, figcaption,
+  input, select, textarea, button, a
+):not(.material-symbols-outlined):not(.icon):not([aria-hidden="true"]) {
+  line-height: 1.5;
+}
+
+/* Ensure chatbot messages and controls benefit from the same readable scale. */
+.osca-chatbot :is(.chat-bubble, .chatbot-header, .chatbot-input-area, #chatbot-input, #chatbot-send) {
+  font-size: max(1rem, 1em);
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  :root {
+    font-size: 118.75%;
+  }
+
+  body {
+    line-height: 1.6;
+  }
+
+  body :is(
+    small,
+    .contact-kicker,
+    .contact-detail small,
+    .contact-card-action small,
+    .contact-visit-note p,
+    .captcha-help,
+    .verify-eyebrow,
+    .form-required-legend,
+    .steps-nav a,
+    .upload-file-name,
+    .chatbot-disclaimer,
+    .chatbot-status,
+    .chatbot-suggestion,
+    .notice-box p:last-child
+  ) {
+    font-size: max(0.9rem, 1em) !important;
+  }
+
+  body :is(p, li, label, summary, dt, dd, figcaption) {
+    line-height: 1.55;
+  }
+
+  body :is(input, select, textarea, button) {
+    font-size: max(1rem, 1em);
+  }
+}

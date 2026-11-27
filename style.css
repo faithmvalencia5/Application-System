@@ -9187,3 +9187,44 @@ body :is(
     transition: none !important;
   }
 }
+
+
+/* Follow-up mobile fixes: reliable form scroll detection, centered title,
+   and separate chatbot language/close controls. */
+@media (max-width: 600px) {
+  /* The title bar is centered independently of surrounding header controls. */
+  body.application-form-page .form-header .title-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    text-align: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Keep the chatbot close button at the far right. The language switcher
+     sits immediately to its left rather than occupying the same position. */
+  #osca-chatbot.chat-open #oscaLanguageToggle {
+    position: fixed !important;
+    top: calc(env(safe-area-inset-top, 0px) + 14px) !important;
+    right: 72px !important;
+    z-index: 20003 !important;
+  }
+
+  #osca-chatbot.chat-open .chatbot-header {
+    padding-right: 12px !important;
+  }
+
+  #osca-chatbot.chat-open #chatbot-close {
+    position: relative !important;
+    z-index: 20004 !important;
+    flex: 0 0 44px !important;
+    width: 44px !important;
+    height: 44px !important;
+    margin-left: 8px !important;
+  }
+}

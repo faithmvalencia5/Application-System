@@ -7894,31 +7894,45 @@ function setupMobileFormHeaderAutoHide() {
   const mobileQuery = window.matchMedia("(max-width: 600px)");
   if (!mobileQuery.matches) return;
 
-  let previousScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  const formCard = document.querySelector(".application-form-card");
+  let previousScroll = 0;
   let ticking = false;
-  let lastDirectionChangeAt = 0;
+
+  const getScrollPosition = function () {
+    // Depending on the browser/layout version, the form may scroll either
+    // inside its card or as the document. Observe both possibilities.
+    const cardScroll = formCard ? formCard.scrollTop : 0;
+    const pageScroll = window.scrollY || document.documentElement.scrollTop || 0;
+    return cardScroll > 0 ? cardScroll : pageScroll;
+  };
 
   const updateHeaderVisibility = function () {
-    const currentScrollY = Math.max(0, window.scrollY || document.documentElement.scrollTop || 0);
-    const delta = currentScrollY - previousScrollY;
+    const currentScroll = Math.max(0, getScrollPosition());
+    const delta = currentScroll - previousScroll;
 
-    if (currentScrollY <= 24) {
+    if (currentScroll <= 24) {
       document.body.classList.remove("mobile-header-hidden");
-    } else if (delta > 7) {
+    } else if (delta > 4) {
       document.body.classList.add("mobile-header-hidden");
-    } else if (delta < -7) {
+    } else if (delta < -4) {
       document.body.classList.remove("mobile-header-hidden");
     }
 
-    previousScrollY = currentScrollY;
+    previousScroll = currentScroll;
     ticking = false;
   };
 
-  window.addEventListener("scroll", function () {
+  const onScroll = function () {
     if (!mobileQuery.matches || ticking) return;
     ticking = true;
     window.requestAnimationFrame(updateHeaderVisibility);
-  }, { passive: true });
+  };
+
+  // Listen to the actual form panel and the page viewport. This handles
+  // both current and older mobile layout modes, including Android Chrome.
+  formCard?.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("scroll", onScroll, { passive: true });
+  document.addEventListener("scroll", onScroll, { passive: true, capture: true });
 
   window.addEventListener("resize", function () {
     if (!mobileQuery.matches) {
@@ -7926,6 +7940,6 @@ function setupMobileFormHeaderAutoHide() {
     }
   }, { passive: true });
 
-  // If the page opens already partway down, start with the compact header.
-  if (previousScrollY > 24) document.body.classList.add("mobile-header-hidden");
+  previousScroll = getScrollPosition();
+  if (previousScroll > 24) document.body.classList.add("mobile-header-hidden");
 }

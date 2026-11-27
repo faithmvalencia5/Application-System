@@ -7740,52 +7740,102 @@ function setupOscaChatbot() {
 
     try {
 
-      const response =
-        await fetch(
-          "/api/chatbot/message",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json"
-            },
-
-            body: JSON.stringify({
-              message:
-                cleanMessage,
-
-              previousInteractionId:
-                previousInteractionId
-            })
-          }
-        );
-
-
-      const result =
-        await response.json();
-
-
-      if (!response.ok) {
-        throw new Error(
-          result.message ||
-          "Unable to get a response."
-        );
-      }
-
-
-      if (
-        result.interactionId
-      ) {
-        previousInteractionId =
-          result.interactionId;
-      }
-
-
-      addMessage(
-        result.reply,
-        "bot"
+      const response = await fetch(
+        "/api/chatbot/message",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "text/event-stream"
+          },
+          body: JSON.stringify({
+            message: cleanMessage,
+            previousInteractionId: previousInteractionId
+          })
+        }
       );
+
+      if (!response.ok || !response.body) {
+        let errorMessage = "Unable to get a response.";
+        try {
+          const errorResult = await response.json();
+          errorMessage = errorResult.message || errorMessage;
+        } catch (_) {}
+        throw new Error(errorMessage);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let streamedReply = "";
+      let botMessageAdded = false;
+      let streamError = null;
+
+      const appendReplyChunk = (chunk) => {
+        if (!chunk) return;
+        streamedReply += chunk;
+
+        if (!botMessageAdded) {
+          addMessage("", "bot");
+          botMessageAdded = true;
+        }
+
+        const botMessages = messages.querySelectorAll(".bot-message .chat-bubble");
+        const activeBubble = botMessages[botMessages.length - 1];
+        if (activeBubble) {
+          activeBubble.textContent = streamedReply;
+          messages.scrollTop = messages.scrollHeight;
+        }
+      };
+
+      const processSseBlock = (block) => {
+        let eventName = "message";
+        let dataText = "";
+
+        for (const line of block.split("\n")) {
+          if (line.startsWith("event:")) {
+            eventName = line.slice(6).trim();
+          } else if (line.startsWith("data:")) {
+            dataText += line.slice(5).trim();
+          }
+        }
+
+        if (!dataText) return;
+        const payload = JSON.parse(dataText);
+
+        if (eventName === "token") {
+          appendReplyChunk(payload.text || "");
+        } else if (eventName === "done") {
+          if (payload.interactionId) {
+            previousInteractionId = payload.interactionId;
+          }
+        } else if (eventName === "chat_error") {
+          streamError = payload.message || "Unable to get a response.";
+        }
+      };
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const blocks = buffer.split("\n\n");
+        buffer = blocks.pop() || "";
+
+        for (const block of blocks) {
+          processSseBlock(block);
+        }
+      }
+
+      buffer += decoder.decode();
+      if (buffer.trim()) processSseBlock(buffer);
+
+      if (streamError) {
+        if (!streamedReply) throw new Error(streamError);
+        appendReplyChunk("\n\n" + streamError);
+      } else if (!streamedReply) {
+        throw new Error("The chatbot did not return a response.");
+      }
 
 
     } catch (error) {

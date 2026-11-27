@@ -9104,3 +9104,86 @@ body :is(
     font-size: max(1rem, 1em);
   }
 }
+
+
+/* Mobile native page scrolling: allow the browser chrome to collapse with the page. */
+@media (max-width: 600px) {
+  html:has(body.application-form-page) {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    scroll-behavior: auto;
+  }
+
+  body.application-form-page {
+    height: auto !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: auto !important;
+  }
+
+  body.application-form-page .page-frame {
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  body.application-form-page .page-frame > .form-header,
+  body.application-form-page .page-frame > .mobile-sticky-area,
+  body.application-form-page .page-frame > .mobile-draft-status {
+    flex: 0 0 auto !important;
+    transition: max-height 220ms ease, opacity 180ms ease, margin 220ms ease,
+      padding 220ms ease, transform 220ms ease;
+  }
+
+  body.application-form-page .form-wrapper {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  body.application-form-page .application-form-card {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    overscroll-behavior: auto !important;
+    -webkit-overflow-scrolling: auto !important;
+  }
+
+  body.application-form-page.mobile-header-hidden .page-frame > .form-header,
+  body.application-form-page.mobile-header-hidden .page-frame > .mobile-sticky-area,
+  body.application-form-page.mobile-header-hidden .page-frame > .mobile-draft-status {
+    max-height: 0 !important;
+    min-height: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border-width: 0 !important;
+    opacity: 0 !important;
+    overflow: hidden !important;
+    transform: translateY(-12px);
+    pointer-events: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.application-form-page .page-frame > .form-header,
+  body.application-form-page .page-frame > .mobile-sticky-area,
+  body.application-form-page .page-frame > .mobile-draft-status {
+    transition: none !important;
+  }
+}

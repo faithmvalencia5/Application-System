@@ -450,7 +450,8 @@ ${OSCA_KNOWLEDGE}
 
 export async function askGemini(
   message,
-  previousInteractionId = null
+  previousInteractionId = null,
+  onToken = null
 ) {
 
   if (!message || !message.trim()) {
@@ -509,7 +510,9 @@ Respond according to the instructions above.
       "gemini-3.6-flash",
 
     input:
-      prompt
+      prompt,
+
+    ...(typeof onToken === "function" ? { stream: true } : {})
   };
 
   if (previousInteractionId) {
@@ -520,10 +523,43 @@ Respond according to the instructions above.
   }
 
   const ai = await getAiClient();
+
+  // Stream generated text to the browser as soon as Gemini emits it.
+  // The normal non-streaming behavior remains available to other callers.
+  if (typeof onToken === "function") {
+    const stream = await ai.interactions.create(request);
+    let reply = "";
+    let interactionId = null;
+
+    for await (const event of stream) {
+      if (event.event_type === "interaction.created") {
+        interactionId = event.interaction?.id || null;
+      } else if (
+        event.event_type === "step.delta" &&
+        event.delta?.type === "text" &&
+        typeof event.delta.text === "string"
+      ) {
+        reply += event.delta.text;
+        onToken(event.delta.text);
+      } else if (event.event_type === "interaction.completed") {
+        interactionId =
+          event.interaction?.id || interactionId;
+      }
+    }
+
+    if (!reply.trim()) {
+      throw new Error("Gemini did not return a response.");
+    }
+
+    return {
+      reply,
+      interactionId,
+      source: "gemini"
+    };
+  }
+
   const interaction =
-    await ai.interactions.create(
-      request
-    );
+    await ai.interactions.create(request);
 
   const reply =
     interaction.output_text;

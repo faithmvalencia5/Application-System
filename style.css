@@ -9228,3 +9228,11 @@ body :is(
     margin-left: 8px !important;
   }
 }
+
+
+/* Hide the language switcher while the chatbot is open on small screens. */
+@media (max-width: 900px) {
+  #osca-chatbot.chat-open #oscaLanguageToggle {
+    display: none !important;
+  }
+}

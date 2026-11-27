@@ -6008,6 +6008,7 @@ function setupVerificationPage() {
     });
   }
   const errorLabel = document.getElementById("application-id-error");
+  const dateOfBirthInput = document.getElementById("application-dob-input");
   const statusItems = document.querySelectorAll(".verify-status-item[data-status]");
   const verifiedId = document.getElementById("verified-application-id");
   const verifiedApplicant = document.getElementById("verified-applicant-name");
@@ -6029,7 +6030,7 @@ function setupVerificationPage() {
     document.getElementById("close-verification-page-status-secondary")
   ].filter(Boolean);
 
-  if (!entryStep || !statusStep || !entryForm || !inputField || !verifiedId || !verifiedApplicant || !verificationNote) {
+  if (!entryStep || !statusStep || !entryForm || !inputField || !dateOfBirthInput || !verifiedId || !verifiedApplicant || !verificationNote) {
     return;
   }
 
@@ -6077,8 +6078,8 @@ function setupVerificationPage() {
     return 'Your application status has been updated.';
   };
 
-  const fetchVerificationRecord = async function (applicationId) {
-    const response = await fetch(`${API_BASE_URL}/status/${encodeURIComponent(applicationId)}`);
+  const fetchVerificationRecord = async function (applicationId, dateOfBirth) {
+    const response = await fetch(`${API_BASE_URL}/status/lookup`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({applicationId,dateOfBirth})});
     const result = await response.json();
 
     if (!response.ok) {
@@ -6302,6 +6303,7 @@ function setupVerificationPage() {
     event.preventDefault();
 
     const applicationId = normalizeApplicationId(inputField.value);
+    const dateOfBirth = String(dateOfBirthInput.value || "").trim();
 
     if (!applicationId) {
       if (errorLabel) {
@@ -6310,6 +6312,8 @@ function setupVerificationPage() {
       inputField.focus();
       return;
     }
+
+    if (!dateOfBirth) { if (errorLabel) errorLabel.textContent="Please enter your date of birth."; dateOfBirthInput.focus(); return; }
 
     const submitButton = entryForm.querySelector('button[type="submit"]');
     const originalButtonText = submitButton ? submitButton.textContent : '';
@@ -6320,7 +6324,7 @@ function setupVerificationPage() {
 
     let record = null;
     try {
-      record = await fetchVerificationRecord(applicationId);
+      record = await fetchVerificationRecord(applicationId, dateOfBirth);
     } catch (error) {
       if (errorLabel) {
         errorLabel.textContent = "Unable to check status right now. Please try again.";

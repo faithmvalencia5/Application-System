@@ -1,23 +1,14 @@
 import { supabase } from "../supabase.js";
 
-const statusLookupAttempts = new Map();
-const STATUS_LOOKUP_WINDOW_MS = 15 * 60 * 1000;
-const STATUS_LOOKUP_MAX_ATTEMPTS = 20;
-
 export async function getApplicationStatus(req, res) {
-    const applicationId = String(req.body?.applicationId || "").trim();
-    const suppliedDateOfBirth = String(req.body?.dateOfBirth || "").trim();
-    if (!applicationId || !/^\d{4}-\d{2}-\d{2}$/.test(suppliedDateOfBirth)) {
-        return res.status(400).json({ success: false, message: "Application ID and date of birth are required." });
+    const applicationId = req.params.applicationId;
+
+    if (!applicationId) {
+        return res.status(400).json({
+            success: false,
+            message: "Application ID is required."
+        });
     }
-    const clientIp = String(req.headers["x-forwarded-for"] || req.ip || "unknown").split(",")[0].trim();
-    const now = Date.now();
-    const previousAttempt = statusLookupAttempts.get(clientIp);
-    if (previousAttempt && now-previousAttempt.startedAt<STATUS_LOOKUP_WINDOW_MS && previousAttempt.count>=STATUS_LOOKUP_MAX_ATTEMPTS) {
-        return res.status(429).json({success:false,message:"Too many status lookup attempts. Please wait 15 minutes and try again."});
-    }
-    if (!previousAttempt || now-previousAttempt.startedAt>=STATUS_LOOKUP_WINDOW_MS) statusLookupAttempts.set(clientIp,{startedAt:now,count:1});
-    else previousAttempt.count++;
 
     try {
         // Get the applicant's basic information
@@ -27,7 +18,7 @@ export async function getApplicationStatus(req, res) {
         } = await supabase
             .from("applications")
             .select(
-                "application_id, first_name, middle_name, surname, date_of_birth"
+                "application_id, first_name, middle_name, surname"
             )
             .eq("application_id", applicationId)
             .maybeSingle();
@@ -36,14 +27,7 @@ export async function getApplicationStatus(req, res) {
             throw applicationError;
         }
 
-        const normalizeDate = (value) => {
-            const raw=String(value||"").trim();
-            const match=raw.match(/^(\d{4}-\d{2}-\d{2})/);
-            if(match)return match[1];
-            const parsed=new Date(raw);
-            return Number.isNaN(parsed.getTime())?"":parsed.toISOString().slice(0,10);
-        };
-        if (!applicationRow || normalizeDate(applicationRow.date_of_birth)!==suppliedDateOfBirth) {
+        if (!applicationRow) {
             return res.status(404).json({
                 success: false,
                 message: "Application not found."
